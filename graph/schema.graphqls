@@ -1,28 +1,76 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
-
-type Todo {
-  id: ID!
-  text: String!
-  done: Boolean!
-  user: User!
-}
+directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
+    | FIELD_DEFINITION
 
 type User {
   id: ID!
-  name: String!
+  firstName: String!
+  lastName: String!
+  fullName: String! @goField(forceResolver: true)
+
+  email: String!
+  phoneNumber: String!
+  pronouns: Pronouns
+  age: Int
+
+  oAuth: OAuth! @goField(forceResolver: true)
+}
+
+"""
+Example:
+subjective=he
+objective=him
+reflexive=himself
+"""
+type Pronouns {
+    subjectivePersonal: String!
+    objectivePersonal: String!
+    reflexive: String!
+}
+
+enum Provider {
+    GITHUB
+}
+
+type OAuth {
+    provider: Provider!
+    accessToken: String!
+}
+
+input PronounsInput {
+    subjectivePersonal: String!
+    objectivePersonal: String!
+    reflexive: String!
+}
+
+input NewUser {
+  firstName: String!
+  lastName: String!
+  email: String!
+  phoneNumber: String!
+  pronouns: PronounsInput
+  age: Int
+}
+
+type LoginPayload {
+    """
+    If false then you must register immediately following this. Else, you are logged in and have access to your own user.
+    """
+    accountExists: Boolean!
+    accessToken: String!
+    user: User
 }
 
 type Query {
-  todos: [Todo!]!
-}
-
-input NewTodo {
-  text: String!
-  userId: String!
+  """
+  The code supplied must be the code given to the frontend by the oauth flow
+  Step 1 response https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps
+  """
+  login(provider: Provider!, code: String!): LoginPayload!
+  register(provider: Provider!, accessToken: String!, input: NewUser!): User!
+  users: [User!]!
 }
 
 type Mutation {
-  createTodo(input: NewTodo!): Todo!
+  updateUser(id: ID!, input: NewUser!): User!
 }
+

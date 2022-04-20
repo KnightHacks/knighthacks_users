@@ -2,19 +2,96 @@
 
 package model
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+import (
+	"fmt"
+	"io"
+	"strconv"
+)
+
+type LoginPayload struct {
+	// If false then you must register immediately following this. Else, you are logged in and have access to your own user.
+	AccountExists bool   `json:"accountExists"`
+	AccessToken   string `json:"accessToken"`
+	User          *User  `json:"user"`
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type NewUser struct {
+	FirstName   string         `json:"firstName"`
+	LastName    string         `json:"lastName"`
+	Email       string         `json:"email"`
+	PhoneNumber string         `json:"phoneNumber"`
+	Pronouns    *PronounsInput `json:"pronouns"`
+	Age         *int           `json:"age"`
+}
+
+type OAuth struct {
+	Provider    Provider `json:"provider"`
+	AccessToken string   `json:"accessToken"`
+}
+
+// Example:
+// subjective=he
+// objective=him
+// reflexive=himself
+type Pronouns struct {
+	SubjectivePersonal string `json:"subjectivePersonal"`
+	ObjectivePersonal  string `json:"objectivePersonal"`
+	Reflexive          string `json:"reflexive"`
+}
+
+type PronounsInput struct {
+	SubjectivePersonal string `json:"subjectivePersonal"`
+	ObjectivePersonal  string `json:"objectivePersonal"`
+	Reflexive          string `json:"reflexive"`
 }
 
 type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID          string    `json:"id"`
+	FirstName   string    `json:"firstName"`
+	LastName    string    `json:"lastName"`
+	FullName    string    `json:"fullName"`
+	Email       string    `json:"email"`
+	PhoneNumber string    `json:"phoneNumber"`
+	Pronouns    *Pronouns `json:"pronouns"`
+	Age         *int      `json:"age"`
+	OAuth       *OAuth    `json:"oAuth"`
+}
+
+type Provider string
+
+const (
+	ProviderGithub Provider = "GITHUB"
+)
+
+var AllProvider = []Provider{
+	ProviderGithub,
+}
+
+func (e Provider) IsValid() bool {
+	switch e {
+	case ProviderGithub:
+		return true
+	}
+	return false
+}
+
+func (e Provider) String() string {
+	return string(e)
+}
+
+func (e *Provider) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Provider(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Provider", str)
+	}
+	return nil
+}
+
+func (e Provider) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
