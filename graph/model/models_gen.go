@@ -57,6 +57,8 @@ type User struct {
 	OAuth       *OAuth    `json:"oAuth"`
 }
 
+func (User) IsEntity() {}
+
 type Provider string
 
 const (
