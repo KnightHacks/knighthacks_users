@@ -19,12 +19,10 @@ type User @key(fields:"id") @key(fields:"oAuth { accessToken }") {
 Example:
 subjective=he
 objective=him
-reflexive=himself
 """
 type Pronouns {
-    subjectivePersonal: String!
-    objectivePersonal: String!
-    reflexive: String!
+    subjective: String!
+    objective: String!
 }
 
 enum Provider {
