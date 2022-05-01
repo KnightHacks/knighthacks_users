@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/LockedThread/users/graph/generated"
-	"github.com/LockedThread/users/graph/model"
+	"github.com/LockedThread/knighthacks_users/graph/generated"
+	"github.com/LockedThread/knighthacks_users/graph/model"
 )
 
 func (r *entityResolver) FindUserByID(ctx context.Context, id string) (*model.User, error) {

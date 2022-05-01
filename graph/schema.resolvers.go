@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/LockedThread/users/graph/generated"
-	"github.com/LockedThread/users/graph/model"
+	"github.com/LockedThread/knighthacks_users/graph/generated"
+	"github.com/LockedThread/knighthacks_users/graph/model"
 )
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {

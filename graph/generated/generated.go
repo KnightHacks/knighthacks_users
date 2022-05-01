@@ -14,7 +14,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/99designs/gqlgen/plugin/federation/fedruntime"
-	"github.com/LockedThread/users/graph/model"
+	"github.com/LockedThread/knighthacks_users/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -68,9 +68,8 @@ type ComplexityRoot struct {
 	}
 
 	Pronouns struct {
-		ObjectivePersonal  func(childComplexity int) int
-		Reflexive          func(childComplexity int) int
-		SubjectivePersonal func(childComplexity int) int
+		Objective  func(childComplexity int) int
+		Subjective func(childComplexity int) int
 	}
 
 	Query struct {
@@ -202,26 +201,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.OAuth.Provider(childComplexity), true
 
-	case "Pronouns.objectivePersonal":
-		if e.complexity.Pronouns.ObjectivePersonal == nil {
+	case "Pronouns.objective":
+		if e.complexity.Pronouns.Objective == nil {
 			break
 		}
 
-		return e.complexity.Pronouns.ObjectivePersonal(childComplexity), true
+		return e.complexity.Pronouns.Objective(childComplexity), true
 
-	case "Pronouns.reflexive":
-		if e.complexity.Pronouns.Reflexive == nil {
+	case "Pronouns.subjective":
+		if e.complexity.Pronouns.Subjective == nil {
 			break
 		}
 
-		return e.complexity.Pronouns.Reflexive(childComplexity), true
-
-	case "Pronouns.subjectivePersonal":
-		if e.complexity.Pronouns.SubjectivePersonal == nil {
-			break
-		}
-
-		return e.complexity.Pronouns.SubjectivePersonal(childComplexity), true
+		return e.complexity.Pronouns.Subjective(childComplexity), true
 
 	case "Query.login":
 		if e.complexity.Query.Login == nil {
@@ -428,12 +420,10 @@ type User @key(fields:"id") @key(fields:"oAuth { accessToken }") {
 Example:
 subjective=he
 objective=him
-reflexive=himself
 """
 type Pronouns {
-    subjectivePersonal: String!
-    objectivePersonal: String!
-    reflexive: String!
+    subjective: String!
+    objective: String!
 }
 
 enum Provider {
@@ -566,7 +556,7 @@ func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, 
 	var arg1 model.NewUser
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNNewUser2githubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐNewUser(ctx, tmp)
+		arg1, err = ec.unmarshalNNewUser2githubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐNewUser(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -611,7 +601,7 @@ func (ec *executionContext) field_Query_login_args(ctx context.Context, rawArgs 
 	var arg0 model.Provider
 	if tmp, ok := rawArgs["provider"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
-		arg0, err = ec.unmarshalNProvider2githubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐProvider(ctx, tmp)
+		arg0, err = ec.unmarshalNProvider2githubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐProvider(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -635,7 +625,7 @@ func (ec *executionContext) field_Query_register_args(ctx context.Context, rawAr
 	var arg0 model.Provider
 	if tmp, ok := rawArgs["provider"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
-		arg0, err = ec.unmarshalNProvider2githubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐProvider(ctx, tmp)
+		arg0, err = ec.unmarshalNProvider2githubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐProvider(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -653,7 +643,7 @@ func (ec *executionContext) field_Query_register_args(ctx context.Context, rawAr
 	var arg2 model.NewUser
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg2, err = ec.unmarshalNNewUser2githubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐNewUser(ctx, tmp)
+		arg2, err = ec.unmarshalNNewUser2githubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐNewUser(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -739,7 +729,7 @@ func (ec *executionContext) _Entity_findUserByID(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Entity_findUserByOAuthAccessToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -781,7 +771,7 @@ func (ec *executionContext) _Entity_findUserByOAuthAccessToken(ctx context.Conte
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _LoginPayload_accountExists(ctx context.Context, field graphql.CollectedField, obj *model.LoginPayload) (ret graphql.Marshaler) {
@@ -883,7 +873,7 @@ func (ec *executionContext) _LoginPayload_user(ctx context.Context, field graphq
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -925,7 +915,7 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OAuth_provider(ctx context.Context, field graphql.CollectedField, obj *model.OAuth) (ret graphql.Marshaler) {
@@ -960,7 +950,7 @@ func (ec *executionContext) _OAuth_provider(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(model.Provider)
 	fc.Result = res
-	return ec.marshalNProvider2githubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐProvider(ctx, field.Selections, res)
+	return ec.marshalNProvider2githubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐProvider(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OAuth_accessToken(ctx context.Context, field graphql.CollectedField, obj *model.OAuth) (ret graphql.Marshaler) {
@@ -998,7 +988,7 @@ func (ec *executionContext) _OAuth_accessToken(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Pronouns_subjectivePersonal(ctx context.Context, field graphql.CollectedField, obj *model.Pronouns) (ret graphql.Marshaler) {
+func (ec *executionContext) _Pronouns_subjective(ctx context.Context, field graphql.CollectedField, obj *model.Pronouns) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1016,7 +1006,7 @@ func (ec *executionContext) _Pronouns_subjectivePersonal(ctx context.Context, fi
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.SubjectivePersonal, nil
+		return obj.Subjective, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1033,7 +1023,7 @@ func (ec *executionContext) _Pronouns_subjectivePersonal(ctx context.Context, fi
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Pronouns_objectivePersonal(ctx context.Context, field graphql.CollectedField, obj *model.Pronouns) (ret graphql.Marshaler) {
+func (ec *executionContext) _Pronouns_objective(ctx context.Context, field graphql.CollectedField, obj *model.Pronouns) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1051,42 +1041,7 @@ func (ec *executionContext) _Pronouns_objectivePersonal(ctx context.Context, fie
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ObjectivePersonal, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Pronouns_reflexive(ctx context.Context, field graphql.CollectedField, obj *model.Pronouns) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Pronouns",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Reflexive, nil
+		return obj.Objective, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1142,7 +1097,7 @@ func (ec *executionContext) _Query_login(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.(*model.LoginPayload)
 	fc.Result = res
-	return ec.marshalNLoginPayload2ᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐLoginPayload(ctx, field.Selections, res)
+	return ec.marshalNLoginPayload2ᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐLoginPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_register(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1184,7 +1139,7 @@ func (ec *executionContext) _Query_register(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_users(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1219,7 +1174,7 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.([]*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐUserᚄ(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query__entities(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1609,7 +1564,7 @@ func (ec *executionContext) _User_pronouns(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.(*model.Pronouns)
 	fc.Result = res
-	return ec.marshalOPronouns2ᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐPronouns(ctx, field.Selections, res)
+	return ec.marshalOPronouns2ᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐPronouns(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_age(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
@@ -1676,7 +1631,7 @@ func (ec *executionContext) _User_oAuth(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.(*model.OAuth)
 	fc.Result = res
-	return ec.marshalNOAuth2ᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐOAuth(ctx, field.Selections, res)
+	return ec.marshalNOAuth2ᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐOAuth(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) __Service_sdl(ctx context.Context, field graphql.CollectedField, obj *fedruntime.Service) (ret graphql.Marshaler) {
@@ -2942,7 +2897,7 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pronouns"))
-			it.Pronouns, err = ec.unmarshalOPronounsInput2ᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐPronounsInput(ctx, v)
+			it.Pronouns, err = ec.unmarshalOPronounsInput2ᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐPronounsInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3238,9 +3193,9 @@ func (ec *executionContext) _Pronouns(ctx context.Context, sel ast.SelectionSet,
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Pronouns")
-		case "subjectivePersonal":
+		case "subjective":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Pronouns_subjectivePersonal(ctx, field, obj)
+				return ec._Pronouns_subjective(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -3248,19 +3203,9 @@ func (ec *executionContext) _Pronouns(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "objectivePersonal":
+		case "objective":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Pronouns_objectivePersonal(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "reflexive":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Pronouns_reflexive(ctx, field, obj)
+				return ec._Pronouns_objective(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -4044,11 +3989,11 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) marshalNLoginPayload2githubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐLoginPayload(ctx context.Context, sel ast.SelectionSet, v model.LoginPayload) graphql.Marshaler {
+func (ec *executionContext) marshalNLoginPayload2githubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐLoginPayload(ctx context.Context, sel ast.SelectionSet, v model.LoginPayload) graphql.Marshaler {
 	return ec._LoginPayload(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNLoginPayload2ᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐLoginPayload(ctx context.Context, sel ast.SelectionSet, v *model.LoginPayload) graphql.Marshaler {
+func (ec *executionContext) marshalNLoginPayload2ᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐLoginPayload(ctx context.Context, sel ast.SelectionSet, v *model.LoginPayload) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -4058,16 +4003,16 @@ func (ec *executionContext) marshalNLoginPayload2ᚖgithubᚗcomᚋLockedThread�
 	return ec._LoginPayload(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNNewUser2githubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐNewUser(ctx context.Context, v interface{}) (model.NewUser, error) {
+func (ec *executionContext) unmarshalNNewUser2githubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐNewUser(ctx context.Context, v interface{}) (model.NewUser, error) {
 	res, err := ec.unmarshalInputNewUser(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNOAuth2githubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐOAuth(ctx context.Context, sel ast.SelectionSet, v model.OAuth) graphql.Marshaler {
+func (ec *executionContext) marshalNOAuth2githubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐOAuth(ctx context.Context, sel ast.SelectionSet, v model.OAuth) graphql.Marshaler {
 	return ec._OAuth(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNOAuth2ᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐOAuth(ctx context.Context, sel ast.SelectionSet, v *model.OAuth) graphql.Marshaler {
+func (ec *executionContext) marshalNOAuth2ᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐOAuth(ctx context.Context, sel ast.SelectionSet, v *model.OAuth) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -4077,13 +4022,13 @@ func (ec *executionContext) marshalNOAuth2ᚖgithubᚗcomᚋLockedThreadᚋusers
 	return ec._OAuth(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNProvider2githubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐProvider(ctx context.Context, v interface{}) (model.Provider, error) {
+func (ec *executionContext) unmarshalNProvider2githubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐProvider(ctx context.Context, v interface{}) (model.Provider, error) {
 	var res model.Provider
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNProvider2githubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐProvider(ctx context.Context, sel ast.SelectionSet, v model.Provider) graphql.Marshaler {
+func (ec *executionContext) marshalNProvider2githubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐProvider(ctx context.Context, sel ast.SelectionSet, v model.Provider) graphql.Marshaler {
 	return v
 }
 
@@ -4102,11 +4047,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNUser2githubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2githubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -4130,7 +4075,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋLockedThreadᚋuse
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
+			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4150,7 +4095,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋLockedThreadᚋuse
 	return ret
 }
 
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -4565,14 +4510,14 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) marshalOPronouns2ᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐPronouns(ctx context.Context, sel ast.SelectionSet, v *model.Pronouns) graphql.Marshaler {
+func (ec *executionContext) marshalOPronouns2ᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐPronouns(ctx context.Context, sel ast.SelectionSet, v *model.Pronouns) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Pronouns(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOPronounsInput2ᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐPronounsInput(ctx context.Context, v interface{}) (*model.PronounsInput, error) {
+func (ec *executionContext) unmarshalOPronounsInput2ᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐPronounsInput(ctx context.Context, v interface{}) (*model.PronounsInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -4606,7 +4551,7 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋLockedThreadᚋusersᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋLockedThreadᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
