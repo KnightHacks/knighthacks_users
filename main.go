@@ -7,8 +7,8 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/LockedThread/knighthacks_users/graph"
-	"github.com/LockedThread/knighthacks_users/graph/generated"
+	"github.com/KnightHacks/knighthacks_users/graph"
+	"github.com/KnightHacks/knighthacks_users/graph/generated"
 )
 
 const defaultPort = "8080"
