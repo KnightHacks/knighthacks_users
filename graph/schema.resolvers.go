@@ -15,6 +15,10 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *queryResolver) Login(ctx context.Context, provider model.Provider, code string) (*model.LoginPayload, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -24,6 +28,18 @@ func (r *queryResolver) Register(ctx context.Context, provider model.Provider, a
 }
 
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) GetUser(ctx context.Context, id string) (*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) SearchUser(ctx context.Context, name string) ([]*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

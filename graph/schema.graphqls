@@ -66,9 +66,14 @@ type Query {
   login(provider: Provider!, code: String!): LoginPayload!
   register(provider: Provider!, accessToken: String!, input: NewUser!): User!
   users: [User!]!
+
+  getUser(id: ID!): User
+  searchUser(name: String!): [User!]!
+  me: User
 }
 
 type Mutation {
   updateUser(id: ID!, input: NewUser!): User!
+  deleteUser(id: ID!): Boolean!
 }
 
