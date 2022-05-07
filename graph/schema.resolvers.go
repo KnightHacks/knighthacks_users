@@ -11,6 +11,10 @@ import (
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 )
 
+func (r *mutationResolver) Register(ctx context.Context, provider model.Provider, code string, input model.NewUser) (*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -19,11 +23,11 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Login(ctx context.Context, provider model.Provider, code string) (*model.LoginPayload, error) {
+func (r *queryResolver) GetAuthRedirectLink(ctx context.Context, provider model.Provider) (string, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Register(ctx context.Context, provider model.Provider, accessToken string, input model.NewUser) (*model.User, error) {
+func (r *queryResolver) Login(ctx context.Context, provider model.Provider, code string) (*model.LoginPayload, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

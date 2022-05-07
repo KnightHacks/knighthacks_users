@@ -10,9 +10,9 @@ import (
 
 type LoginPayload struct {
 	// If false then you must register immediately following this. Else, you are logged in and have access to your own user.
-	AccountExists bool   `json:"accountExists"`
-	AccessToken   string `json:"accessToken"`
-	User          *User  `json:"user"`
+	AccountExists bool    `json:"accountExists"`
+	User          *User   `json:"user"`
+	Jwt           *string `json:"jwt"`
 }
 
 type NewUser struct {
@@ -61,15 +61,17 @@ type Provider string
 
 const (
 	ProviderGithub Provider = "GITHUB"
+	ProviderGmail  Provider = "GMAIL"
 )
 
 var AllProvider = []Provider{
 	ProviderGithub,
+	ProviderGmail,
 }
 
 func (e Provider) IsValid() bool {
 	switch e {
-	case ProviderGithub:
+	case ProviderGithub, ProviderGmail:
 		return true
 	}
 	return false

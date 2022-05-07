@@ -27,6 +27,7 @@ type Pronouns {
 
 enum Provider {
     GITHUB
+    GMAIL
 }
 
 type OAuth {
@@ -54,8 +55,8 @@ type LoginPayload {
     If false then you must register immediately following this. Else, you are logged in and have access to your own user.
     """
     accountExists: Boolean!
-    accessToken: String!
     user: User
+    jwt: String
 }
 
 type Query {
@@ -63,8 +64,8 @@ type Query {
   The code supplied must be the code given to the frontend by the oauth flow
   Step 1 response https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps
   """
+  getAuthRedirectLink(provider: Provider!): String!
   login(provider: Provider!, code: String!): LoginPayload!
-  register(provider: Provider!, accessToken: String!, input: NewUser!): User!
   users: [User!]!
 
   getUser(id: ID!): User
@@ -73,6 +74,7 @@ type Query {
 }
 
 type Mutation {
+  register(provider: Provider!, code: String!, input: NewUser!): User!
   updateUser(id: ID!, input: NewUser!): User!
   deleteUser(id: ID!): Boolean!
 }

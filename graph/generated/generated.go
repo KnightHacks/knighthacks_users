@@ -53,13 +53,14 @@ type ComplexityRoot struct {
 	}
 
 	LoginPayload struct {
-		AccessToken   func(childComplexity int) int
 		AccountExists func(childComplexity int) int
+		Jwt           func(childComplexity int) int
 		User          func(childComplexity int) int
 	}
 
 	Mutation struct {
 		DeleteUser func(childComplexity int, id string) int
+		Register   func(childComplexity int, provider model.Provider, code string, input model.NewUser) int
 		UpdateUser func(childComplexity int, id string, input model.NewUser) int
 	}
 
@@ -74,14 +75,14 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetUser            func(childComplexity int, id string) int
-		Login              func(childComplexity int, provider model.Provider, code string) int
-		Me                 func(childComplexity int) int
-		Register           func(childComplexity int, provider model.Provider, accessToken string, input model.NewUser) int
-		SearchUser         func(childComplexity int, name string) int
-		Users              func(childComplexity int) int
-		__resolve__service func(childComplexity int) int
-		__resolve_entities func(childComplexity int, representations []map[string]interface{}) int
+		GetAuthRedirectLink func(childComplexity int, provider model.Provider) int
+		GetUser             func(childComplexity int, id string) int
+		Login               func(childComplexity int, provider model.Provider, code string) int
+		Me                  func(childComplexity int) int
+		SearchUser          func(childComplexity int, name string) int
+		Users               func(childComplexity int) int
+		__resolve__service  func(childComplexity int) int
+		__resolve_entities  func(childComplexity int, representations []map[string]interface{}) int
 	}
 
 	User struct {
@@ -106,12 +107,13 @@ type EntityResolver interface {
 	FindUserByOAuthAccessToken(ctx context.Context, oAuthAccessToken string) (*model.User, error)
 }
 type MutationResolver interface {
+	Register(ctx context.Context, provider model.Provider, code string, input model.NewUser) (*model.User, error)
 	UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error)
 	DeleteUser(ctx context.Context, id string) (bool, error)
 }
 type QueryResolver interface {
+	GetAuthRedirectLink(ctx context.Context, provider model.Provider) (string, error)
 	Login(ctx context.Context, provider model.Provider, code string) (*model.LoginPayload, error)
-	Register(ctx context.Context, provider model.Provider, accessToken string, input model.NewUser) (*model.User, error)
 	Users(ctx context.Context) ([]*model.User, error)
 	GetUser(ctx context.Context, id string) (*model.User, error)
 	SearchUser(ctx context.Context, name string) ([]*model.User, error)
@@ -162,19 +164,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Entity.FindUserByOAuthAccessToken(childComplexity, args["oAuthAccessToken"].(string)), true
 
-	case "LoginPayload.accessToken":
-		if e.complexity.LoginPayload.AccessToken == nil {
-			break
-		}
-
-		return e.complexity.LoginPayload.AccessToken(childComplexity), true
-
 	case "LoginPayload.accountExists":
 		if e.complexity.LoginPayload.AccountExists == nil {
 			break
 		}
 
 		return e.complexity.LoginPayload.AccountExists(childComplexity), true
+
+	case "LoginPayload.jwt":
+		if e.complexity.LoginPayload.Jwt == nil {
+			break
+		}
+
+		return e.complexity.LoginPayload.Jwt(childComplexity), true
 
 	case "LoginPayload.user":
 		if e.complexity.LoginPayload.User == nil {
@@ -194,6 +196,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteUser(childComplexity, args["id"].(string)), true
+
+	case "Mutation.register":
+		if e.complexity.Mutation.Register == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_register_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Register(childComplexity, args["provider"].(model.Provider), args["code"].(string), args["input"].(model.NewUser)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -235,6 +249,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Pronouns.Subjective(childComplexity), true
 
+	case "Query.getAuthRedirectLink":
+		if e.complexity.Query.GetAuthRedirectLink == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getAuthRedirectLink_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetAuthRedirectLink(childComplexity, args["provider"].(model.Provider)), true
+
 	case "Query.getUser":
 		if e.complexity.Query.GetUser == nil {
 			break
@@ -265,18 +291,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Me(childComplexity), true
-
-	case "Query.register":
-		if e.complexity.Query.Register == nil {
-			break
-		}
-
-		args, err := ec.field_Query_register_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.Register(childComplexity, args["provider"].(model.Provider), args["accessToken"].(string), args["input"].(model.NewUser)), true
 
 	case "Query.searchUser":
 		if e.complexity.Query.SearchUser == nil {
@@ -479,6 +493,7 @@ type Pronouns {
 
 enum Provider {
     GITHUB
+    GMAIL
 }
 
 type OAuth {
@@ -506,8 +521,8 @@ type LoginPayload {
     If false then you must register immediately following this. Else, you are logged in and have access to your own user.
     """
     accountExists: Boolean!
-    accessToken: String!
     user: User
+    jwt: String
 }
 
 type Query {
@@ -515,8 +530,8 @@ type Query {
   The code supplied must be the code given to the frontend by the oauth flow
   Step 1 response https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps
   """
+  getAuthRedirectLink(provider: Provider!): String!
   login(provider: Provider!, code: String!): LoginPayload!
-  register(provider: Provider!, accessToken: String!, input: NewUser!): User!
   users: [User!]!
 
   getUser(id: ID!): User
@@ -525,6 +540,7 @@ type Query {
 }
 
 type Mutation {
+  register(provider: Provider!, code: String!, input: NewUser!): User!
   updateUser(id: ID!, input: NewUser!): User!
   deleteUser(id: ID!): Boolean!
 }
@@ -612,6 +628,39 @@ func (ec *executionContext) field_Mutation_deleteUser_args(ctx context.Context, 
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_register_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.Provider
+	if tmp, ok := rawArgs["provider"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
+		arg0, err = ec.unmarshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐProvider(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["provider"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["code"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["code"] = arg1
+	var arg2 model.NewUser
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg2, err = ec.unmarshalNNewUser2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐNewUser(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg2
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -666,6 +715,21 @@ func (ec *executionContext) field_Query__entities_args(ctx context.Context, rawA
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_getAuthRedirectLink_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.Provider
+	if tmp, ok := rawArgs["provider"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
+		arg0, err = ec.unmarshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐProvider(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["provider"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_getUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -702,39 +766,6 @@ func (ec *executionContext) field_Query_login_args(ctx context.Context, rawArgs 
 		}
 	}
 	args["code"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_register_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 model.Provider
-	if tmp, ok := rawArgs["provider"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
-		arg0, err = ec.unmarshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐProvider(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["provider"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["accessToken"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("accessToken"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["accessToken"] = arg1
-	var arg2 model.NewUser
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg2, err = ec.unmarshalNNewUser2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐNewUser(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg2
 	return args, nil
 }
 
@@ -910,41 +941,6 @@ func (ec *executionContext) _LoginPayload_accountExists(ctx context.Context, fie
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _LoginPayload_accessToken(ctx context.Context, field graphql.CollectedField, obj *model.LoginPayload) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "LoginPayload",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.AccessToken, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _LoginPayload_user(ctx context.Context, field graphql.CollectedField, obj *model.LoginPayload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -975,6 +971,80 @@ func (ec *executionContext) _LoginPayload_user(ctx context.Context, field graphq
 	res := resTmp.(*model.User)
 	fc.Result = res
 	return ec.marshalOUser2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _LoginPayload_jwt(ctx context.Context, field graphql.CollectedField, obj *model.LoginPayload) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "LoginPayload",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Jwt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_register(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_register_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Register(rctx, args["provider"].(model.Provider), args["code"].(string), args["input"].(model.NewUser))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1201,6 +1271,48 @@ func (ec *executionContext) _Pronouns_objective(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_getAuthRedirectLink(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getAuthRedirectLink_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetAuthRedirectLink(rctx, args["provider"].(model.Provider))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1241,48 +1353,6 @@ func (ec *executionContext) _Query_login(ctx context.Context, field graphql.Coll
 	res := resTmp.(*model.LoginPayload)
 	fc.Result = res
 	return ec.marshalNLoginPayload2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐLoginPayload(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_register(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_register_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Register(rctx, args["provider"].(model.Provider), args["accessToken"].(string), args["input"].(model.NewUser))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.User)
-	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_users(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3330,19 +3400,16 @@ func (ec *executionContext) _LoginPayload(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "accessToken":
+		case "user":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._LoginPayload_accessToken(ctx, field, obj)
+				return ec._LoginPayload_user(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "user":
+		case "jwt":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._LoginPayload_user(ctx, field, obj)
+				return ec._LoginPayload_jwt(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -3377,6 +3444,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
+		case "register":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_register(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "updateUser":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateUser(ctx, field)
@@ -3509,7 +3586,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "login":
+		case "getAuthRedirectLink":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3518,7 +3595,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_login(ctx, field)
+				res = ec._Query_getAuthRedirectLink(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -3532,7 +3609,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "register":
+		case "login":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3541,7 +3618,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_register(ctx, field)
+				res = ec._Query_login(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
