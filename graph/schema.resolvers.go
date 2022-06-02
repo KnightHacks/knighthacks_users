@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"github.com/KnightHacks/knighthacks_shared/auth"
 
 	"github.com/KnightHacks/knighthacks_users/graph/generated"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
@@ -24,7 +25,12 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 }
 
 func (r *queryResolver) GetAuthRedirectLink(ctx context.Context, provider model.Provider) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	if provider == model.ProviderGithub {
+		return r.Auth.GetAuthCodeURL(auth.GitHubAuthProvider), nil
+	} else if provider == model.ProviderGmail {
+		return r.Auth.GetAuthCodeURL(auth.GmailAuthProvider), nil
+	}
+	return "", fmt.Errorf("this shouldn't happen, model.Provider & auth.Provider are not in sync")
 }
 
 func (r *queryResolver) Login(ctx context.Context, provider model.Provider, code string) (*model.LoginPayload, error) {

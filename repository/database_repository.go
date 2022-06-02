@@ -13,6 +13,14 @@ type DatabaseRepository struct {
 	PronounReverseMap map[model.Pronouns]int
 }
 
+func NewDatabaseRepository(databasePool *pgxpool.Pool) *DatabaseRepository {
+	return &DatabaseRepository{
+		DatabasePool:      databasePool,
+		PronounMap:        map[int]model.Pronouns{},
+		PronounReverseMap: map[model.Pronouns]int{},
+	}
+}
+
 func (r DatabaseRepository) GetByPronouns(pronouns model.Pronouns) (int, bool) {
 	id, exist := r.PronounReverseMap[pronouns]
 	return id, exist
