@@ -67,12 +67,12 @@ func (r DatabaseRepository) GetOAuth(ctx context.Context, id string) (*model.OAu
 	return &oAuth, err
 }
 
-//getUser returns user by some key and value on the users table
-func (r DatabaseRepository) getUser(ctx context.Context, key string, value string) (*model.User, error) {
+//getUser returns user by some column and value on the users table
+func (r DatabaseRepository) getUser(ctx context.Context, column string, value string) (*model.User, error) {
 	var user model.User
 	var pronounId int
 	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		err := tx.QueryRow(ctx, "SELECT first_name, last_name, email, phone_number, pronoun_id, age FROM users WHERE $1 = $2", key, value).Scan(
+		err := tx.QueryRow(ctx, "SELECT first_name, last_name, email, phone_number, pronoun_id, age FROM users WHERE $1 = $2", column, value).Scan(
 			&user.FirstName,
 			&user.LastName,
 			&user.Email,
