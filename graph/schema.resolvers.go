@@ -34,7 +34,32 @@ func (r *queryResolver) GetAuthRedirectLink(ctx context.Context, provider model.
 }
 
 func (r *queryResolver) Login(ctx context.Context, provider model.Provider, code string) (*model.LoginPayload, error) {
-	panic(fmt.Errorf("not implemented"))
+	var authProvider auth.Provider
+	if provider == model.ProviderGithub {
+		_ = auth.GitHubAuthProvider
+	} else if provider == model.ProviderGmail {
+		_ = auth.GmailAuthProvider
+	} else {
+		panic("new provider not fully implemented")
+	}
+	token, err := r.Auth.ExchangeCode(ctx, authProvider, code)
+	if err != nil {
+		return nil, err
+	}
+	user, err := r.Repository.GetUserByAuthToken(ctx, token.AccessToken)
+	if err != nil {
+		return nil, err
+	}
+	payload := model.LoginPayload{}
+
+	if user != nil {
+		payload.User = user
+	}
+
+	// TODO: Implement JWT
+
+	payload.AccountExists = payload.User != nil
+	return &payload, nil
 }
 
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
