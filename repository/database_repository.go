@@ -102,3 +102,8 @@ func (r *DatabaseRepository) getUser(ctx context.Context, column string, value s
 	}
 	return &user, err
 }
+
+func (r *DatabaseRepository) CreateUser(ctx context.Context, auth *model.OAuth, oAuthCode string, input *model.NewUser) (*model.User, error) {
+	//TODO implement me
+	panic("implement me")
+}
