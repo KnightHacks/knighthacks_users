@@ -2,9 +2,14 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+)
+
+var (
+	UserNotFound = errors.New("user not found")
 )
 
 //DatabaseRepository
@@ -70,34 +75,44 @@ func (r *DatabaseRepository) GetOAuth(ctx context.Context, id string) (*model.OA
 //getUser returns user by some column and value on the users table
 func (r *DatabaseRepository) getUser(ctx context.Context, column string, value string) (*model.User, error) {
 	var user model.User
-	var pronounId int
+	var pronounIdPtr *int
 	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		err := tx.QueryRow(ctx, "SELECT first_name, last_name, email, phone_number, pronoun_id, age FROM users WHERE $1 = $2", column, value).Scan(
 			&user.FirstName,
 			&user.LastName,
 			&user.Email,
 			&user.PhoneNumber,
-			&pronounId,
+			pronounIdPtr,
 			&user.Age,
 		)
+
 		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return UserNotFound
+			}
 			return err
 		}
-		pronouns, exists := r.GetById(pronounId)
-		if !exists {
-			err = tx.QueryRow(ctx, "SELECT subjective, objective FROM pronouns WHERE id = $1", pronounId).Scan(
-				&pronouns.Subjective,
-				&pronouns.Objective,
-			)
-			if err != nil {
-				return err
+		if pronounIdPtr != nil {
+			pronounId := *pronounIdPtr
+			pronouns, exists := r.GetById(pronounId)
+			if !exists {
+				err = tx.QueryRow(ctx, "SELECT subjective, objective FROM pronouns WHERE id = $1", pronounId).Scan(
+					&pronouns.Subjective,
+					&pronouns.Objective,
+				)
+				if err != nil {
+					return err
+				}
+				r.Set(pronounId, pronouns)
 			}
-			r.Set(pronounId, pronouns)
+			user.Pronouns = &pronouns
 		}
-		user.Pronouns = &pronouns
 		return err
 	})
 	if err != nil {
+		if errors.Is(err, UserNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &user, err
