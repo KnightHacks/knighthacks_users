@@ -45,7 +45,6 @@ func main() {
 			RedirectURL:  getEnvOrDie("OAUTH_GITHUB_REDIRECT_URL"),
 			Endpoint:     github.Endpoint,
 			Scopes: []string{
-				"read:user",
 				"user:email",
 			},
 		},
@@ -68,7 +67,7 @@ func main() {
 func getEnvOrDie(key string) string {
 	env, exists := os.LookupEnv(key)
 	if !exists {
-		log.Fatalf("You must provide the %s environmental variable\n", env)
+		log.Fatalf("You must provide the %s environmental variable\n", key)
 	}
 	return env
 }
