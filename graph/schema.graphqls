@@ -1,7 +1,7 @@
 directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
     | FIELD_DEFINITION
 
-type User @key(fields:"id") @key(fields:"oAuth { accessToken }") {
+type User @key(fields:"id") @key(fields:"oAuth { uid }") {
   id: ID!
   firstName: String!
   lastName: String!
@@ -32,7 +32,7 @@ enum Provider {
 
 type OAuth {
     provider: Provider!
-    accessToken: String!
+    uid: String!
 }
 
 input PronounsInput {

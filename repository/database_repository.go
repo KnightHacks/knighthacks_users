@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"github.com/KnightHacks/knighthacks_shared/auth"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -54,10 +55,10 @@ func (r *DatabaseRepository) GetUserByID(ctx context.Context, id string) (*model
 	return r.getUser(ctx, "id", id)
 }
 
-//GetUserByAuthToken returns the user by their oauth auth token
+// GetUserByOAuthUID returns the user by their oauth auth token
 //TODO: possibly add Provider as argument?
-func (r *DatabaseRepository) GetUserByAuthToken(ctx context.Context, authToken string) (*model.User, error) {
-	return r.getUser(ctx, "oauth_token", authToken)
+func (r *DatabaseRepository) GetUserByOAuthUID(ctx context.Context, authToken string) (*model.User, error) {
+	return r.getUser(ctx, "oauth_uid", authToken)
 }
 
 //GetOAuth returns the model.OAuth object that is associated with the user's id
@@ -65,7 +66,7 @@ func (r *DatabaseRepository) GetUserByAuthToken(ctx context.Context, authToken s
 //a force resolver is a good idea
 func (r *DatabaseRepository) GetOAuth(ctx context.Context, id string) (*model.OAuth, error) {
 	var oAuth model.OAuth
-	err := r.DatabasePool.QueryRow(ctx, "SELECT oauth_token, oauth_provider FROM users WHERE id = $1", id).Scan(&oAuth.AccessToken, &oAuth.Provider)
+	err := r.DatabasePool.QueryRow(ctx, "SELECT oauth_uid, oauth_provider FROM users WHERE id = $1", id).Scan(&oAuth.UID, &oAuth.Provider)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +119,12 @@ func (r *DatabaseRepository) getUser(ctx context.Context, column string, value s
 	return &user, err
 }
 
-func (r *DatabaseRepository) CreateUser(ctx context.Context, auth *model.OAuth, oAuthCode string, input *model.NewUser) (*model.User, error) {
-	//TODO implement me
-	panic("implement me")
+func (r *DatabaseRepository) CreateUser(ctx context.Context, provider auth.Provider, accessToken string, input *model.NewUser) (*model.User, error) {
+	/*
+		var user model.User
+		err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+
+		})
+	*/
+	return nil, nil
 }

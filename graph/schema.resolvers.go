@@ -5,15 +5,35 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"github.com/KnightHacks/knighthacks_shared/auth"
+	"log"
 
+	"github.com/KnightHacks/knighthacks_shared/auth"
 	"github.com/KnightHacks/knighthacks_users/graph/generated"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 )
 
 func (r *mutationResolver) Register(ctx context.Context, provider model.Provider, code string, input model.NewUser) (*model.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	var authProvider auth.Provider
+	if provider == model.ProviderGithub {
+		_ = auth.GitHubAuthProvider
+	} else if provider == model.ProviderGmail {
+		_ = auth.GmailAuthProvider
+	} else {
+		panic("new provider not fully implemented")
+	}
+	token, err := r.Auth.ExchangeCode(ctx, authProvider, code)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := r.Repository.CreateUser(ctx, authProvider, token.AccessToken, &input)
+	if err != nil {
+		// TODO: Possibly do some error handling hear to filter sql errors out
+		return nil, err
+	}
+	return user, nil
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
@@ -46,7 +66,11 @@ func (r *queryResolver) Login(ctx context.Context, provider model.Provider, code
 	if err != nil {
 		return nil, err
 	}
-	user, err := r.Repository.GetUserByAuthToken(ctx, token.AccessToken)
+	if !token.Valid() {
+		return nil, errors.New("auth token not valid, nice try hacker")
+	}
+	log.Printf("accessToken=%s, refreshToken=%s, type=%s, expiry=%s\n", token.AccessToken, token.RefreshToken, token.Type(), token.Expiry)
+	user, err := r.Repository.GetUserByOAuthUID(ctx, token.AccessToken)
 	if err != nil {
 		return nil, err
 	}

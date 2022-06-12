@@ -48,8 +48,8 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Entity struct {
-		FindUserByID               func(childComplexity int, id string) int
-		FindUserByOAuthAccessToken func(childComplexity int, oAuthAccessToken string) int
+		FindUserByID       func(childComplexity int, id string) int
+		FindUserByOAuthUID func(childComplexity int, oAuthUID string) int
 	}
 
 	LoginPayload struct {
@@ -65,8 +65,8 @@ type ComplexityRoot struct {
 	}
 
 	OAuth struct {
-		AccessToken func(childComplexity int) int
-		Provider    func(childComplexity int) int
+		Provider func(childComplexity int) int
+		UID      func(childComplexity int) int
 	}
 
 	Pronouns struct {
@@ -104,7 +104,7 @@ type ComplexityRoot struct {
 
 type EntityResolver interface {
 	FindUserByID(ctx context.Context, id string) (*model.User, error)
-	FindUserByOAuthAccessToken(ctx context.Context, oAuthAccessToken string) (*model.User, error)
+	FindUserByOAuthUID(ctx context.Context, oAuthUID string) (*model.User, error)
 }
 type MutationResolver interface {
 	Register(ctx context.Context, provider model.Provider, code string, input model.NewUser) (*model.User, error)
@@ -152,17 +152,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Entity.FindUserByID(childComplexity, args["id"].(string)), true
 
-	case "Entity.findUserByOAuthAccessToken":
-		if e.complexity.Entity.FindUserByOAuthAccessToken == nil {
+	case "Entity.findUserByOAuthUID":
+		if e.complexity.Entity.FindUserByOAuthUID == nil {
 			break
 		}
 
-		args, err := ec.field_Entity_findUserByOAuthAccessToken_args(context.TODO(), rawArgs)
+		args, err := ec.field_Entity_findUserByOAuthUID_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Entity.FindUserByOAuthAccessToken(childComplexity, args["oAuthAccessToken"].(string)), true
+		return e.complexity.Entity.FindUserByOAuthUID(childComplexity, args["oAuthUID"].(string)), true
 
 	case "LoginPayload.accountExists":
 		if e.complexity.LoginPayload.AccountExists == nil {
@@ -221,19 +221,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateUser(childComplexity, args["id"].(string), args["input"].(model.NewUser)), true
 
-	case "OAuth.accessToken":
-		if e.complexity.OAuth.AccessToken == nil {
-			break
-		}
-
-		return e.complexity.OAuth.AccessToken(childComplexity), true
-
 	case "OAuth.provider":
 		if e.complexity.OAuth.Provider == nil {
 			break
 		}
 
 		return e.complexity.OAuth.Provider(childComplexity), true
+
+	case "OAuth.uid":
+		if e.complexity.OAuth.UID == nil {
+			break
+		}
+
+		return e.complexity.OAuth.UID(childComplexity), true
 
 	case "Pronouns.objective":
 		if e.complexity.Pronouns.Objective == nil {
@@ -467,7 +467,7 @@ var sources = []*ast.Source{
 	{Name: "graph/schema.graphqls", Input: `directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
     | FIELD_DEFINITION
 
-type User @key(fields:"id") @key(fields:"oAuth { accessToken }") {
+type User @key(fields:"id") @key(fields:"oAuth { uid }") {
   id: ID!
   firstName: String!
   lastName: String!
@@ -498,7 +498,7 @@ enum Provider {
 
 type OAuth {
     provider: Provider!
-    accessToken: String!
+    uid: String!
 }
 
 input PronounsInput {
@@ -563,7 +563,7 @@ union _Entity = User
 # fake type to build resolver interfaces for users to implement
 type Entity {
 		findUserByID(id: ID!,): User!
-	findUserByOAuthAccessToken(oAuthAccessToken: String!,): User!
+	findUserByOAuthUID(oAuthUID: String!,): User!
 
 }
 
@@ -598,18 +598,18 @@ func (ec *executionContext) field_Entity_findUserByID_args(ctx context.Context, 
 	return args, nil
 }
 
-func (ec *executionContext) field_Entity_findUserByOAuthAccessToken_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Entity_findUserByOAuthUID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["oAuthAccessToken"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("oAuthAccessToken"))
+	if tmp, ok := rawArgs["oAuthUID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("oAuthUID"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["oAuthAccessToken"] = arg0
+	args["oAuthUID"] = arg0
 	return args, nil
 }
 
@@ -864,7 +864,7 @@ func (ec *executionContext) _Entity_findUserByID(ctx context.Context, field grap
 	return ec.marshalNUser2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Entity_findUserByOAuthAccessToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Entity_findUserByOAuthUID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -881,7 +881,7 @@ func (ec *executionContext) _Entity_findUserByOAuthAccessToken(ctx context.Conte
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findUserByOAuthAccessToken_args(ctx, rawArgs)
+	args, err := ec.field_Entity_findUserByOAuthUID_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -889,7 +889,7 @@ func (ec *executionContext) _Entity_findUserByOAuthAccessToken(ctx context.Conte
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindUserByOAuthAccessToken(rctx, args["oAuthAccessToken"].(string))
+		return ec.resolvers.Entity().FindUserByOAuthUID(rctx, args["oAuthUID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1166,7 +1166,7 @@ func (ec *executionContext) _OAuth_provider(ctx context.Context, field graphql.C
 	return ec.marshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐProvider(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _OAuth_accessToken(ctx context.Context, field graphql.CollectedField, obj *model.OAuth) (ret graphql.Marshaler) {
+func (ec *executionContext) _OAuth_uid(ctx context.Context, field graphql.CollectedField, obj *model.OAuth) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1184,7 +1184,7 @@ func (ec *executionContext) _OAuth_accessToken(ctx context.Context, field graphq
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AccessToken, nil
+		return obj.UID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3346,7 +3346,7 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "findUserByOAuthAccessToken":
+		case "findUserByOAuthUID":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3355,7 +3355,7 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Entity_findUserByOAuthAccessToken(ctx, field)
+				res = ec._Entity_findUserByOAuthUID(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -3505,9 +3505,9 @@ func (ec *executionContext) _OAuth(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "accessToken":
+		case "uid":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._OAuth_accessToken(ctx, field, obj)
+				return ec._OAuth_uid(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)

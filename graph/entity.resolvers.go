@@ -15,8 +15,8 @@ func (r *entityResolver) FindUserByID(ctx context.Context, id string) (*model.Us
 	return user, err
 }
 
-func (r *entityResolver) FindUserByOAuthAccessToken(ctx context.Context, oAuthAccessToken string) (*model.User, error) {
-	user, err := r.Resolver.Repository.GetUserByAuthToken(ctx, oAuthAccessToken)
+func (r *entityResolver) FindUserByOAuthUID(ctx context.Context, oAuthUID string) (*model.User, error) {
+	user, err := r.Resolver.Repository.GetUserByOAuthUID(ctx, oAuthUID)
 	return user, err
 }
 

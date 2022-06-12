@@ -99,12 +99,12 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 
 				list[idx[i]] = entity
 				return nil
-			case "findUserByOAuthAccessToken":
-				id0, err := ec.unmarshalNString2string(ctx, rep["oAuth"].(map[string]interface{})["accessToken"])
+			case "findUserByOAuthUID":
+				id0, err := ec.unmarshalNString2string(ctx, rep["oAuth"].(map[string]interface{})["uid"])
 				if err != nil {
-					return fmt.Errorf(`unmarshalling param 0 for findUserByOAuthAccessToken(): %w`, err)
+					return fmt.Errorf(`unmarshalling param 0 for findUserByOAuthUID(): %w`, err)
 				}
-				entity, err := ec.resolvers.Entity().FindUserByOAuthAccessToken(ctx, id0)
+				entity, err := ec.resolvers.Entity().FindUserByOAuthUID(ctx, id0)
 				if err != nil {
 					return fmt.Errorf(`resolving Entity "User": %w`, err)
 				}
@@ -209,10 +209,10 @@ func entityResolverNameForUser(ctx context.Context, rep map[string]interface{}) 
 		if m, ok = val.(map[string]interface{}); !ok {
 			break
 		}
-		if _, ok = m["accessToken"]; !ok {
+		if _, ok = m["uid"]; !ok {
 			break
 		}
-		return "findUserByOAuthAccessToken", nil
+		return "findUserByOAuthUID", nil
 	}
 	return "", fmt.Errorf("%w for User", ErrTypeNotFound)
 }

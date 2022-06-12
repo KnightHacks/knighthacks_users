@@ -25,8 +25,8 @@ type NewUser struct {
 }
 
 type OAuth struct {
-	Provider    Provider `json:"provider"`
-	AccessToken string   `json:"accessToken"`
+	Provider Provider `json:"provider"`
+	UID      string   `json:"uid"`
 }
 
 // Example:
