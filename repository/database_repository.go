@@ -131,9 +131,9 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 	}
 
 	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		var discoveredId string
-		err := tx.QueryRow(ctx, "SELECT id FROM users WHERE oauth_uid=$1 LIMIT 1", oAuth.UID).Scan(&discoveredId)
-		if err == nil || len(discoveredId) > 0 {
+		var discoveredId *int
+		err := tx.QueryRow(ctx, "SELECT id FROM users WHERE oauth_uid=$1 LIMIT 1", oAuth.UID).Scan(discoveredId)
+		if err == nil || discoveredId != nil {
 			return UserAlreadyExists
 		}
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
