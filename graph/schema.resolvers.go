@@ -28,7 +28,12 @@ func (r *mutationResolver) Register(ctx context.Context, provider model.Provider
 		return nil, err
 	}
 
-	user, err := r.Repository.CreateUser(ctx, authProvider, token.AccessToken, &input)
+	uid, err := r.Auth.GetUID(ctx, authProvider, token)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := r.Repository.CreateUser(ctx, &model.OAuth{UID: uid, Provider: provider}, &input)
 	if err != nil {
 		// TODO: Possibly do some error handling hear to filter sql errors out
 		return nil, err

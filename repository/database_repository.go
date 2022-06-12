@@ -3,14 +3,14 @@ package repository
 import (
 	"context"
 	"errors"
-	"github.com/KnightHacks/knighthacks_shared/auth"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 var (
-	UserNotFound = errors.New("user not found")
+	UserNotFound      = errors.New("user not found")
+	UserAlreadyExists = errors.New("user with id already exists")
 )
 
 //DatabaseRepository
@@ -119,12 +119,61 @@ func (r *DatabaseRepository) getUser(ctx context.Context, column string, value s
 	return &user, err
 }
 
-func (r *DatabaseRepository) CreateUser(ctx context.Context, provider auth.Provider, accessToken string, input *model.NewUser) (*model.User, error) {
-	/*
-		var user model.User
-		err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth, input *model.NewUser) (*model.User, error) {
+	var userId string
+	pronouns := model.Pronouns{
+		Subjective: input.Pronouns.SubjectivePersonal,
+		Objective:  input.Pronouns.ObjectivePersonal,
+	}
+	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		var discoveredId string
+		err := tx.QueryRow(ctx, "SELECT id FROM users WHERE oauth_uid=$1 LIMIT 1", oAuth.UID).Scan(&discoveredId)
+		if err == nil || len(discoveredId) > 0 {
+			return UserAlreadyExists
+		}
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return err
+		}
 
-		})
-	*/
-	return nil, nil
+		pronounId, exists := r.GetByPronouns(pronouns)
+		if !exists {
+			err = tx.QueryRow(ctx, "INSERT INTO pronouns (subjective, objective) VALUES ($1, $2) RETURNING id",
+				input.Pronouns.SubjectivePersonal,
+				input.Pronouns.ObjectivePersonal,
+			).Scan(&pronounId)
+			if err != nil {
+				return err
+			}
+			r.Set(pronounId, pronouns)
+		}
+
+		err = tx.QueryRow(ctx, "INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+			input.FirstName,
+			input.LastName,
+			input.Email,
+			input.PhoneNumber,
+			input.Age,
+			pronounId,
+			oAuth.UID,
+			oAuth.Provider.String(),
+		).Scan(&userId)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	// TODO: look into the case where the userId is not scanned in
+	return &model.User{
+		ID:          userId,
+		FirstName:   input.FirstName,
+		LastName:    input.LastName,
+		Email:       input.Email,
+		PhoneNumber: input.PhoneNumber,
+		Pronouns:    &pronouns,
+		Age:         input.Age,
+		OAuth:       oAuth,
+	}, nil
 }

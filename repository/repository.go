@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"github.com/KnightHacks/knighthacks_shared/auth"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 )
 
@@ -11,5 +10,5 @@ type Repository interface {
 	GetUserByOAuthUID(ctx context.Context, oAuthUID string) (*model.User, error)
 	GetOAuth(ctx context.Context, userId string) (*model.OAuth, error)
 
-	CreateUser(ctx context.Context, provider auth.Provider, accessToken string, input *model.NewUser) (*model.User, error)
+	CreateUser(ctx context.Context, oAuth *model.OAuth, input *model.NewUser) (*model.User, error)
 }
