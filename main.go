@@ -45,6 +45,7 @@ func main() {
 			RedirectURL:  getEnvOrDie("OAUTH_GITHUB_REDIRECT_URL"),
 			Endpoint:     github.Endpoint,
 			Scopes: []string{
+				"read:user",
 				"user:email",
 			},
 		},
