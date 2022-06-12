@@ -121,10 +121,14 @@ func (r *DatabaseRepository) getUser(ctx context.Context, column string, value s
 
 func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth, input *model.NewUser) (*model.User, error) {
 	var userId string
-	pronouns := model.Pronouns{
-		Subjective: input.Pronouns.Subjective,
-		Objective:  input.Pronouns.Objective,
+	var pronounsPtr *model.Pronouns
+	if input.Pronouns != nil {
+		pronounsPtr = &model.Pronouns{
+			Subjective: input.Pronouns.Subjective,
+			Objective:  input.Pronouns.Objective,
+		}
 	}
+
 	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		var discoveredId string
 		err := tx.QueryRow(ctx, "SELECT id FROM users WHERE oauth_uid=$1 LIMIT 1", oAuth.UID).Scan(&discoveredId)
@@ -135,16 +139,22 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 			return err
 		}
 
-		pronounId, exists := r.GetByPronouns(pronouns)
-		if !exists {
-			err = tx.QueryRow(ctx, "INSERT INTO pronouns (subjective, objective) VALUES ($1, $2) RETURNING id",
-				input.Pronouns.Subjective,
-				input.Pronouns.Objective,
-			).Scan(&pronounId)
-			if err != nil {
-				return err
+		var pronounIdPtr *int
+
+		if pronounsPtr != nil {
+			pronouns := *pronounsPtr
+			pronounId, exists := r.GetByPronouns(pronouns)
+			if !exists {
+				err = tx.QueryRow(ctx, "INSERT INTO pronouns (subjective, objective) VALUES ($1, $2) RETURNING id",
+					input.Pronouns.Subjective,
+					input.Pronouns.Objective,
+				).Scan(&pronounId)
+				if err != nil {
+					return err
+				}
+				r.Set(pronounId, pronouns)
 			}
-			r.Set(pronounId, pronouns)
+			pronounIdPtr = &pronounId
 		}
 
 		err = tx.QueryRow(ctx, "INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
@@ -153,7 +163,7 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 			input.Email,
 			input.PhoneNumber,
 			input.Age,
-			pronounId,
+			pronounIdPtr,
 			oAuth.UID,
 			oAuth.Provider.String(),
 		).Scan(&userId)
@@ -172,7 +182,7 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 		LastName:    input.LastName,
 		Email:       input.Email,
 		PhoneNumber: input.PhoneNumber,
-		Pronouns:    &pronouns,
+		Pronouns:    pronounsPtr,
 		Age:         input.Age,
 		OAuth:       oAuth,
 	}, nil
