@@ -6,6 +6,7 @@ import (
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"strconv"
 )
 
 var (
@@ -157,7 +158,9 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 			pronounIdPtr = &pronounId
 		}
 
-		err = tx.QueryRow(ctx, "INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+		// TODO: Possibly change ID type to int to stop this hacky fix?
+		var userIdInt int
+		err = tx.QueryRow(ctx, "INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
 			input.FirstName,
 			input.LastName,
 			input.Email,
@@ -166,10 +169,11 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 			pronounIdPtr,
 			oAuth.UID,
 			oAuth.Provider.String(),
-		).Scan(&userId)
+		).Scan(&userIdInt)
 		if err != nil {
 			return err
 		}
+		userId = strconv.Itoa(userIdInt)
 		return nil
 	})
 	if err != nil {
