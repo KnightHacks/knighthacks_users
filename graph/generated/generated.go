@@ -502,9 +502,8 @@ type OAuth {
 }
 
 input PronounsInput {
-    subjectivePersonal: String!
-    objectivePersonal: String!
-    reflexive: String!
+    subjective: String!
+    objective: String!
 }
 
 input NewUser {
@@ -3250,27 +3249,19 @@ func (ec *executionContext) unmarshalInputPronounsInput(ctx context.Context, obj
 
 	for k, v := range asMap {
 		switch k {
-		case "subjectivePersonal":
+		case "subjective":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subjectivePersonal"))
-			it.SubjectivePersonal, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subjective"))
+			it.Subjective, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "objectivePersonal":
+		case "objective":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("objectivePersonal"))
-			it.ObjectivePersonal, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "reflexive":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reflexive"))
-			it.Reflexive, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("objective"))
+			it.Objective, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}

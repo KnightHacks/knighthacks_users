@@ -36,9 +36,8 @@ type OAuth {
 }
 
 input PronounsInput {
-    subjectivePersonal: String!
-    objectivePersonal: String!
-    reflexive: String!
+    subjective: String!
+    objective: String!
 }
 
 input NewUser {

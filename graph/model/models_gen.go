@@ -38,9 +38,8 @@ type Pronouns struct {
 }
 
 type PronounsInput struct {
-	SubjectivePersonal string `json:"subjectivePersonal"`
-	ObjectivePersonal  string `json:"objectivePersonal"`
-	Reflexive          string `json:"reflexive"`
+	Subjective string `json:"subjective"`
+	Objective  string `json:"objective"`
 }
 
 type User struct {

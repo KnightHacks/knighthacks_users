@@ -122,8 +122,8 @@ func (r *DatabaseRepository) getUser(ctx context.Context, column string, value s
 func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth, input *model.NewUser) (*model.User, error) {
 	var userId string
 	pronouns := model.Pronouns{
-		Subjective: input.Pronouns.SubjectivePersonal,
-		Objective:  input.Pronouns.ObjectivePersonal,
+		Subjective: input.Pronouns.Subjective,
+		Objective:  input.Pronouns.Objective,
 	}
 	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		var discoveredId string
@@ -138,8 +138,8 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 		pronounId, exists := r.GetByPronouns(pronouns)
 		if !exists {
 			err = tx.QueryRow(ctx, "INSERT INTO pronouns (subjective, objective) VALUES ($1, $2) RETURNING id",
-				input.Pronouns.SubjectivePersonal,
-				input.Pronouns.ObjectivePersonal,
+				input.Pronouns.Subjective,
+				input.Pronouns.Objective,
 			).Scan(&pronounId)
 			if err != nil {
 				return err
