@@ -10,9 +10,10 @@ import (
 
 type LoginPayload struct {
 	// If false then you must register immediately following this. Else, you are logged in and have access to your own user.
-	AccountExists bool    `json:"accountExists"`
-	User          *User   `json:"user"`
-	Jwt           *string `json:"jwt"`
+	AccountExists             bool    `json:"accountExists"`
+	User                      *User   `json:"user"`
+	Jwt                       *string `json:"jwt"`
+	EncryptedOAuthAccessToken *string `json:"encryptedOAuthAccessToken"`
 }
 
 type NewUser struct {

@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"log"
@@ -14,7 +15,7 @@ import (
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 )
 
-func (r *mutationResolver) Register(ctx context.Context, provider model.Provider, code string, input model.NewUser) (*model.User, error) {
+func (r *mutationResolver) Register(ctx context.Context, provider model.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.User, error) {
 	var authProvider auth.Provider
 	if provider == model.ProviderGithub {
 		_ = auth.GitHubAuthProvider
@@ -23,12 +24,15 @@ func (r *mutationResolver) Register(ctx context.Context, provider model.Provider
 	} else {
 		panic("new provider not fully implemented")
 	}
-	token, err := r.Auth.ExchangeCode(ctx, authProvider, code)
+	b, err := base64.URLEncoding.DecodeString(encryptedOauthAccessToken)
 	if err != nil {
 		return nil, err
 	}
-
-	uid, err := r.Auth.GetUID(ctx, authProvider, token)
+	accessToken, err := r.Auth.DecryptAccessToken(string(b))
+	if err != nil {
+		return nil, err
+	}
+	uid, err := r.Auth.GetUID(ctx, authProvider, string(accessToken))
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +83,13 @@ func (r *queryResolver) Login(ctx context.Context, provider model.Provider, code
 	if err != nil {
 		return nil, err
 	}
-	payload := model.LoginPayload{}
+	encryptAccessTokenBytes := r.Auth.EncryptAccessToken(token.AccessToken)
+	log.Printf("bytes=%v\n", encryptAccessTokenBytes)
+	encryptAccessToken := base64.URLEncoding.EncodeToString(encryptAccessTokenBytes)
+	log.Printf("string=%v\n", encryptAccessToken)
+	payload := model.LoginPayload{
+		EncryptedOAuthAccessToken: &encryptAccessToken,
+	}
 
 	if user != nil {
 		payload.User = user

@@ -53,14 +53,15 @@ type ComplexityRoot struct {
 	}
 
 	LoginPayload struct {
-		AccountExists func(childComplexity int) int
-		Jwt           func(childComplexity int) int
-		User          func(childComplexity int) int
+		AccountExists             func(childComplexity int) int
+		EncryptedOAuthAccessToken func(childComplexity int) int
+		Jwt                       func(childComplexity int) int
+		User                      func(childComplexity int) int
 	}
 
 	Mutation struct {
 		DeleteUser func(childComplexity int, id string) int
-		Register   func(childComplexity int, provider model.Provider, code string, input model.NewUser) int
+		Register   func(childComplexity int, provider model.Provider, encryptedOauthAccessToken string, input model.NewUser) int
 		UpdateUser func(childComplexity int, id string, input model.NewUser) int
 	}
 
@@ -107,7 +108,7 @@ type EntityResolver interface {
 	FindUserByOAuthUID(ctx context.Context, oAuthUID string) (*model.User, error)
 }
 type MutationResolver interface {
-	Register(ctx context.Context, provider model.Provider, code string, input model.NewUser) (*model.User, error)
+	Register(ctx context.Context, provider model.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.User, error)
 	UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error)
 	DeleteUser(ctx context.Context, id string) (bool, error)
 }
@@ -171,6 +172,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.LoginPayload.AccountExists(childComplexity), true
 
+	case "LoginPayload.encryptedOAuthAccessToken":
+		if e.complexity.LoginPayload.EncryptedOAuthAccessToken == nil {
+			break
+		}
+
+		return e.complexity.LoginPayload.EncryptedOAuthAccessToken(childComplexity), true
+
 	case "LoginPayload.jwt":
 		if e.complexity.LoginPayload.Jwt == nil {
 			break
@@ -207,7 +215,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Register(childComplexity, args["provider"].(model.Provider), args["code"].(string), args["input"].(model.NewUser)), true
+		return e.complexity.Mutation.Register(childComplexity, args["provider"].(model.Provider), args["encryptedOAuthAccessToken"].(string), args["input"].(model.NewUser)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -522,6 +530,8 @@ type LoginPayload {
     accountExists: Boolean!
     user: User
     jwt: String
+
+    encryptedOAuthAccessToken: String
 }
 
 type Query {
@@ -539,7 +549,10 @@ type Query {
 }
 
 type Mutation {
-  register(provider: Provider!, code: String!, input: NewUser!): User!
+  """
+  To receive an encryptedOAuthAccessToken first call the Login query
+  """
+  register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): User!
   updateUser(id: ID!, input: NewUser!): User!
   deleteUser(id: ID!): Boolean!
 }
@@ -640,14 +653,14 @@ func (ec *executionContext) field_Mutation_register_args(ctx context.Context, ra
 	}
 	args["provider"] = arg0
 	var arg1 string
-	if tmp, ok := rawArgs["code"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+	if tmp, ok := rawArgs["encryptedOAuthAccessToken"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("encryptedOAuthAccessToken"))
 		arg1, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["code"] = arg1
+	args["encryptedOAuthAccessToken"] = arg1
 	var arg2 model.NewUser
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
@@ -1004,6 +1017,38 @@ func (ec *executionContext) _LoginPayload_jwt(ctx context.Context, field graphql
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _LoginPayload_encryptedOAuthAccessToken(ctx context.Context, field graphql.CollectedField, obj *model.LoginPayload) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "LoginPayload",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EncryptedOAuthAccessToken, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_register(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1029,7 +1074,7 @@ func (ec *executionContext) _Mutation_register(ctx context.Context, field graphq
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Register(rctx, args["provider"].(model.Provider), args["code"].(string), args["input"].(model.NewUser))
+		return ec.resolvers.Mutation().Register(rctx, args["provider"].(model.Provider), args["encryptedOAuthAccessToken"].(string), args["input"].(model.NewUser))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3401,6 +3446,13 @@ func (ec *executionContext) _LoginPayload(ctx context.Context, sel ast.Selection
 		case "jwt":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._LoginPayload_jwt(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "encryptedOAuthAccessToken":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._LoginPayload_encryptedOAuthAccessToken(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)

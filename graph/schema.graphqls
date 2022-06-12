@@ -56,6 +56,8 @@ type LoginPayload {
     accountExists: Boolean!
     user: User
     jwt: String
+
+    encryptedOAuthAccessToken: String
 }
 
 type Query {
@@ -73,7 +75,10 @@ type Query {
 }
 
 type Mutation {
-  register(provider: Provider!, code: String!, input: NewUser!): User!
+  """
+  To receive an encryptedOAuthAccessToken first call the Login query
+  """
+  register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): User!
   updateUser(id: ID!, input: NewUser!): User!
   deleteUser(id: ID!): Boolean!
 }

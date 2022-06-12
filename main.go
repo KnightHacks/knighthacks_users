@@ -51,10 +51,14 @@ func main() {
 		},
 	}
 
+	newAuth, err := auth.NewAuth(getEnvOrDie("JWT_SIGNING_KEY"), getEnvOrDie("AES_CIPHER"), oauthConfigMap)
+	if err != nil {
+		log.Fatalf("An error occured when trying to create an instance of Auth: %s\n", err)
+	}
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{
 		Resolvers: &graph.Resolver{
 			Repository: repository.NewDatabaseRepository(pool),
-			Auth:       auth.Auth{ConfigMap: oauthConfigMap},
+			Auth:       *newAuth,
 		},
 	}))
 

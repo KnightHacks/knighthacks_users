@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/99designs/gqlgen v0.17.9
-	github.com/KnightHacks/knighthacks_shared v0.0.0-20220612020121-f107dd15dce3
+	github.com/KnightHacks/knighthacks_shared v0.0.0-20220612055005-94b69c0d692a
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/vektah/gqlparser/v2 v2.4.4
 	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb
