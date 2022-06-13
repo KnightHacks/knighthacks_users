@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: ghcr.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  jobs:
+    generate-version:
+      runs-on: ubuntu-latest
+      outputs:
+        version: ${{ steps.out.outputs.version }}
+      steps:
+        - uses: actions/checkout@v2
+        - id: pr
+          uses: actions-ecosystem/action-get-merged-pull-request@v1.0.1
+          with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+        - uses: zwaldowski/semver-release-action@v2
+          with:
+            dry_run: true
+            bump: ${{ steps.pr.outputs.labels }}
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+        - name: Set version output
+          id: out
+          run: echo "::set-output name=version::$(echo ${VERSION})"
+
+  build:
+    needs:
+      - generate-version
+
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      #Login against a Docker registry except on PR
+      #https://github.com/docker/login-action
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate build ID
+        id: prep
+        run: |
+          branch=${GITHUB_REF##*/}
+          sha=${GITHUB_SHA::8}
+          ts=$(date +%s)
+          echo "::set-output name=BUILD_ID::${branch}-${sha}-${ts}"          
+
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+            type=raw,value=${{ steps.prep.outputs.BUILD_ID }}
+      # Build and push Docker image with Buildx (don't push on PR)
+      # https://github.com/docker/build-push-action
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
