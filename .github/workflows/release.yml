@@ -26,6 +26,7 @@ jobs:
           dry_run: true
           bump: ${{ steps.pr.outputs.labels }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          prefix: v
       - name: Set version output
         id: out
         run: echo "::set-output name=version::$(echo ${VERSION})"
