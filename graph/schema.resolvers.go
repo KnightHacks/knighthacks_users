@@ -87,7 +87,11 @@ func (r *queryResolver) Login(ctx context.Context, provider model.Provider, code
 	}
 	log.Printf("accessToken=%s, refreshToken=%s, type=%s, expiry=%s\n", token.AccessToken, token.RefreshToken, token.Type(), token.Expiry)
 	// Get the user by their OAuth ID, if the user == nil then the user hasn't created an account yet, but will using the Register function
-	user, err := r.Repository.GetUserByOAuthUID(ctx, token.AccessToken)
+	uid, err := r.Auth.GetUID(ctx, authProvider, token.AccessToken)
+	if err != nil {
+		return nil, err
+	}
+	user, err := r.Repository.GetUserByOAuthUID(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
