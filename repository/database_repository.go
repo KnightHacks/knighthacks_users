@@ -120,17 +120,26 @@ func (r *DatabaseRepository) getUser(ctx context.Context, column string, value s
 	return &user, err
 }
 
+//CreateUser Creates a user in the database and returns the new user struct
+//
+//The NewUser input struct contains all nillable fields so the following function
+//must be able to run regardless of whether of it's input, that is why there is a
+//lot of pointers for nil safety purposes
 func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth, input *model.NewUser) (*model.User, error) {
 	var userId string
 	var pronounsPtr *model.Pronouns
 	if input.Pronouns != nil {
+		// input.Pronouns is a PronounsInput struct which a direct copy of the Pronouns struct, so we need to copy its fields
 		pronounsPtr = &model.Pronouns{
 			Subjective: input.Pronouns.Subjective,
 			Objective:  input.Pronouns.Objective,
 		}
 	}
 
+	// Begins the database transaction
 	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		// Detects whether or not the user with the oauth_uid, for github that is their github ID already exists, if
+		// the use already exists we return an UserAlreadyExists error
 		var discoveredId *int
 		err := tx.QueryRow(ctx, "SELECT id FROM users WHERE oauth_uid=$1 LIMIT 1", oAuth.UID).Scan(discoveredId)
 		if err == nil || discoveredId != nil {
@@ -142,23 +151,47 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 
 		var pronounIdPtr *int
 
+		// is pronoun being set?
 		if pronounsPtr != nil {
 			pronouns := *pronounsPtr
 			pronounId, exists := r.GetByPronouns(pronouns)
+			// if the pronoun does not exist in the local cache
 			if !exists {
-				err = tx.QueryRow(ctx, "INSERT INTO pronouns (subjective, objective) VALUES ($1, $2) RETURNING id",
+				// check if the pronoun exists in the database
+				err = tx.QueryRow(ctx, "SELECT id FROM pronouns WHERE subjective=$1 AND objective=$2 RETURNING id",
 					input.Pronouns.Subjective,
 					input.Pronouns.Objective,
 				).Scan(&pronounId)
+
+				pronounExist := true
+				if err != nil {
+					if errors.Is(err, pgx.ErrNoRows) {
+						// pronoun does not exist in the database
+						pronounExist = false
+					} else {
+						return err
+					}
+				}
+				if !pronounExist {
+					// since the new pronoun does not exist in the database, we insert it
+					err = tx.QueryRow(ctx, "INSERT INTO pronouns (subjective, objective) VALUES ($1, $2) RETURNING id",
+						input.Pronouns.Subjective,
+						input.Pronouns.Objective,
+					).Scan(&pronounId)
+				}
+
 				if err != nil {
 					return err
 				}
+				// set the pronoun cache
 				r.Set(pronounId, pronouns)
 			}
+
 			pronounIdPtr = &pronounId
 		}
 
 		// TODO: Possibly change ID type to int to stop this hacky fix?
+		// insert user into database and return their ID
 		var userIdInt int
 		err = tx.QueryRow(ctx, "INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
 			input.FirstName,
