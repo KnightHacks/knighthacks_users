@@ -50,7 +50,7 @@ func (r *mutationResolver) Register(ctx context.Context, provider model.Provider
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.Repository.UpdateUser(ctx, id, input)
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, error) {
