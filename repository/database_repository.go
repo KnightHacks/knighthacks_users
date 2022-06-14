@@ -94,10 +94,13 @@ func (r *DatabaseRepository) getUser(ctx context.Context, column string, value s
 			}
 			return err
 		}
+		// if the user has their pronouns set
 		if pronounIdPtr != nil {
 			pronounId := *pronounIdPtr
 			pronouns, exists := r.GetById(pronounId)
+			// does the pronoun not exist in the local cache?
 			if !exists {
+				// retrieve the pronoun from the database
 				err = tx.QueryRow(ctx, "SELECT subjective, objective FROM pronouns WHERE id = $1", pronounId).Scan(
 					&pronouns.Subjective,
 					&pronouns.Objective,
@@ -105,6 +108,7 @@ func (r *DatabaseRepository) getUser(ctx context.Context, column string, value s
 				if err != nil {
 					return err
 				}
+				// set the pronoun in the local cache
 				r.Set(pronounId, pronouns)
 			}
 			user.Pronouns = &pronouns
@@ -113,6 +117,7 @@ func (r *DatabaseRepository) getUser(ctx context.Context, column string, value s
 	})
 	if err != nil {
 		if errors.Is(err, UserNotFound) {
+			// if the user does not exist then the user is nil, TODO: maybe return error?
 			return nil, nil
 		}
 		return nil, err
