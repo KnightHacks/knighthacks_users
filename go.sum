@@ -40,6 +40,8 @@ github.com/KnightHacks/knighthacks_shared v0.0.0-20220618080018-db594c4350dd h1:
 github.com/KnightHacks/knighthacks_shared v0.0.0-20220618080018-db594c4350dd/go.mod h1:8iZcwW1hi58cDaKdjy+gspyjVb/BnZVgroKcLySTBTQ=
 github.com/KnightHacks/knighthacks_shared v0.0.0-20220618162633-f5ae0850f16f h1:gkf5C6+Advx6FJVUj/eRTMjQ9oUnkgKFvSNvOLiW0VM=
 github.com/KnightHacks/knighthacks_shared v0.0.0-20220618162633-f5ae0850f16f/go.mod h1:8iZcwW1hi58cDaKdjy+gspyjVb/BnZVgroKcLySTBTQ=
+github.com/KnightHacks/knighthacks_shared v0.0.0-20220618165036-d9aab55de9cc h1:QQf9eO7o7qNTfzcA2uOsd3jYsFJPH4ZmctUkm+Y7a+k=
+github.com/KnightHacks/knighthacks_shared v0.0.0-20220618165036-d9aab55de9cc/go.mod h1:8iZcwW1hi58cDaKdjy+gspyjVb/BnZVgroKcLySTBTQ=
 github.com/Masterminds/semver/v3 v3.1.1/go.mod h1:VPu/7SZ7ePZ3QOrcuXROw5FAcLl4a0cBrbBpGY/8hQs=
 github.com/agnivade/levenshtein v1.0.1/go.mod h1:CURSv5d9Uaml+FovSIICkLbAUZ9S4RqaHDIsdSBg7lM=
 github.com/agnivade/levenshtein v1.1.1 h1:QY8M92nrzkmr798gCo3kmMyqXFzdQVpxLlGPRBij0P8=
