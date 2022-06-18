@@ -200,7 +200,7 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 		// TODO: Possibly change ID type to int to stop this hacky fix?
 		// insert user into database and return their ID
 		var userIdInt int
-		err = tx.QueryRow(ctx, "INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider, role) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
+		err = tx.QueryRow(ctx, "INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider, role) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id",
 			input.FirstName,
 			input.LastName,
 			input.Email,
