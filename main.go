@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"github.com/KnightHacks/knighthacks_shared/auth"
+	"github.com/KnightHacks/knighthacks_shared/models"
+	"github.com/KnightHacks/knighthacks_shared/utils"
 	"github.com/KnightHacks/knighthacks_users/repository"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"golang.org/x/oauth2"
@@ -30,7 +32,7 @@ func main() {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
 
-	oauthConfigMap := map[auth.Provider]oauth2.Config{
+	oauthConfigMap := map[models.Provider]oauth2.Config{
 		//TODO: implement gmail auth, github is priority
 		//auth.GmailAuthProvider: {
 		//	ClientID:     "",
@@ -39,7 +41,7 @@ func main() {
 		//	RedirectURL:  "",
 		//	Scopes:       nil,
 		//},
-		auth.GitHubAuthProvider: {
+		models.ProviderGithub: {
 			ClientID:     getEnvOrDie("OAUTH_GITHUB_CLIENT_ID"),
 			ClientSecret: getEnvOrDie("OAUTH_GITHUB_CLIENT_SECRET"),
 			RedirectURL:  getEnvOrDie("OAUTH_GITHUB_REDIRECT_URL"),
