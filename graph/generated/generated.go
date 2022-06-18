@@ -49,8 +49,8 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Entity struct {
-		FindUserByID       func(childComplexity int, id string) int
-		FindUserByOAuthUID func(childComplexity int, oAuthUID string) int
+		FindUserByID                       func(childComplexity int, id string) int
+		FindUserByOAuthUIDAndOAuthProvider func(childComplexity int, oAuthUID string, oAuthProvider models.Provider) int
 	}
 
 	LoginPayload struct {
@@ -115,7 +115,7 @@ type ComplexityRoot struct {
 
 type EntityResolver interface {
 	FindUserByID(ctx context.Context, id string) (*model.User, error)
-	FindUserByOAuthUID(ctx context.Context, oAuthUID string) (*model.User, error)
+	FindUserByOAuthUIDAndOAuthProvider(ctx context.Context, oAuthUID string, oAuthProvider models.Provider) (*model.User, error)
 }
 type MutationResolver interface {
 	Register(ctx context.Context, provider models.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.RegistrationPayload, error)
@@ -164,17 +164,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Entity.FindUserByID(childComplexity, args["id"].(string)), true
 
-	case "Entity.findUserByOAuthUID":
-		if e.complexity.Entity.FindUserByOAuthUID == nil {
+	case "Entity.findUserByOAuthUIDAndOAuthProvider":
+		if e.complexity.Entity.FindUserByOAuthUIDAndOAuthProvider == nil {
 			break
 		}
 
-		args, err := ec.field_Entity_findUserByOAuthUID_args(context.TODO(), rawArgs)
+		args, err := ec.field_Entity_findUserByOAuthUIDAndOAuthProvider_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Entity.FindUserByOAuthUID(childComplexity, args["oAuthUID"].(string)), true
+		return e.complexity.Entity.FindUserByOAuthUIDAndOAuthProvider(childComplexity, args["oAuthUID"].(string), args["oAuthProvider"].(models.Provider)), true
 
 	case "LoginPayload.accessToken":
 		if e.complexity.LoginPayload.AccessToken == nil {
@@ -540,7 +540,7 @@ var sources = []*ast.Source{
 directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
     | FIELD_DEFINITION
 
-type User @key(fields:"id") @key(fields:"oAuth { uid }") {
+type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
   id: ID!
   firstName: String!
   lastName: String!
@@ -658,7 +658,7 @@ union _Entity = User
 # fake type to build resolver interfaces for users to implement
 type Entity {
 		findUserByID(id: ID!,): User!
-	findUserByOAuthUID(oAuthUID: String!,): User!
+	findUserByOAuthUIDAndOAuthProvider(oAuthUID: String!,oAuthProvider: Provider!,): User!
 
 }
 
@@ -693,7 +693,7 @@ func (ec *executionContext) field_Entity_findUserByID_args(ctx context.Context, 
 	return args, nil
 }
 
-func (ec *executionContext) field_Entity_findUserByOAuthUID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Entity_findUserByOAuthUIDAndOAuthProvider_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -705,6 +705,15 @@ func (ec *executionContext) field_Entity_findUserByOAuthUID_args(ctx context.Con
 		}
 	}
 	args["oAuthUID"] = arg0
+	var arg1 models.Provider
+	if tmp, ok := rawArgs["oAuthProvider"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("oAuthProvider"))
+		arg1, err = ec.unmarshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐProvider(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["oAuthProvider"] = arg1
 	return args, nil
 }
 
@@ -974,7 +983,7 @@ func (ec *executionContext) _Entity_findUserByID(ctx context.Context, field grap
 	return ec.marshalNUser2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Entity_findUserByOAuthUID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Entity_findUserByOAuthUIDAndOAuthProvider(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -991,7 +1000,7 @@ func (ec *executionContext) _Entity_findUserByOAuthUID(ctx context.Context, fiel
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findUserByOAuthUID_args(ctx, rawArgs)
+	args, err := ec.field_Entity_findUserByOAuthUIDAndOAuthProvider_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -999,7 +1008,7 @@ func (ec *executionContext) _Entity_findUserByOAuthUID(ctx context.Context, fiel
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindUserByOAuthUID(rctx, args["oAuthUID"].(string))
+		return ec.resolvers.Entity().FindUserByOAuthUIDAndOAuthProvider(rctx, args["oAuthUID"].(string), args["oAuthProvider"].(models.Provider))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3694,7 +3703,7 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "findUserByOAuthUID":
+		case "findUserByOAuthUIDAndOAuthProvider":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3703,7 +3712,7 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Entity_findUserByOAuthUID(ctx, field)
+				res = ec._Entity_findUserByOAuthUIDAndOAuthProvider(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

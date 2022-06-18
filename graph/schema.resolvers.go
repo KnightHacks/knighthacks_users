@@ -8,9 +8,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/KnightHacks/knighthacks_shared/auth"
 	"log"
 
+	"github.com/KnightHacks/knighthacks_shared/auth"
 	"github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_users/graph/generated"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
@@ -79,7 +79,7 @@ func (r *queryResolver) Login(ctx context.Context, provider models.Provider, cod
 	if err != nil {
 		return nil, err
 	}
-	user, err := r.Repository.GetUserByOAuthUID(ctx, uid)
+	user, err := r.Repository.GetUserByOAuthUID(ctx, uid, provider)
 	if err != nil {
 		return nil, err
 	}
