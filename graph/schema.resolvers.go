@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/KnightHacks/knighthacks_shared/auth"
 	"log"
 
 	"github.com/KnightHacks/knighthacks_shared/models"
@@ -137,7 +138,12 @@ func (r *queryResolver) SearchUser(ctx context.Context, name string) ([]*model.U
 }
 
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	userClaims, err := auth.UserClaimsFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.Entity().FindUserByID(ctx, userClaims.UserID)
 }
 
 func (r *userResolver) FullName(ctx context.Context, obj *model.User) (string, error) {
