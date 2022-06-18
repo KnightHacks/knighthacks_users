@@ -6,11 +6,11 @@ import (
 	"github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_shared/utils"
 	"github.com/KnightHacks/knighthacks_users/repository"
+	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -57,18 +57,37 @@ func main() {
 	if err != nil {
 		log.Fatalf("An error occured when trying to create an instance of Auth: %s\n", err)
 	}
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{
+	ginRouter := gin.Default()
+	ginRouter.Use(auth.AuthContextMiddleware(newAuth))
+	ginRouter.Use(utils.GinContextMiddleware())
+
+	ginRouter.POST("/query", graphqlHandler(newAuth, pool))
+	ginRouter.GET("/", playgroundHandler())
+
+	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
+	log.Fatalln(ginRouter.Run())
+}
+
+func graphqlHandler(newAuth *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
+	config := generated.Config{
 		Resolvers: &graph.Resolver{
 			Repository: repository.NewDatabaseRepository(pool),
 			Auth:       *newAuth,
 		},
-	}))
+	}
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(config))
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	return func(c *gin.Context) {
+		srv.ServeHTTP(c.Writer, c.Request)
+	}
+}
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+func playgroundHandler() gin.HandlerFunc {
+	h := playground.Handler("GraphQL", "/query")
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
 }
 
 func getEnvOrDie(key string) string {
