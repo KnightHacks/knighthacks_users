@@ -90,6 +90,7 @@ func playgroundHandler() gin.HandlerFunc {
 	}
 }
 
+// TODO: use getEnvOrDie in shared
 func getEnvOrDie(key string) string {
 	env, exists := os.LookupEnv(key)
 	if !exists {
