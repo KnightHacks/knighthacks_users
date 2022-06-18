@@ -1,3 +1,10 @@
+directive @goModel(model: String, models: [String!]) on OBJECT
+    | INPUT_OBJECT
+    | SCALAR
+    | ENUM
+    | INTERFACE
+    | UNION
+
 directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
     | FIELD_DEFINITION
 
@@ -26,12 +33,12 @@ type Pronouns {
     objective: String!
 }
 
-enum Provider {
+enum Provider @goModel(model: "github.com/KnightHacks/knighthacks_shared/models.Provider") {
     GITHUB
     GMAIL
 }
 
-enum Role {
+enum Role @goModel(model: "github.com/KnightHacks/knighthacks_shared/models.Role") {
     ADMIN
     """
     for now keep this the same

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	sharedModels "github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -208,7 +209,7 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 			pronounIdPtr,
 			oAuth.UID,
 			oAuth.Provider.String(),
-			model.RoleNormal,
+			sharedModels.RoleNormal,
 		).Scan(&userIdInt)
 		if err != nil {
 			return err
