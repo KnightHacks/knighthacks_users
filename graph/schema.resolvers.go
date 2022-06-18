@@ -38,7 +38,7 @@ func (r *mutationResolver) Register(ctx context.Context, provider models.Provide
 		return nil, err
 	}
 
-	refresh, access, err := r.Auth.NewTokens(user.ID, user.Role.String())
+	refresh, access, err := r.Auth.NewTokens(user.ID, user.Role)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (r *queryResolver) Login(ctx context.Context, provider models.Provider, cod
 		payload.User = user
 		payload.AccountExists = true
 
-		refresh, access, err := r.Auth.NewTokens(user.ID, user.Role.String())
+		refresh, access, err := r.Auth.NewTokens(user.ID, user.Role)
 		if err != nil {
 			return nil, err
 		}
