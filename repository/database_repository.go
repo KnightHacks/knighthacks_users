@@ -147,9 +147,9 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		// Detects whether or not the user with the oauth_uid, for github that is their github ID already exists, if
 		// the use already exists we return an UserAlreadyExists error
-		var discoveredId *int
+		var discoveredId = new(int)
 		err := tx.QueryRow(ctx, "SELECT id FROM users WHERE oauth_uid=$1 AND oauth_provider=$2 LIMIT 1", oAuth.UID, oAuth.Provider.String()).Scan(discoveredId)
-		if err == nil || discoveredId != nil {
+		if err == nil && discoveredId != nil {
 			return UserAlreadyExists
 		}
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
