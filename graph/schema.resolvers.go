@@ -113,7 +113,15 @@ func (r *queryResolver) Login(ctx context.Context, provider models.Provider, cod
 }
 
 func (r *queryResolver) RefreshJwt(ctx context.Context, refreshToken string) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	refreshTokenUserClaims, err := r.Auth.ParseJWT(refreshToken)
+	if err != nil {
+		return "", err
+	}
+	token, err := r.Auth.NewAccessToken(refreshTokenUserClaims.UserID, refreshTokenUserClaims.Role)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }
 
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
