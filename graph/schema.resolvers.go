@@ -50,6 +50,9 @@ func (r *mutationResolver) Register(ctx context.Context, provider model.Provider
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
+	if input.FirstName == "" && input.LastName == "" && input.Email == "" && input.PhoneNumber == "" && input.Pronouns == nil && input.Age == nil {
+		return nil, fmt.Errorf("no field has been updated")
+	}
 	return r.Repository.UpdateUser(ctx, id, input)
 }
 

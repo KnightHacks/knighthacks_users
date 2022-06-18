@@ -236,6 +236,10 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 
 func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
 	var user *model.User
+	// checking to see if input is empty first
+	if input.FirstName == "" && input.LastName == "" && input.Email == "" && input.PhoneNumber == "" && input.Pronouns == nil && input.Age == nil {
+		return nil, errors.New("empty user field")
+	}
 	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		if input.FirstName != "" {
 			err := r.UpdateFirstName(ctx, id, input.FirstName, tx)
@@ -270,12 +274,12 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input mo
 			if err != nil {
 				return err
 			}
-			var PronounsPtr *model.Pronouns
-			PronounsPtr = &model.Pronouns{
+			var pronounsPtr *model.Pronouns
+			pronounsPtr = &model.Pronouns{
 				Subjective: input.Pronouns.Subjective,
 				Objective:  input.Pronouns.Objective,
 			}
-			user.Pronouns = PronounsPtr
+			user.Pronouns = pronounsPtr
 		}
 		if input.Age != nil {
 			err := r.UpdateAge(ctx, id, input.Age, tx)
@@ -298,7 +302,7 @@ func (r *DatabaseRepository) UpdateFirstName(ctx context.Context, id string, fir
 		return err
 	}
 	if commandTag.RowsAffected() != 1 {
-		return errors.New("No user found to update")
+		return UserNotFound
 	}
 	return nil
 }
@@ -346,13 +350,13 @@ func (r *DatabaseRepository) UpdatePhoneNumber(ctx context.Context, id string, n
 func (r *DatabaseRepository) UpdatePronouns(ctx context.Context, id string, pronoun *model.PronounsInput, tx pgx.Tx) error {
 	// first find pronouns, if it doesnt exist this will add to database and then update user pronoun in database
 	// copied from createUser
-	var PronounsPtr *model.Pronouns
-	PronounsPtr = &model.Pronouns{
+	var pronounsPtr *model.Pronouns
+	pronounsPtr = &model.Pronouns{
 		Subjective: pronoun.Subjective,
 		Objective:  pronoun.Objective,
 	}
 	var pronounIdPtr *int
-	pronouns := *PronounsPtr
+	pronouns := *pronounsPtr
 	pronounId, exists := r.GetByPronouns(pronouns)
 
 	if !exists {
@@ -408,6 +412,6 @@ func (r *DatabaseRepository) UpdateAge(ctx context.Context, id string, age *int,
 	if commandTag.RowsAffected() != 1 {
 		return UserNotFound
 	}
-	// then no errafdsor
+	// then no error
 	return nil
 }
