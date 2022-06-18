@@ -12,7 +12,8 @@ type LoginPayload struct {
 	// If false then you must register immediately following this. Else, you are logged in and have access to your own user.
 	AccountExists             bool    `json:"accountExists"`
 	User                      *User   `json:"user"`
-	Jwt                       *string `json:"jwt"`
+	AccessToken               *string `json:"accessToken"`
+	RefreshToken              *string `json:"refreshToken"`
 	EncryptedOAuthAccessToken *string `json:"encryptedOAuthAccessToken"`
 }
 
@@ -43,6 +44,12 @@ type PronounsInput struct {
 	Objective  string `json:"objective"`
 }
 
+type RegistrationPayload struct {
+	User         *User  `json:"user"`
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+}
+
 type User struct {
 	ID          string    `json:"id"`
 	FirstName   string    `json:"firstName"`
@@ -52,6 +59,7 @@ type User struct {
 	PhoneNumber string    `json:"phoneNumber"`
 	Pronouns    *Pronouns `json:"pronouns"`
 	Age         *int      `json:"age"`
+	Role        Role      `json:"role"`
 	OAuth       *OAuth    `json:"oAuth"`
 }
 
@@ -95,5 +103,49 @@ func (e *Provider) UnmarshalGQL(v interface{}) error {
 }
 
 func (e Provider) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type Role string
+
+const (
+	RoleAdmin Role = "ADMIN"
+	// for now keep this the same
+	RoleSponsor Role = "SPONSOR"
+	RoleNormal  Role = "NORMAL"
+)
+
+var AllRole = []Role{
+	RoleAdmin,
+	RoleSponsor,
+	RoleNormal,
+}
+
+func (e Role) IsValid() bool {
+	switch e {
+	case RoleAdmin, RoleSponsor, RoleNormal:
+		return true
+	}
+	return false
+}
+
+func (e Role) String() string {
+	return string(e)
+}
+
+func (e *Role) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Role(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Role", str)
+	}
+	return nil
+}
+
+func (e Role) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

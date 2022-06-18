@@ -15,7 +15,7 @@ import (
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 )
 
-func (r *mutationResolver) Register(ctx context.Context, provider model.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.User, error) {
+func (r *mutationResolver) Register(ctx context.Context, provider model.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.RegistrationPayload, error) {
 	// convert model.Provider to auth.Provider, TODO: merge them with gqlgen magic
 	var authProvider auth.Provider
 	if provider == model.ProviderGithub {
@@ -46,7 +46,17 @@ func (r *mutationResolver) Register(ctx context.Context, provider model.Provider
 		// TODO: Possibly do some error handling hear to filter sql errors out
 		return nil, err
 	}
-	return user, nil
+
+	refresh, access, err := r.Auth.NewTokens(user.ID, user.Role.String())
+	if err != nil {
+		return nil, err
+	}
+	payload := &model.RegistrationPayload{
+		User:         user,
+		RefreshToken: refresh,
+		AccessToken:  access,
+	}
+	return payload, nil
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
@@ -100,7 +110,13 @@ func (r *queryResolver) Login(ctx context.Context, provider model.Provider, code
 		// Set the user since they exist
 		payload.User = user
 		payload.AccountExists = true
-		// TODO: Implement JWT
+
+		refresh, access, err := r.Auth.NewTokens(user.ID, user.Role.String())
+		if err != nil {
+			return nil, err
+		}
+		payload.RefreshToken = &refresh
+		payload.AccessToken = &access
 	} else {
 		// Using AES-256 encryption, encrypt the access token to protect against packet sniffing
 		encryptAccessTokenBytes := r.Auth.EncryptAccessToken(token.AccessToken)
@@ -117,6 +133,10 @@ func (r *queryResolver) Login(ctx context.Context, provider model.Provider, code
 	// if the user does not exist then we should supply the user with the encodedAccessToken
 	// to be able to Register an account
 	return &payload, nil
+}
+
+func (r *queryResolver) RefreshJwt(ctx context.Context, refreshToken string) (string, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {

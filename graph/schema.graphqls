@@ -11,6 +11,7 @@ type User @key(fields:"id") @key(fields:"oAuth { uid }") {
   phoneNumber: String!
   pronouns: Pronouns
   age: Int
+  role: Role!
 
   oAuth: OAuth! @goField(forceResolver: true)
 }
@@ -28,6 +29,15 @@ type Pronouns {
 enum Provider {
     GITHUB
     GMAIL
+}
+
+enum Role {
+    ADMIN
+    """
+    for now keep this the same
+    """
+    SPONSOR
+    NORMAL
 }
 
 type OAuth {
@@ -55,9 +65,16 @@ type LoginPayload {
     """
     accountExists: Boolean!
     user: User
-    jwt: String
+    accessToken: String
+    refreshToken: String
 
     encryptedOAuthAccessToken: String
+}
+
+type RegistrationPayload {
+    user: User!
+    accessToken: String!
+    refreshToken: String!
 }
 
 type Query {
@@ -67,6 +84,7 @@ type Query {
   """
   getAuthRedirectLink(provider: Provider!): String!
   login(provider: Provider!, code: String!): LoginPayload!
+  refreshJWT(refreshToken: String!): String!
   users: [User!]!
 
   getUser(id: ID!): User
@@ -78,7 +96,7 @@ type Mutation {
   """
   To receive an encryptedOAuthAccessToken first call the Login query
   """
-  register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): User!
+  register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): RegistrationPayload!
   updateUser(id: ID!, input: NewUser!): User!
   deleteUser(id: ID!): Boolean!
 }
