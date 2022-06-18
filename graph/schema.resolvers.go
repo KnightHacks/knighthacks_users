@@ -116,6 +116,8 @@ func (r *queryResolver) Login(ctx context.Context, provider models.Provider, cod
 func (r *queryResolver) RefreshJwt(ctx context.Context, refreshToken string) (string, error) {
 	refreshTokenUserClaims, err := r.Auth.ParseJWT(refreshToken)
 	if err != nil {
+		// TODO: special handler for auth.TokenNotValid error
+		// if the err is auth.TokenNotValid then the user must login again
 		return "", err
 	}
 	token, err := r.Auth.NewAccessToken(refreshTokenUserClaims.UserID, refreshTokenUserClaims.Role)
