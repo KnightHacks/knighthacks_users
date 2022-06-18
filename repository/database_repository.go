@@ -146,7 +146,7 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 		// Detects whether or not the user with the oauth_uid, for github that is their github ID already exists, if
 		// the use already exists we return an UserAlreadyExists error
 		var discoveredId *int
-		err := tx.QueryRow(ctx, "SELECT id FROM users WHERE oauth_uid=$1 LIMIT 1", oAuth.UID).Scan(discoveredId)
+		err := tx.QueryRow(ctx, "SELECT id FROM users WHERE oauth_uid=$1 AND oauth_provider=$2 LIMIT 1", oAuth.UID, oAuth.Provider.String()).Scan(discoveredId)
 		if err == nil || discoveredId != nil {
 			return UserAlreadyExists
 		}
