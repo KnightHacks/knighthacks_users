@@ -52,10 +52,26 @@ func (r *mutationResolver) Register(ctx context.Context, provider models.Provide
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
+	claims, ok := ctx.Value("AuthorizationUserClaims").(*auth.UserClaims)
+	if !ok {
+		return nil, errors.New("unable to retrieve user claims, most likely forgot to set @hasRole directive")
+	}
+	if claims.Role != models.RoleAdmin && claims.Id != id {
+		return nil, errors.New("unauthorized to update user that is not you")
+	}
+	// TODO: implement UpdateUser
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, error) {
+	claims, ok := ctx.Value("AuthorizationUserClaims").(*auth.UserClaims)
+	if !ok {
+		return false, errors.New("unable to retrieve user claims, most likely forgot to set @hasRole directive")
+	}
+	if claims.Role != models.RoleAdmin && claims.Id != id {
+		return false, errors.New("unauthorized to update user that is not you")
+	}
+	// TODO: implement DeleteUser
 	panic(fmt.Errorf("not implemented"))
 }
 

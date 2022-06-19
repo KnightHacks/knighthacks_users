@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"github.com/KnightHacks/knighthacks_shared/auth"
 	"github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_shared/utils"
+	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -69,10 +71,23 @@ func main() {
 }
 
 func graphqlHandler(newAuth *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
+	hasRoleDirective := auth.HasRoleDirective{GetUserId: func(ctx context.Context, obj interface{}) (string, error) {
+		switch t := obj.(type) {
+		case *model.User:
+			return t.ID, nil
+		default:
+			// shouldn't happen, you must implement the new object with the ID field
+			return "", errors.New("this shouldn't happen")
+		}
+	}}
+
 	config := generated.Config{
 		Resolvers: &graph.Resolver{
 			Repository: repository.NewDatabaseRepository(pool),
 			Auth:       *newAuth,
+		},
+		Directives: generated.DirectiveRoot{
+			HasRole: hasRoleDirective.Direct,
 		},
 	}
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(config))
