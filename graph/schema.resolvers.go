@@ -5,10 +5,14 @@ package graph
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/KnightHacks/knighthacks_shared/utils"
 	"log"
+	"net/http"
+	"net/url"
 
 	"github.com/KnightHacks/knighthacks_shared/auth"
 	"github.com/KnightHacks/knighthacks_shared/models"
@@ -76,10 +80,41 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 }
 
 func (r *queryResolver) GetAuthRedirectLink(ctx context.Context, provider models.Provider) (string, error) {
-	return r.Auth.GetAuthCodeURL(provider), nil
+	ginContext, err := utils.GinContextFromContext(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	b := make([]byte, 16)
+	_, err = rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	state := base64.URLEncoding.EncodeToString(b)
+
+	// TODO: check into enabling secure behind proxy in production
+	ginContext.SetSameSite(http.SameSiteNoneMode)
+	ginContext.SetCookie("oauthstate", state, 60*10, "/", "localhost", false, true)
+	ginContext.Header("Access-Control-Allow-Credentials", "true")
+	return r.Auth.GetAuthCodeURL(provider, state), nil
 }
 
-func (r *queryResolver) Login(ctx context.Context, provider models.Provider, code string) (*model.LoginPayload, error) {
+func (r *queryResolver) Login(ctx context.Context, provider models.Provider, code string, state string) (*model.LoginPayload, error) {
+	// todo: this should probably be cleaned up, been at this shit for hours, please god.. no more
+	ginContext, err := utils.GinContextFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	cookieHeader := ginContext.GetHeader("oauthstate")
+	cookieHeader, err = url.QueryUnescape(cookieHeader)
+	if err != nil {
+		return nil, err
+	}
+
+	if cookieHeader != state {
+		return nil, fmt.Errorf("invalid oauth state")
+	}
+
 	// Using the OAuth code provided exchange the code for an access token
 	token, err := r.Auth.ExchangeCode(ctx, provider, code)
 	if err != nil {

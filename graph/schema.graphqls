@@ -93,7 +93,7 @@ type Query {
   Step 1 response https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps
   """
   getAuthRedirectLink(provider: Provider!): String!
-  login(provider: Provider!, code: String!): LoginPayload!
+  login(provider: Provider!, code: String!, state: String!): LoginPayload!
   refreshJWT(refreshToken: String!): String! @hasRole(role: NORMAL)
   users: [User!]! @hasRole(role: ADMIN)
 

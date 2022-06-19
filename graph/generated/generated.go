@@ -81,7 +81,7 @@ type ComplexityRoot struct {
 	Query struct {
 		GetAuthRedirectLink func(childComplexity int, provider models.Provider) int
 		GetUser             func(childComplexity int, id string) int
-		Login               func(childComplexity int, provider models.Provider, code string) int
+		Login               func(childComplexity int, provider models.Provider, code string, state string) int
 		Me                  func(childComplexity int) int
 		RefreshJwt          func(childComplexity int, refreshToken string) int
 		SearchUser          func(childComplexity int, name string) int
@@ -125,7 +125,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	GetAuthRedirectLink(ctx context.Context, provider models.Provider) (string, error)
-	Login(ctx context.Context, provider models.Provider, code string) (*model.LoginPayload, error)
+	Login(ctx context.Context, provider models.Provider, code string, state string) (*model.LoginPayload, error)
 	RefreshJwt(ctx context.Context, refreshToken string) (string, error)
 	Users(ctx context.Context) ([]*model.User, error)
 	GetUser(ctx context.Context, id string) (*model.User, error)
@@ -310,7 +310,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Login(childComplexity, args["provider"].(models.Provider), args["code"].(string)), true
+		return e.complexity.Query.Login(childComplexity, args["provider"].(models.Provider), args["code"].(string), args["state"].(string)), true
 
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
@@ -626,7 +626,7 @@ type Query {
   Step 1 response https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps
   """
   getAuthRedirectLink(provider: Provider!): String!
-  login(provider: Provider!, code: String!): LoginPayload!
+  login(provider: Provider!, code: String!, state: String!): LoginPayload!
   refreshJWT(refreshToken: String!): String! @hasRole(role: NORMAL)
   users: [User!]! @hasRole(role: ADMIN)
 
@@ -889,6 +889,15 @@ func (ec *executionContext) field_Query_login_args(ctx context.Context, rawArgs 
 		}
 	}
 	args["code"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["state"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("state"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["state"] = arg2
 	return args, nil
 }
 
@@ -1588,7 +1597,7 @@ func (ec *executionContext) _Query_login(ctx context.Context, field graphql.Coll
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Login(rctx, args["provider"].(models.Provider), args["code"].(string))
+		return ec.resolvers.Query().Login(rctx, args["provider"].(models.Provider), args["code"].(string), args["state"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

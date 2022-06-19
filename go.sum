@@ -36,14 +36,10 @@ github.com/99designs/gqlgen v0.17.9/go.mod h1:PThAZAK9t2pAat7g8QdSI4dCBMOhBO+t2q
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/toml v1.1.0/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20220618165036-d9aab55de9cc h1:QQf9eO7o7qNTfzcA2uOsd3jYsFJPH4ZmctUkm+Y7a+k=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20220618165036-d9aab55de9cc/go.mod h1:8iZcwW1hi58cDaKdjy+gspyjVb/BnZVgroKcLySTBTQ=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20220619042728-b4b32318a743 h1:Ghb0sAXIDIaLBDx0aEPMgv+xKakOwYNFSNsYqKo7SU4=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20220619042728-b4b32318a743/go.mod h1:8iZcwW1hi58cDaKdjy+gspyjVb/BnZVgroKcLySTBTQ=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20220619053742-c465678bcba6 h1:f3wn8pdYWtVOY+m7LLUjLpO9N6LuHWnUsPqS4nxEOBk=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20220619053742-c465678bcba6/go.mod h1:8iZcwW1hi58cDaKdjy+gspyjVb/BnZVgroKcLySTBTQ=
 github.com/KnightHacks/knighthacks_shared v0.0.0-20220619054617-002be0a8a522 h1:6+6lI6w0d9R0ODzfUam7dXmUzPKODO+FOXaRVGiMm6k=
 github.com/KnightHacks/knighthacks_shared v0.0.0-20220619054617-002be0a8a522/go.mod h1:8iZcwW1hi58cDaKdjy+gspyjVb/BnZVgroKcLySTBTQ=
+github.com/KnightHacks/knighthacks_shared v0.0.0-20220619064001-0c2515903620 h1:lxAH6SS3Glc83uxazsGGqgzVLHctOj3BtYa+BbPe6zg=
+github.com/KnightHacks/knighthacks_shared v0.0.0-20220619064001-0c2515903620/go.mod h1:8iZcwW1hi58cDaKdjy+gspyjVb/BnZVgroKcLySTBTQ=
 github.com/Masterminds/semver/v3 v3.1.1/go.mod h1:VPu/7SZ7ePZ3QOrcuXROw5FAcLl4a0cBrbBpGY/8hQs=
 github.com/agnivade/levenshtein v1.0.1/go.mod h1:CURSv5d9Uaml+FovSIICkLbAUZ9S4RqaHDIsdSBg7lM=
 github.com/agnivade/levenshtein v1.1.1 h1:QY8M92nrzkmr798gCo3kmMyqXFzdQVpxLlGPRBij0P8=
