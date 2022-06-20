@@ -36,8 +36,8 @@ github.com/99designs/gqlgen v0.17.10/go.mod h1:tjgUrZGpynt+w38zmgTn5QGgd3EUhkHa4
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/toml v1.1.0/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20220620052542-8d1a74cbb372 h1:VfD9fYtIW4HKAJJenwG5/xipJhK786pfHA6dC6Z34pA=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20220620052542-8d1a74cbb372/go.mod h1:fEEUyCM7yJM0NCAtgRzY3aUf5sPqqMvIK3N9+yNOb2o=
+github.com/KnightHacks/knighthacks_shared v0.0.0-20220620050911-7a64d6921ca7 h1:uubIS4KfZfBuy4PBcUDRxwiVxg9J3CEpHIvn6VeX3SE=
+github.com/KnightHacks/knighthacks_shared v0.0.0-20220620050911-7a64d6921ca7/go.mod h1:fEEUyCM7yJM0NCAtgRzY3aUf5sPqqMvIK3N9+yNOb2o=
 github.com/Masterminds/semver/v3 v3.1.1/go.mod h1:VPu/7SZ7ePZ3QOrcuXROw5FAcLl4a0cBrbBpGY/8hQs=
 github.com/agnivade/levenshtein v1.0.1/go.mod h1:CURSv5d9Uaml+FovSIICkLbAUZ9S4RqaHDIsdSBg7lM=
 github.com/agnivade/levenshtein v1.1.1 h1:QY8M92nrzkmr798gCo3kmMyqXFzdQVpxLlGPRBij0P8=
