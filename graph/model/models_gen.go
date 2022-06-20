@@ -3,19 +3,16 @@
 package model
 
 import (
-	"github.com/KnightHacks/knighthacks_shared/models"
+	"fmt"
+	"io"
+	"strconv"
 )
-
-type Connection interface {
-	IsConnection()
-}
 
 type LoginPayload struct {
 	// If false then you must register immediately following this. Else, you are logged in and have access to your own user.
 	AccountExists             bool    `json:"accountExists"`
 	User                      *User   `json:"user"`
-	AccessToken               *string `json:"accessToken"`
-	RefreshToken              *string `json:"refreshToken"`
+	Jwt                       *string `json:"jwt"`
 	EncryptedOAuthAccessToken *string `json:"encryptedOAuthAccessToken"`
 }
 
@@ -29,8 +26,8 @@ type NewUser struct {
 }
 
 type OAuth struct {
-	Provider models.Provider `json:"provider"`
-	UID      string          `json:"uid"`
+	Provider Provider `json:"provider"`
+	UID      string   `json:"uid"`
 }
 
 // Example:
@@ -46,31 +43,57 @@ type PronounsInput struct {
 	Objective  string `json:"objective"`
 }
 
-type RegistrationPayload struct {
-	User         *User  `json:"user"`
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
-}
-
 type User struct {
-	ID          string      `json:"id"`
-	FirstName   string      `json:"firstName"`
-	LastName    string      `json:"lastName"`
-	FullName    string      `json:"fullName"`
-	Email       string      `json:"email"`
-	PhoneNumber string      `json:"phoneNumber"`
-	Pronouns    *Pronouns   `json:"pronouns"`
-	Age         *int        `json:"age"`
-	Role        models.Role `json:"role"`
-	OAuth       *OAuth      `json:"oAuth"`
+	ID          string    `json:"id"`
+	FirstName   string    `json:"firstName"`
+	LastName    string    `json:"lastName"`
+	FullName    string    `json:"fullName"`
+	Email       string    `json:"email"`
+	PhoneNumber string    `json:"phoneNumber"`
+	Pronouns    *Pronouns `json:"pronouns"`
+	Age         *int      `json:"age"`
+	OAuth       *OAuth    `json:"oAuth"`
 }
 
 func (User) IsEntity() {}
 
-type UsersConnection struct {
-	TotalCount int              `json:"totalCount"`
-	PageInfo   *models.PageInfo `json:"pageInfo"`
-	Users      []*User          `json:"users"`
+type Provider string
+
+const (
+	ProviderGithub Provider = "GITHUB"
+	ProviderGmail  Provider = "GMAIL"
+)
+
+var AllProvider = []Provider{
+	ProviderGithub,
+	ProviderGmail,
 }
 
-func (UsersConnection) IsConnection() {}
+func (e Provider) IsValid() bool {
+	switch e {
+	case ProviderGithub, ProviderGmail:
+		return true
+	}
+	return false
+}
+
+func (e Provider) String() string {
+	return string(e)
+}
+
+func (e *Provider) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Provider(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Provider", str)
+	}
+	return nil
+}
+
+func (e Provider) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}

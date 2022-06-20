@@ -14,7 +14,6 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/99designs/gqlgen/plugin/federation/fedruntime"
-	"github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -45,27 +44,24 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
-	HasRole    func(ctx context.Context, obj interface{}, next graphql.Resolver, role models.Role) (res interface{}, err error)
-	Pagination func(ctx context.Context, obj interface{}, next graphql.Resolver, maxLength int) (res interface{}, err error)
 }
 
 type ComplexityRoot struct {
 	Entity struct {
-		FindUserByID                       func(childComplexity int, id string) int
-		FindUserByOAuthUIDAndOAuthProvider func(childComplexity int, oAuthUID string, oAuthProvider models.Provider) int
+		FindUserByID       func(childComplexity int, id string) int
+		FindUserByOAuthUID func(childComplexity int, oAuthUID string) int
 	}
 
 	LoginPayload struct {
-		AccessToken               func(childComplexity int) int
 		AccountExists             func(childComplexity int) int
 		EncryptedOAuthAccessToken func(childComplexity int) int
-		RefreshToken              func(childComplexity int) int
+		Jwt                       func(childComplexity int) int
 		User                      func(childComplexity int) int
 	}
 
 	Mutation struct {
 		DeleteUser func(childComplexity int, id string) int
-		Register   func(childComplexity int, provider models.Provider, encryptedOauthAccessToken string, input model.NewUser) int
+		Register   func(childComplexity int, provider model.Provider, encryptedOauthAccessToken string, input model.NewUser) int
 		UpdateUser func(childComplexity int, id string, input model.NewUser) int
 	}
 
@@ -74,32 +70,20 @@ type ComplexityRoot struct {
 		UID      func(childComplexity int) int
 	}
 
-	PageInfo struct {
-		EndCursor   func(childComplexity int) int
-		StartCursor func(childComplexity int) int
-	}
-
 	Pronouns struct {
 		Objective  func(childComplexity int) int
 		Subjective func(childComplexity int) int
 	}
 
 	Query struct {
-		GetAuthRedirectLink func(childComplexity int, provider models.Provider) int
+		GetAuthRedirectLink func(childComplexity int, provider model.Provider) int
 		GetUser             func(childComplexity int, id string) int
-		Login               func(childComplexity int, provider models.Provider, code string, state string) int
+		Login               func(childComplexity int, provider model.Provider, code string) int
 		Me                  func(childComplexity int) int
-		RefreshJwt          func(childComplexity int, refreshToken string) int
 		SearchUser          func(childComplexity int, name string) int
-		Users               func(childComplexity int, first int, after *string) int
+		Users               func(childComplexity int) int
 		__resolve__service  func(childComplexity int) int
 		__resolve_entities  func(childComplexity int, representations []map[string]interface{}) int
-	}
-
-	RegistrationPayload struct {
-		AccessToken  func(childComplexity int) int
-		RefreshToken func(childComplexity int) int
-		User         func(childComplexity int) int
 	}
 
 	User struct {
@@ -112,13 +96,6 @@ type ComplexityRoot struct {
 		OAuth       func(childComplexity int) int
 		PhoneNumber func(childComplexity int) int
 		Pronouns    func(childComplexity int) int
-		Role        func(childComplexity int) int
-	}
-
-	UsersConnection struct {
-		PageInfo   func(childComplexity int) int
-		TotalCount func(childComplexity int) int
-		Users      func(childComplexity int) int
 	}
 
 	_Service struct {
@@ -128,18 +105,17 @@ type ComplexityRoot struct {
 
 type EntityResolver interface {
 	FindUserByID(ctx context.Context, id string) (*model.User, error)
-	FindUserByOAuthUIDAndOAuthProvider(ctx context.Context, oAuthUID string, oAuthProvider models.Provider) (*model.User, error)
+	FindUserByOAuthUID(ctx context.Context, oAuthUID string) (*model.User, error)
 }
 type MutationResolver interface {
-	Register(ctx context.Context, provider models.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.RegistrationPayload, error)
+	Register(ctx context.Context, provider model.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.User, error)
 	UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error)
 	DeleteUser(ctx context.Context, id string) (bool, error)
 }
 type QueryResolver interface {
-	GetAuthRedirectLink(ctx context.Context, provider models.Provider) (string, error)
-	Login(ctx context.Context, provider models.Provider, code string, state string) (*model.LoginPayload, error)
-	RefreshJwt(ctx context.Context, refreshToken string) (string, error)
-	Users(ctx context.Context, first int, after *string) (*model.UsersConnection, error)
+	GetAuthRedirectLink(ctx context.Context, provider model.Provider) (string, error)
+	Login(ctx context.Context, provider model.Provider, code string) (*model.LoginPayload, error)
+	Users(ctx context.Context) ([]*model.User, error)
 	GetUser(ctx context.Context, id string) (*model.User, error)
 	SearchUser(ctx context.Context, name string) ([]*model.User, error)
 	Me(ctx context.Context) (*model.User, error)
@@ -177,24 +153,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Entity.FindUserByID(childComplexity, args["id"].(string)), true
 
-	case "Entity.findUserByOAuthUIDAndOAuthProvider":
-		if e.complexity.Entity.FindUserByOAuthUIDAndOAuthProvider == nil {
+	case "Entity.findUserByOAuthUID":
+		if e.complexity.Entity.FindUserByOAuthUID == nil {
 			break
 		}
 
-		args, err := ec.field_Entity_findUserByOAuthUIDAndOAuthProvider_args(context.TODO(), rawArgs)
+		args, err := ec.field_Entity_findUserByOAuthUID_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Entity.FindUserByOAuthUIDAndOAuthProvider(childComplexity, args["oAuthUID"].(string), args["oAuthProvider"].(models.Provider)), true
-
-	case "LoginPayload.accessToken":
-		if e.complexity.LoginPayload.AccessToken == nil {
-			break
-		}
-
-		return e.complexity.LoginPayload.AccessToken(childComplexity), true
+		return e.complexity.Entity.FindUserByOAuthUID(childComplexity, args["oAuthUID"].(string)), true
 
 	case "LoginPayload.accountExists":
 		if e.complexity.LoginPayload.AccountExists == nil {
@@ -210,12 +179,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.LoginPayload.EncryptedOAuthAccessToken(childComplexity), true
 
-	case "LoginPayload.refreshToken":
-		if e.complexity.LoginPayload.RefreshToken == nil {
+	case "LoginPayload.jwt":
+		if e.complexity.LoginPayload.Jwt == nil {
 			break
 		}
 
-		return e.complexity.LoginPayload.RefreshToken(childComplexity), true
+		return e.complexity.LoginPayload.Jwt(childComplexity), true
 
 	case "LoginPayload.user":
 		if e.complexity.LoginPayload.User == nil {
@@ -246,7 +215,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Register(childComplexity, args["provider"].(models.Provider), args["encryptedOAuthAccessToken"].(string), args["input"].(model.NewUser)), true
+		return e.complexity.Mutation.Register(childComplexity, args["provider"].(model.Provider), args["encryptedOAuthAccessToken"].(string), args["input"].(model.NewUser)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -274,20 +243,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.OAuth.UID(childComplexity), true
 
-	case "PageInfo.endCursor":
-		if e.complexity.PageInfo.EndCursor == nil {
-			break
-		}
-
-		return e.complexity.PageInfo.EndCursor(childComplexity), true
-
-	case "PageInfo.startCursor":
-		if e.complexity.PageInfo.StartCursor == nil {
-			break
-		}
-
-		return e.complexity.PageInfo.StartCursor(childComplexity), true
-
 	case "Pronouns.objective":
 		if e.complexity.Pronouns.Objective == nil {
 			break
@@ -312,7 +267,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetAuthRedirectLink(childComplexity, args["provider"].(models.Provider)), true
+		return e.complexity.Query.GetAuthRedirectLink(childComplexity, args["provider"].(model.Provider)), true
 
 	case "Query.getUser":
 		if e.complexity.Query.GetUser == nil {
@@ -336,7 +291,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Login(childComplexity, args["provider"].(models.Provider), args["code"].(string), args["state"].(string)), true
+		return e.complexity.Query.Login(childComplexity, args["provider"].(model.Provider), args["code"].(string)), true
 
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
@@ -344,18 +299,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Me(childComplexity), true
-
-	case "Query.refreshJWT":
-		if e.complexity.Query.RefreshJwt == nil {
-			break
-		}
-
-		args, err := ec.field_Query_refreshJWT_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.RefreshJwt(childComplexity, args["refreshToken"].(string)), true
 
 	case "Query.searchUser":
 		if e.complexity.Query.SearchUser == nil {
@@ -374,12 +317,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_Query_users_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.Users(childComplexity, args["first"].(int), args["after"].(*string)), true
+		return e.complexity.Query.Users(childComplexity), true
 
 	case "Query._service":
 		if e.complexity.Query.__resolve__service == nil {
@@ -399,27 +337,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.__resolve_entities(childComplexity, args["representations"].([]map[string]interface{})), true
-
-	case "RegistrationPayload.accessToken":
-		if e.complexity.RegistrationPayload.AccessToken == nil {
-			break
-		}
-
-		return e.complexity.RegistrationPayload.AccessToken(childComplexity), true
-
-	case "RegistrationPayload.refreshToken":
-		if e.complexity.RegistrationPayload.RefreshToken == nil {
-			break
-		}
-
-		return e.complexity.RegistrationPayload.RefreshToken(childComplexity), true
-
-	case "RegistrationPayload.user":
-		if e.complexity.RegistrationPayload.User == nil {
-			break
-		}
-
-		return e.complexity.RegistrationPayload.User(childComplexity), true
 
 	case "User.age":
 		if e.complexity.User.Age == nil {
@@ -483,34 +400,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Pronouns(childComplexity), true
-
-	case "User.role":
-		if e.complexity.User.Role == nil {
-			break
-		}
-
-		return e.complexity.User.Role(childComplexity), true
-
-	case "UsersConnection.pageInfo":
-		if e.complexity.UsersConnection.PageInfo == nil {
-			break
-		}
-
-		return e.complexity.UsersConnection.PageInfo(childComplexity), true
-
-	case "UsersConnection.totalCount":
-		if e.complexity.UsersConnection.TotalCount == nil {
-			break
-		}
-
-		return e.complexity.UsersConnection.TotalCount(childComplexity), true
-
-	case "UsersConnection.users":
-		if e.complexity.UsersConnection.Users == nil {
-			break
-		}
-
-		return e.complexity.UsersConnection.Users(childComplexity), true
 
 	case "_Service.sdl":
 		if e.complexity._Service.SDL == nil {
@@ -583,54 +472,21 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "graph/schema.graphqls", Input: `directive @goModel(model: String, models: [String!]) on OBJECT
-    | INPUT_OBJECT
-    | SCALAR
-    | ENUM
-    | INTERFACE
-    | UNION
-
-directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
+	{Name: "graph/schema.graphqls", Input: `directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
     | FIELD_DEFINITION
 
-directive @hasRole(role: Role!) on FIELD_DEFINITION | OBJECT # set minimum layer of security
-directive @pagination(maxLength: Int!) on FIELD_DEFINITION
-
-interface Connection {
-    # The total number of entries
-    totalCount: Int
-    # Information for paginating this connection
-    pageInfo: PageInfo!
-}
-
-type PageInfo @goModel(model: "github.com/KnightHacks/knighthacks_shared/models.PageInfo") {
-    # the first entry
-    startCursor: String!
-    # the last entry
-    endCursor: String!
-}
-
-# A connection object for a list of users
-type UsersConnection implements Connection {
-    totalCount: Int!
-    pageInfo: PageInfo!
-
-    users: [User!]!
-}
-
-type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
+type User @key(fields:"id") @key(fields:"oAuth { uid }") {
   id: ID!
   firstName: String!
   lastName: String!
   fullName: String! @goField(forceResolver: true)
 
-  email: String! @hasRole(role: OWNS)
-  phoneNumber: String! @hasRole(role: OWNS)
+  email: String!
+  phoneNumber: String!
   pronouns: Pronouns
-  age: Int @hasRole(role: OWNS)
-  role: Role! @hasRole(role: OWNS)
+  age: Int
 
-  oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
+  oAuth: OAuth! @goField(forceResolver: true)
 }
 
 """
@@ -643,19 +499,9 @@ type Pronouns {
     objective: String!
 }
 
-enum Provider @goModel(model: "github.com/KnightHacks/knighthacks_shared/models.Provider") {
+enum Provider {
     GITHUB
     GMAIL
-}
-
-enum Role @goModel(model: "github.com/KnightHacks/knighthacks_shared/models.Role") {
-    ADMIN
-    """
-    for now keep this the same
-    """
-    SPONSOR
-    NORMAL
-    OWNS
 }
 
 type OAuth {
@@ -683,16 +529,9 @@ type LoginPayload {
     """
     accountExists: Boolean!
     user: User
-    accessToken: String
-    refreshToken: String
+    jwt: String
 
     encryptedOAuthAccessToken: String
-}
-
-type RegistrationPayload {
-    user: User!
-    accessToken: String!
-    refreshToken: String!
 }
 
 type Query {
@@ -701,21 +540,21 @@ type Query {
   Step 1 response https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps
   """
   getAuthRedirectLink(provider: Provider!): String!
-  login(provider: Provider!, code: String!, state: String!): LoginPayload!
-  refreshJWT(refreshToken: String!): String! @hasRole(role: NORMAL)
-  users(first: Int!, after: String): UsersConnection! @pagination(maxLength: 20) @hasRole(role: ADMIN)
-  getUser(id: ID!): User @hasRole(role: NORMAL)
-  searchUser(name: String!): [User!]! @hasRole(role: NORMAL)
-  me: User @hasRole(role: NORMAL)
+  login(provider: Provider!, code: String!): LoginPayload!
+  users: [User!]!
+
+  getUser(id: ID!): User
+  searchUser(name: String!): [User!]!
+  me: User
 }
 
 type Mutation {
   """
   To receive an encryptedOAuthAccessToken first call the Login query
   """
-  register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): RegistrationPayload!
-  updateUser(id: ID!, input: NewUser!): User! @hasRole(role: NORMAL)
-  deleteUser(id: ID!): Boolean! @hasRole(role: NORMAL)
+  register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): User!
+  updateUser(id: ID!, input: NewUser!): User!
+  deleteUser(id: ID!): Boolean!
 }
 
 `, BuiltIn: false},
@@ -736,7 +575,7 @@ union _Entity = User
 # fake type to build resolver interfaces for users to implement
 type Entity {
 		findUserByID(id: ID!,): User!
-	findUserByOAuthUIDAndOAuthProvider(oAuthUID: String!,oAuthProvider: Provider!,): User!
+	findUserByOAuthUID(oAuthUID: String!,): User!
 
 }
 
@@ -756,36 +595,6 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) dir_hasRole_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 models.Role
-	if tmp, ok := rawArgs["role"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
-		arg0, err = ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["role"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) dir_pagination_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["maxLength"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("maxLength"))
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["maxLength"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_Entity_findUserByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -801,7 +610,7 @@ func (ec *executionContext) field_Entity_findUserByID_args(ctx context.Context, 
 	return args, nil
 }
 
-func (ec *executionContext) field_Entity_findUserByOAuthUIDAndOAuthProvider_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Entity_findUserByOAuthUID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -813,15 +622,6 @@ func (ec *executionContext) field_Entity_findUserByOAuthUIDAndOAuthProvider_args
 		}
 	}
 	args["oAuthUID"] = arg0
-	var arg1 models.Provider
-	if tmp, ok := rawArgs["oAuthProvider"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("oAuthProvider"))
-		arg1, err = ec.unmarshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐProvider(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["oAuthProvider"] = arg1
 	return args, nil
 }
 
@@ -843,10 +643,10 @@ func (ec *executionContext) field_Mutation_deleteUser_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_register_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 models.Provider
+	var arg0 model.Provider
 	if tmp, ok := rawArgs["provider"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
-		arg0, err = ec.unmarshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐProvider(ctx, tmp)
+		arg0, err = ec.unmarshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐProvider(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -930,10 +730,10 @@ func (ec *executionContext) field_Query__entities_args(ctx context.Context, rawA
 func (ec *executionContext) field_Query_getAuthRedirectLink_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 models.Provider
+	var arg0 model.Provider
 	if tmp, ok := rawArgs["provider"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
-		arg0, err = ec.unmarshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐProvider(ctx, tmp)
+		arg0, err = ec.unmarshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐProvider(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -960,10 +760,10 @@ func (ec *executionContext) field_Query_getUser_args(ctx context.Context, rawArg
 func (ec *executionContext) field_Query_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 models.Provider
+	var arg0 model.Provider
 	if tmp, ok := rawArgs["provider"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
-		arg0, err = ec.unmarshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐProvider(ctx, tmp)
+		arg0, err = ec.unmarshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐProvider(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -978,30 +778,6 @@ func (ec *executionContext) field_Query_login_args(ctx context.Context, rawArgs 
 		}
 	}
 	args["code"] = arg1
-	var arg2 string
-	if tmp, ok := rawArgs["state"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("state"))
-		arg2, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["state"] = arg2
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_refreshJWT_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["refreshToken"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("refreshToken"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["refreshToken"] = arg0
 	return args, nil
 }
 
@@ -1017,30 +793,6 @@ func (ec *executionContext) field_Query_searchUser_args(ctx context.Context, raw
 		}
 	}
 	args["name"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_users_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["first"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["first"] = arg0
-	var arg1 *string
-	if tmp, ok := rawArgs["after"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
-		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["after"] = arg1
 	return args, nil
 }
 
@@ -1124,7 +876,7 @@ func (ec *executionContext) _Entity_findUserByID(ctx context.Context, field grap
 	return ec.marshalNUser2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Entity_findUserByOAuthUIDAndOAuthProvider(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Entity_findUserByOAuthUID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1141,7 +893,7 @@ func (ec *executionContext) _Entity_findUserByOAuthUIDAndOAuthProvider(ctx conte
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findUserByOAuthUIDAndOAuthProvider_args(ctx, rawArgs)
+	args, err := ec.field_Entity_findUserByOAuthUID_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -1149,7 +901,7 @@ func (ec *executionContext) _Entity_findUserByOAuthUIDAndOAuthProvider(ctx conte
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindUserByOAuthUIDAndOAuthProvider(rctx, args["oAuthUID"].(string), args["oAuthProvider"].(models.Provider))
+		return ec.resolvers.Entity().FindUserByOAuthUID(rctx, args["oAuthUID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1233,7 +985,7 @@ func (ec *executionContext) _LoginPayload_user(ctx context.Context, field graphq
 	return ec.marshalOUser2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _LoginPayload_accessToken(ctx context.Context, field graphql.CollectedField, obj *model.LoginPayload) (ret graphql.Marshaler) {
+func (ec *executionContext) _LoginPayload_jwt(ctx context.Context, field graphql.CollectedField, obj *model.LoginPayload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1251,39 +1003,7 @@ func (ec *executionContext) _LoginPayload_accessToken(ctx context.Context, field
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AccessToken, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _LoginPayload_refreshToken(ctx context.Context, field graphql.CollectedField, obj *model.LoginPayload) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "LoginPayload",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.RefreshToken, nil
+		return obj.Jwt, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1354,7 +1074,7 @@ func (ec *executionContext) _Mutation_register(ctx context.Context, field graphq
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Register(rctx, args["provider"].(models.Provider), args["encryptedOAuthAccessToken"].(string), args["input"].(model.NewUser))
+		return ec.resolvers.Mutation().Register(rctx, args["provider"].(model.Provider), args["encryptedOAuthAccessToken"].(string), args["input"].(model.NewUser))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1366,9 +1086,9 @@ func (ec *executionContext) _Mutation_register(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.RegistrationPayload)
+	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNRegistrationPayload2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRegistrationPayload(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1395,32 +1115,8 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().UpdateUser(rctx, args["id"].(string), args["input"].(model.NewUser))
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "NORMAL")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(*model.User); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/KnightHacks/knighthacks_users/graph/model.User`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateUser(rctx, args["id"].(string), args["input"].(model.NewUser))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1461,32 +1157,8 @@ func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field grap
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().DeleteUser(rctx, args["id"].(string))
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "NORMAL")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(bool); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteUser(rctx, args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1533,9 +1205,9 @@ func (ec *executionContext) _OAuth_provider(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.(models.Provider)
+	res := resTmp.(model.Provider)
 	fc.Result = res
-	return ec.marshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐProvider(ctx, field.Selections, res)
+	return ec.marshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐProvider(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OAuth_uid(ctx context.Context, field graphql.CollectedField, obj *model.OAuth) (ret graphql.Marshaler) {
@@ -1557,76 +1229,6 @@ func (ec *executionContext) _OAuth_uid(ctx context.Context, field graphql.Collec
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.UID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _PageInfo_startCursor(ctx context.Context, field graphql.CollectedField, obj *models.PageInfo) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "PageInfo",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.StartCursor, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _PageInfo_endCursor(ctx context.Context, field graphql.CollectedField, obj *models.PageInfo) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "PageInfo",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.EndCursor, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1738,7 +1340,7 @@ func (ec *executionContext) _Query_getAuthRedirectLink(ctx context.Context, fiel
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAuthRedirectLink(rctx, args["provider"].(models.Provider))
+		return ec.resolvers.Query().GetAuthRedirectLink(rctx, args["provider"].(model.Provider))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1780,7 +1382,7 @@ func (ec *executionContext) _Query_login(ctx context.Context, field graphql.Coll
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Login(rctx, args["provider"].(models.Provider), args["code"].(string), args["state"].(string))
+		return ec.resolvers.Query().Login(rctx, args["provider"].(model.Provider), args["code"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1795,72 +1397,6 @@ func (ec *executionContext) _Query_login(ctx context.Context, field graphql.Coll
 	res := resTmp.(*model.LoginPayload)
 	fc.Result = res
 	return ec.marshalNLoginPayload2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐLoginPayload(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_refreshJWT(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_refreshJWT_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().RefreshJwt(rctx, args["refreshToken"].(string))
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "NORMAL")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(string); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_users(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1879,50 +1415,9 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_users_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().Users(rctx, args["first"].(int), args["after"].(*string))
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			maxLength, err := ec.unmarshalNInt2int(ctx, 20)
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.Pagination == nil {
-				return nil, errors.New("directive pagination is not implemented")
-			}
-			return ec.directives.Pagination(ctx, nil, directive0, maxLength)
-		}
-		directive2 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "ADMIN")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive1, role)
-		}
-
-		tmp, err := directive2(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(*model.UsersConnection); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/KnightHacks/knighthacks_users/graph/model.UsersConnection`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Users(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1934,9 +1429,9 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.UsersConnection)
+	res := resTmp.([]*model.User)
 	fc.Result = res
-	return ec.marshalNUsersConnection2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUsersConnection(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1963,32 +1458,8 @@ func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.Co
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().GetUser(rctx, args["id"].(string))
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "NORMAL")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(*model.User); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/KnightHacks/knighthacks_users/graph/model.User`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetUser(rctx, args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2026,32 +1497,8 @@ func (ec *executionContext) _Query_searchUser(ctx context.Context, field graphql
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().SearchUser(rctx, args["name"].(string))
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "NORMAL")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.([]*model.User); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/KnightHacks/knighthacks_users/graph/model.User`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().SearchUser(rctx, args["name"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2085,32 +1532,8 @@ func (ec *executionContext) _Query_me(ctx context.Context, field graphql.Collect
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().Me(rctx)
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "NORMAL")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(*model.User); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/KnightHacks/knighthacks_users/graph/model.User`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Me(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2272,111 +1695,6 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _RegistrationPayload_user(ctx context.Context, field graphql.CollectedField, obj *model.RegistrationPayload) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "RegistrationPayload",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.User, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.User)
-	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _RegistrationPayload_accessToken(ctx context.Context, field graphql.CollectedField, obj *model.RegistrationPayload) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "RegistrationPayload",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.AccessToken, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _RegistrationPayload_refreshToken(ctx context.Context, field graphql.CollectedField, obj *model.RegistrationPayload) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "RegistrationPayload",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.RefreshToken, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2534,32 +1852,8 @@ func (ec *executionContext) _User_email(ctx context.Context, field graphql.Colle
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return obj.Email, nil
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, obj, directive0, role)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(string); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return obj.Email, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2593,32 +1887,8 @@ func (ec *executionContext) _User_phoneNumber(ctx context.Context, field graphql
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return obj.PhoneNumber, nil
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, obj, directive0, role)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(string); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return obj.PhoneNumber, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2684,32 +1954,8 @@ func (ec *executionContext) _User_age(ctx context.Context, field graphql.Collect
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return obj.Age, nil
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, obj, directive0, role)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(*int); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *int`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return obj.Age, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2721,65 +1967,6 @@ func (ec *executionContext) _User_age(ctx context.Context, field graphql.Collect
 	res := resTmp.(*int)
 	fc.Result = res
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _User_role(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "User",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return obj.Role, nil
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, obj, directive0, role)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(models.Role); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be github.com/KnightHacks/knighthacks_shared/models.Role`, tmp)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(models.Role)
-	fc.Result = res
-	return ec.marshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_oAuth(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
@@ -2799,32 +1986,8 @@ func (ec *executionContext) _User_oAuth(ctx context.Context, field graphql.Colle
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.User().OAuth(rctx, obj)
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, obj, directive0, role)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(*model.OAuth); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/KnightHacks/knighthacks_users/graph/model.OAuth`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().OAuth(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2839,111 +2002,6 @@ func (ec *executionContext) _User_oAuth(ctx context.Context, field graphql.Colle
 	res := resTmp.(*model.OAuth)
 	fc.Result = res
 	return ec.marshalNOAuth2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐOAuth(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _UsersConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *model.UsersConnection) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "UsersConnection",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.TotalCount, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _UsersConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *model.UsersConnection) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "UsersConnection",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.PageInfo, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*models.PageInfo)
-	fc.Result = res
-	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐPageInfo(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _UsersConnection_users(ctx context.Context, field graphql.CollectedField, obj *model.UsersConnection) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "UsersConnection",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Users, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.User)
-	fc.Result = res
-	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) __Service_sdl(ctx context.Context, field graphql.CollectedField, obj *fedruntime.Service) (ret graphql.Marshaler) {
@@ -4262,22 +3320,6 @@ func (ec *executionContext) unmarshalInputPronounsInput(ctx context.Context, obj
 
 // region    ************************** interface.gotpl ***************************
 
-func (ec *executionContext) _Connection(ctx context.Context, sel ast.SelectionSet, obj model.Connection) graphql.Marshaler {
-	switch obj := (obj).(type) {
-	case nil:
-		return graphql.Null
-	case model.UsersConnection:
-		return ec._UsersConnection(ctx, sel, &obj)
-	case *model.UsersConnection:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._UsersConnection(ctx, sel, obj)
-	default:
-		panic(fmt.Errorf("unexpected type %T", obj))
-	}
-}
-
 func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, obj fedruntime.Entity) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
@@ -4340,7 +3382,7 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "findUserByOAuthUIDAndOAuthProvider":
+		case "findUserByOAuthUID":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -4349,7 +3391,7 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Entity_findUserByOAuthUIDAndOAuthProvider(ctx, field)
+				res = ec._Entity_findUserByOAuthUID(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -4401,16 +3443,9 @@ func (ec *executionContext) _LoginPayload(ctx context.Context, sel ast.Selection
 
 			out.Values[i] = innerFunc(ctx)
 
-		case "accessToken":
+		case "jwt":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._LoginPayload_accessToken(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-		case "refreshToken":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._LoginPayload_refreshToken(ctx, field, obj)
+				return ec._LoginPayload_jwt(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -4534,47 +3569,6 @@ func (ec *executionContext) _OAuth(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
-var pageInfoImplementors = []string{"PageInfo"}
-
-func (ec *executionContext) _PageInfo(ctx context.Context, sel ast.SelectionSet, obj *models.PageInfo) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, pageInfoImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("PageInfo")
-		case "startCursor":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._PageInfo_startCursor(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "endCursor":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._PageInfo_endCursor(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var pronounsImplementors = []string{"Pronouns"}
 
 func (ec *executionContext) _Pronouns(ctx context.Context, sel ast.SelectionSet, obj *model.Pronouns) graphql.Marshaler {
@@ -4668,29 +3662,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_login(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
-		case "refreshJWT":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_refreshJWT(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -4861,57 +3832,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
-var registrationPayloadImplementors = []string{"RegistrationPayload"}
-
-func (ec *executionContext) _RegistrationPayload(ctx context.Context, sel ast.SelectionSet, obj *model.RegistrationPayload) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, registrationPayloadImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("RegistrationPayload")
-		case "user":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._RegistrationPayload_user(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "accessToken":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._RegistrationPayload_accessToken(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "refreshToken":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._RegistrationPayload_refreshToken(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var userImplementors = []string{"User", "_Entity"}
 
 func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *model.User) graphql.Marshaler {
@@ -5006,16 +3926,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 
 			out.Values[i] = innerFunc(ctx)
 
-		case "role":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._User_role(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "oAuth":
 			field := field
 
@@ -5036,57 +3946,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 				return innerFunc(ctx)
 
 			})
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var usersConnectionImplementors = []string{"UsersConnection", "Connection"}
-
-func (ec *executionContext) _UsersConnection(ctx context.Context, sel ast.SelectionSet, obj *model.UsersConnection) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, usersConnectionImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("UsersConnection")
-		case "totalCount":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._UsersConnection_totalCount(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "pageInfo":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._UsersConnection_pageInfo(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "users":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._UsersConnection_users(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5579,21 +4438,6 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
-	res, err := graphql.UnmarshalInt(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	res := graphql.MarshalInt(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-	}
-	return res
-}
-
 func (ec *executionContext) marshalNLoginPayload2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐLoginPayload(ctx context.Context, sel ast.SelectionSet, v model.LoginPayload) graphql.Marshaler {
 	return ec._LoginPayload(ctx, sel, &v)
 }
@@ -5627,47 +4471,13 @@ func (ec *executionContext) marshalNOAuth2ᚖgithubᚗcomᚋKnightHacksᚋknight
 	return ec._OAuth(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNPageInfo2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v *models.PageInfo) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._PageInfo(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐProvider(ctx context.Context, v interface{}) (models.Provider, error) {
-	var res models.Provider
+func (ec *executionContext) unmarshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐProvider(ctx context.Context, v interface{}) (model.Provider, error) {
+	var res model.Provider
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐProvider(ctx context.Context, sel ast.SelectionSet, v models.Provider) graphql.Marshaler {
-	return v
-}
-
-func (ec *executionContext) marshalNRegistrationPayload2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRegistrationPayload(ctx context.Context, sel ast.SelectionSet, v model.RegistrationPayload) graphql.Marshaler {
-	return ec._RegistrationPayload(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNRegistrationPayload2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRegistrationPayload(ctx context.Context, sel ast.SelectionSet, v *model.RegistrationPayload) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._RegistrationPayload(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx context.Context, v interface{}) (models.Role, error) {
-	var res models.Role
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx context.Context, sel ast.SelectionSet, v models.Role) graphql.Marshaler {
+func (ec *executionContext) marshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐProvider(ctx context.Context, sel ast.SelectionSet, v model.Provider) graphql.Marshaler {
 	return v
 }
 
@@ -5742,20 +4552,6 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋKnightHacksᚋknighth
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNUsersConnection2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUsersConnection(ctx context.Context, sel ast.SelectionSet, v model.UsersConnection) graphql.Marshaler {
-	return ec._UsersConnection(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNUsersConnection2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUsersConnection(ctx context.Context, sel ast.SelectionSet, v *model.UsersConnection) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._UsersConnection(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalN_Any2map(ctx context.Context, v interface{}) (map[string]interface{}, error) {
@@ -6186,44 +4982,6 @@ func (ec *executionContext) unmarshalOString2string(ctx context.Context, v inter
 func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	res := graphql.MarshalString(v)
 	return res
-}
-
-func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]string, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
-	}
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

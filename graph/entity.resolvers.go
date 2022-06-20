@@ -6,7 +6,6 @@ package graph
 import (
 	"context"
 
-	"github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_users/graph/generated"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 )
@@ -16,8 +15,8 @@ func (r *entityResolver) FindUserByID(ctx context.Context, id string) (*model.Us
 	return user, err
 }
 
-func (r *entityResolver) FindUserByOAuthUIDAndOAuthProvider(ctx context.Context, oAuthUID string, oAuthProvider models.Provider) (*model.User, error) {
-	user, err := r.Resolver.Repository.GetUserByOAuthUID(ctx, oAuthUID, oAuthProvider)
+func (r *entityResolver) FindUserByOAuthUID(ctx context.Context, oAuthUID string) (*model.User, error) {
+	user, err := r.Resolver.Repository.GetUserByOAuthUID(ctx, oAuthUID)
 	return user, err
 }
 
