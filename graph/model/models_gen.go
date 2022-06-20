@@ -6,6 +6,10 @@ import (
 	"github.com/KnightHacks/knighthacks_shared/models"
 )
 
+type Connection interface {
+	IsConnection()
+}
+
 type LoginPayload struct {
 	// If false then you must register immediately following this. Else, you are logged in and have access to your own user.
 	AccountExists             bool    `json:"accountExists"`
@@ -62,3 +66,11 @@ type User struct {
 }
 
 func (User) IsEntity() {}
+
+type UsersConnection struct {
+	TotalCount int              `json:"totalCount"`
+	PageInfo   *models.PageInfo `json:"pageInfo"`
+	Users      []*User          `json:"users"`
+}
+
+func (UsersConnection) IsConnection() {}

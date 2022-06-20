@@ -9,6 +9,29 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     | FIELD_DEFINITION
 
 directive @hasRole(role: Role!) on FIELD_DEFINITION | OBJECT # set minimum layer of security
+directive @pagination(maxLength: Int!) on FIELD_DEFINITION
+
+interface Connection {
+    # The total number of entries
+    totalCount: Int
+    # Information for paginating this connection
+    pageInfo: PageInfo!
+}
+
+type PageInfo @goModel(model: "github.com/KnightHacks/knighthacks_shared/models.PageInfo") {
+    # the first entry
+    startCursor: String!
+    # the last entry
+    endCursor: String!
+}
+
+# A connection object for a list of users
+type UsersConnection implements Connection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+
+    users: [User!]!
+}
 
 type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
   id: ID!
@@ -95,8 +118,7 @@ type Query {
   getAuthRedirectLink(provider: Provider!): String!
   login(provider: Provider!, code: String!, state: String!): LoginPayload!
   refreshJWT(refreshToken: String!): String! @hasRole(role: NORMAL)
-  users: [User!]! @hasRole(role: ADMIN)
-
+  users(first: Int!, after: String): UsersConnection! @pagination(maxLength: 20) @hasRole(role: ADMIN)
   getUser(id: ID!): User @hasRole(role: NORMAL)
   searchUser(name: String!): [User!]! @hasRole(role: NORMAL)
   me: User @hasRole(role: NORMAL)

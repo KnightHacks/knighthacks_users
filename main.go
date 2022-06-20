@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/KnightHacks/knighthacks_shared/auth"
 	"github.com/KnightHacks/knighthacks_shared/models"
+	"github.com/KnightHacks/knighthacks_shared/pagination"
 	"github.com/KnightHacks/knighthacks_shared/utils"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
@@ -87,7 +88,8 @@ func graphqlHandler(newAuth *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
 			Auth:       *newAuth,
 		},
 		Directives: generated.DirectiveRoot{
-			HasRole: hasRoleDirective.Direct,
+			HasRole:    hasRoleDirective.Direct,
+			Pagination: pagination.Pagination,
 		},
 	}
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(config))

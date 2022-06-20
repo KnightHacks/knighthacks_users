@@ -9,13 +9,14 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/KnightHacks/knighthacks_shared/utils"
 	"log"
 	"net/http"
 	"net/url"
 
 	"github.com/KnightHacks/knighthacks_shared/auth"
 	"github.com/KnightHacks/knighthacks_shared/models"
+	"github.com/KnightHacks/knighthacks_shared/pagination"
+	"github.com/KnightHacks/knighthacks_shared/utils"
 	"github.com/KnightHacks/knighthacks_users/graph/generated"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 )
@@ -178,8 +179,19 @@ func (r *queryResolver) RefreshJwt(ctx context.Context, refreshToken string) (st
 	return token, nil
 }
 
-func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *queryResolver) Users(ctx context.Context, first int, after *string) (*model.UsersConnection, error) {
+	err := pagination.DecodeCursor(after)
+
+	users, total, err := r.Repository.GetUsers(ctx, first, *after)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.UsersConnection{
+		TotalCount: total,
+		PageInfo:   pagination.GetPageInfo(users[0].ID, users[len(users)-1].ID),
+		Users:      users,
+	}, nil
 }
 
 func (r *queryResolver) GetUser(ctx context.Context, id string) (*model.User, error) {
@@ -187,7 +199,12 @@ func (r *queryResolver) GetUser(ctx context.Context, id string) (*model.User, er
 }
 
 func (r *queryResolver) SearchUser(ctx context.Context, name string) ([]*model.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	if !utils.IsASCII(name) {
+		// TODO: how to handle non ascii names? do they exist? idk
+		return nil, fmt.Errorf("the name must include only ascii characters")
+	}
+
+	return r.Repository.SearchUser(ctx, name)
 }
 
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {

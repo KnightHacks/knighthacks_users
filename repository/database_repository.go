@@ -73,19 +73,8 @@ func (r *DatabaseRepository) GetUserByOAuthUID(ctx context.Context, oAuthUID str
 
 func (r *DatabaseRepository) getUser(ctx context.Context, query string, args ...interface{}) (*model.User, error) {
 	var user model.User
-	var pronounId *int32
 	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		var userIdInt int
-		err := tx.QueryRow(ctx, query, args...).Scan(
-			&userIdInt,
-			&user.FirstName,
-			&user.LastName,
-			&user.Email,
-			&user.PhoneNumber,
-			&pronounId,
-			&user.Age,
-			&user.Role,
-		)
+		pronounId, err := ScanUser(&user, tx.QueryRow(ctx, query, args...))
 
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
@@ -93,7 +82,6 @@ func (r *DatabaseRepository) getUser(ctx context.Context, query string, args ...
 			}
 			return err
 		}
-		user.ID = strconv.Itoa(userIdInt)
 		// if the user has their pronouns set
 		err = getPronouns(ctx, tx, pronounId, r, &user)
 		if err != nil {
@@ -248,4 +236,77 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 		Age:         input.Age,
 		OAuth:       oAuth,
 	}, nil
+}
+
+func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after string) ([]*model.User, int, error) {
+	users := make([]*model.User, 0, first)
+	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		rows, err := tx.Query(ctx, "SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role FROM users WHERE id > $1 LIMIT $2 ORDER BY id DESC", after, first)
+		if err != nil {
+			return err
+		}
+		for rows.Next() {
+			var user model.User
+
+			pronounId, err := ScanUser(&user, rows)
+			if err != nil {
+				return err
+			}
+			err = getPronouns(ctx, tx, pronounId, r, &user)
+			if err != nil {
+				return err
+			}
+			users = append(users, &user)
+		}
+		return rows.Err()
+	})
+	return users, 0, err
+}
+
+func (r *DatabaseRepository) SearchUser(ctx context.Context, name string) ([]*model.User, error) {
+	const limit int = 10
+	users := make([]*model.User, 0, limit)
+
+	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		rows, err := tx.Query(ctx, "SELECT * from users WHERE to_tsvector(first_name || ' ' || last_name) @@ to_tsquery('$1:*') LIMIT $2", name, limit)
+		if err != nil {
+			return err
+		}
+		for rows.Next() {
+			var user model.User
+
+			pronounId, err := ScanUser(&user, rows)
+			if err != nil {
+				return err
+			}
+			err = getPronouns(ctx, tx, pronounId, r, &user)
+			if err != nil {
+				return err
+			}
+			users = append(users, &user)
+		}
+		return rows.Err()
+	})
+	if err != nil {
+		return nil, err
+	}
+	return users, err
+}
+
+type Scannable interface {
+	Scan(dest ...interface{}) error
+}
+
+func ScanUser[T Scannable](user *model.User, scannable T) (*int32, error) {
+	var pronounId *int32
+	var userIdInt int
+	return pronounId, scannable.Scan(
+		&userIdInt,
+		&user.FirstName,
+		&user.LastName,
+		&user.Email,
+		&user.PhoneNumber,
+		&pronounId,
+		&user.Age,
+	)
 }
