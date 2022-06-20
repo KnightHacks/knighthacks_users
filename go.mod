@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/99designs/gqlgen v0.17.10
-	github.com/KnightHacks/knighthacks_shared v0.0.0-20220620015944-75b31634f3f7
+	github.com/KnightHacks/knighthacks_shared v0.0.0-20220620052542-8d1a74cbb372
 	github.com/gin-gonic/gin v1.8.1
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/vektah/gqlparser/v2 v2.4.5
