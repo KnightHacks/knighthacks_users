@@ -1,51 +1,18 @@
-directive @goModel(model: String, models: [String!]) on OBJECT
-    | INPUT_OBJECT
-    | SCALAR
-    | ENUM
-    | INTERFACE
-    | UNION
-
 directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
     | FIELD_DEFINITION
 
-directive @hasRole(role: Role!) on FIELD_DEFINITION | OBJECT # set minimum layer of security
-directive @pagination(maxLength: Int!) on FIELD_DEFINITION
-
-interface Connection {
-    # The total number of entries
-    totalCount: Int
-    # Information for paginating this connection
-    pageInfo: PageInfo!
-}
-
-type PageInfo @goModel(model: "github.com/KnightHacks/knighthacks_shared/models.PageInfo") {
-    # the first entry
-    startCursor: String!
-    # the last entry
-    endCursor: String!
-}
-
-# A connection object for a list of users
-type UsersConnection implements Connection {
-    totalCount: Int!
-    pageInfo: PageInfo!
-
-    users: [User!]!
-}
-
-type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
+type User @key(fields:"id") @key(fields:"oAuth { uid }") {
   id: ID!
   firstName: String!
   lastName: String!
   fullName: String! @goField(forceResolver: true)
 
-  email: String! @hasRole(role: OWNS)
-  phoneNumber: String! @hasRole(role: OWNS)
+  email: String!
+  phoneNumber: String!
   pronouns: Pronouns
-  age: Int @hasRole(role: OWNS)
-  role: Role! @hasRole(role: OWNS)
+  age: Int
 
-  oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
+  oAuth: OAuth! @goField(forceResolver: true)
 }
 
 """
@@ -58,19 +25,9 @@ type Pronouns {
     objective: String!
 }
 
-enum Provider @goModel(model: "github.com/KnightHacks/knighthacks_shared/models.Provider") {
+enum Provider {
     GITHUB
     GMAIL
-}
-
-enum Role @goModel(model: "github.com/KnightHacks/knighthacks_shared/models.Role") {
-    ADMIN
-    """
-    for now keep this the same
-    """
-    SPONSOR
-    NORMAL
-    OWNS
 }
 
 type OAuth {
@@ -98,16 +55,9 @@ type LoginPayload {
     """
     accountExists: Boolean!
     user: User
-    accessToken: String
-    refreshToken: String
+    jwt: String
 
     encryptedOAuthAccessToken: String
-}
-
-type RegistrationPayload {
-    user: User!
-    accessToken: String!
-    refreshToken: String!
 }
 
 type Query {
@@ -116,20 +66,20 @@ type Query {
   Step 1 response https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps
   """
   getAuthRedirectLink(provider: Provider!): String!
-  login(provider: Provider!, code: String!, state: String!): LoginPayload!
-  refreshJWT(refreshToken: String!): String! @hasRole(role: NORMAL)
-  users(first: Int!, after: String): UsersConnection! @pagination(maxLength: 20) @hasRole(role: ADMIN)
-  getUser(id: ID!): User @hasRole(role: NORMAL)
-  searchUser(name: String!): [User!]! @hasRole(role: NORMAL)
-  me: User @hasRole(role: NORMAL)
+  login(provider: Provider!, code: String!): LoginPayload!
+  users: [User!]!
+
+  getUser(id: ID!): User
+  searchUser(name: String!): [User!]!
+  me: User
 }
 
 type Mutation {
   """
   To receive an encryptedOAuthAccessToken first call the Login query
   """
-  register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): RegistrationPayload!
-  updateUser(id: ID!, input: NewUser!): User! @hasRole(role: NORMAL)
-  deleteUser(id: ID!): Boolean! @hasRole(role: NORMAL)
+  register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): User!
+  updateUser(id: ID!, input: NewUser!): User!
+  deleteUser(id: ID!): Boolean!
 }
 
