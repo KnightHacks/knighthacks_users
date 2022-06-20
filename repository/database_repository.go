@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"strconv"
-
+	sharedModels "github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -54,13 +54,49 @@ func (r *DatabaseRepository) Set(id int, pronouns model.Pronouns) {
 
 //GetUserByID returns the user by their id
 func (r *DatabaseRepository) GetUserByID(ctx context.Context, id string) (*model.User, error) {
-	return r.getUser(ctx, "id", id)
+	return r.getUser(
+		ctx,
+		`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role FROM users WHERE id = $1 LIMIT 1`,
+		id,
+	)
 }
 
 // GetUserByOAuthUID returns the user by their oauth auth token
-//TODO: possibly add Provider as argument?
-func (r *DatabaseRepository) GetUserByOAuthUID(ctx context.Context, authToken string) (*model.User, error) {
-	return r.getUser(ctx, "oauth_uid", authToken)
+func (r *DatabaseRepository) GetUserByOAuthUID(ctx context.Context, oAuthUID string, provider sharedModels.Provider) (*model.User, error) {
+	return r.getUser(
+		ctx,
+		`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role FROM users WHERE oauth_uid=cast($1 as varchar) AND oauth_provider=$2 LIMIT 1`,
+		oAuthUID,
+		provider,
+	)
+}
+
+func (r *DatabaseRepository) getUser(ctx context.Context, query string, args ...interface{}) (*model.User, error) {
+	var user model.User
+	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		pronounId, err := ScanUser(&user, tx.QueryRow(ctx, query, args...))
+
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return UserNotFound
+			}
+			return err
+		}
+		// if the user has their pronouns set
+		err = getPronouns(ctx, tx, pronounId, r, &user)
+		if err != nil {
+			return err
+		}
+		return err
+	})
+	if err != nil {
+		if errors.Is(err, UserNotFound) {
+			// if the user does not exist then the user is nil, TODO: maybe return error?
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &user, err
 }
 
 //GetOAuth returns the model.OAuth object that is associated with the user's id
@@ -75,55 +111,25 @@ func (r *DatabaseRepository) GetOAuth(ctx context.Context, id string) (*model.OA
 	return &oAuth, err
 }
 
-//getUser returns user by some column and value on the users table
-func (r *DatabaseRepository) getUser(ctx context.Context, column string, value string) (*model.User, error) {
-	var user model.User
-	var pronounIdPtr *int
-	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		err := tx.QueryRow(ctx, "SELECT first_name, last_name, email, phone_number, pronoun_id, age FROM users WHERE $1 = $2", column, value).Scan(
-			&user.FirstName,
-			&user.LastName,
-			&user.Email,
-			&user.PhoneNumber,
-			pronounIdPtr,
-			&user.Age,
-		)
-
-		if err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				return UserNotFound
+func getPronouns(ctx context.Context, tx pgx.Tx, pronounId *int32, r *DatabaseRepository, user *model.User) error {
+	if pronounId != nil {
+		pronouns, exists := r.GetById(int(*pronounId))
+		// does the pronoun not exist in the local cache?
+		if !exists {
+			// retrieve the pronoun from the database
+			err := tx.QueryRow(ctx, "SELECT subjective, objective FROM pronouns WHERE id = $1", pronounId).Scan(
+				&pronouns.Subjective,
+				&pronouns.Objective,
+			)
+			if err != nil {
+				return err
 			}
-			return err
+			// set the pronoun in the local cache
+			r.Set(int(*pronounId), pronouns)
 		}
-		// if the user has their pronouns set
-		if pronounIdPtr != nil {
-			pronounId := *pronounIdPtr
-			pronouns, exists := r.GetById(pronounId)
-			// does the pronoun not exist in the local cache?
-			if !exists {
-				// retrieve the pronoun from the database
-				err = tx.QueryRow(ctx, "SELECT subjective, objective FROM pronouns WHERE id = $1", pronounId).Scan(
-					&pronouns.Subjective,
-					&pronouns.Objective,
-				)
-				if err != nil {
-					return err
-				}
-				// set the pronoun in the local cache
-				r.Set(pronounId, pronouns)
-			}
-			user.Pronouns = &pronouns
-		}
-		return err
-	})
-	if err != nil {
-		if errors.Is(err, UserNotFound) {
-			// if the user does not exist then the user is nil, TODO: maybe return error?
-			return nil, nil
-		}
-		return nil, err
+		user.Pronouns = &pronouns
 	}
-	return &user, err
+	return nil
 }
 
 //CreateUser Creates a user in the database and returns the new user struct
@@ -146,9 +152,9 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		// Detects whether or not the user with the oauth_uid, for github that is their github ID already exists, if
 		// the use already exists we return an UserAlreadyExists error
-		var discoveredId *int
-		err := tx.QueryRow(ctx, "SELECT id FROM users WHERE oauth_uid=$1 LIMIT 1", oAuth.UID).Scan(discoveredId)
-		if err == nil || discoveredId != nil {
+		var discoveredId = new(int)
+		err := tx.QueryRow(ctx, "SELECT id FROM users WHERE oauth_uid=$1 AND oauth_provider=$2 LIMIT 1", oAuth.UID, oAuth.Provider.String()).Scan(discoveredId)
+		if err == nil && discoveredId != nil {
 			return UserAlreadyExists
 		}
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
@@ -199,7 +205,7 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 		// TODO: Possibly change ID type to int to stop this hacky fix?
 		// insert user into database and return their ID
 		var userIdInt int
-		err = tx.QueryRow(ctx, "INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
+		err = tx.QueryRow(ctx, "INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider, role) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id",
 			input.FirstName,
 			input.LastName,
 			input.Email,
@@ -208,6 +214,7 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 			pronounIdPtr,
 			oAuth.UID,
 			oAuth.Provider.String(),
+			sharedModels.RoleNormal,
 		).Scan(&userIdInt)
 		if err != nil {
 			return err
@@ -288,6 +295,61 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input mo
 			}
 		}
 		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after string) ([]*model.User, int, error) {
+	users := make([]*model.User, 0, first)
+	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		rows, err := tx.Query(ctx, "SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role FROM users WHERE id > $1 LIMIT $2 ORDER BY id DESC", after, first)
+		if err != nil {
+			return err
+		}
+		for rows.Next() {
+			var user model.User
+
+			pronounId, err := ScanUser(&user, rows)
+			if err != nil {
+				return err
+			}
+			err = getPronouns(ctx, tx, pronounId, r, &user)
+			if err != nil {
+				return err
+			}
+			users = append(users, &user)
+		}
+		return rows.Err()
+	})
+	return users, 0, err
+}
+
+func (r *DatabaseRepository) SearchUser(ctx context.Context, name string) ([]*model.User, error) {
+	const limit int = 10
+	users := make([]*model.User, 0, limit)
+
+	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		rows, err := tx.Query(ctx, "SELECT * from users WHERE to_tsvector(first_name || ' ' || last_name) @@ to_tsquery('$1:*') LIMIT $2", name, limit)
+		if err != nil {
+			return err
+		}
+		for rows.Next() {
+			var user model.User
+
+			pronounId, err := ScanUser(&user, rows)
+			if err != nil {
+				return err
+			}
+			err = getPronouns(ctx, tx, pronounId, r, &user)
+			if err != nil {
+				return err
+			}
+			users = append(users, &user)
+		}
+		return rows.Err()
 	})
 	if err != nil {
 		return nil, err
@@ -414,4 +476,24 @@ func (r *DatabaseRepository) UpdateAge(ctx context.Context, id string, age *int,
 	}
 	// then no error
 	return nil
+=======
+	return users, err
+}
+
+type Scannable interface {
+	Scan(dest ...interface{}) error
+}
+
+func ScanUser[T Scannable](user *model.User, scannable T) (*int32, error) {
+	var pronounId *int32
+	var userIdInt int
+	return pronounId, scannable.Scan(
+		&userIdInt,
+		&user.FirstName,
+		&user.LastName,
+		&user.Email,
+		&user.PhoneNumber,
+		&pronounId,
+		&user.Age,
+	)
 }

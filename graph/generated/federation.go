@@ -99,12 +99,16 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 
 				list[idx[i]] = entity
 				return nil
-			case "findUserByOAuthUID":
+			case "findUserByOAuthUIDAndOAuthProvider":
 				id0, err := ec.unmarshalNString2string(ctx, rep["oAuth"].(map[string]interface{})["uid"])
 				if err != nil {
-					return fmt.Errorf(`unmarshalling param 0 for findUserByOAuthUID(): %w`, err)
+					return fmt.Errorf(`unmarshalling param 0 for findUserByOAuthUIDAndOAuthProvider(): %w`, err)
 				}
-				entity, err := ec.resolvers.Entity().FindUserByOAuthUID(ctx, id0)
+				id1, err := ec.unmarshalNProvider2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐProvider(ctx, rep["oAuth"].(map[string]interface{})["provider"])
+				if err != nil {
+					return fmt.Errorf(`unmarshalling param 1 for findUserByOAuthUIDAndOAuthProvider(): %w`, err)
+				}
+				entity, err := ec.resolvers.Entity().FindUserByOAuthUIDAndOAuthProvider(ctx, id0, id1)
 				if err != nil {
 					return fmt.Errorf(`resolving Entity "User": %w`, err)
 				}
@@ -212,7 +216,17 @@ func entityResolverNameForUser(ctx context.Context, rep map[string]interface{}) 
 		if _, ok = m["uid"]; !ok {
 			break
 		}
-		return "findUserByOAuthUID", nil
+		m = rep
+		if val, ok = m["oAuth"]; !ok {
+			break
+		}
+		if m, ok = val.(map[string]interface{}); !ok {
+			break
+		}
+		if _, ok = m["provider"]; !ok {
+			break
+		}
+		return "findUserByOAuthUIDAndOAuthProvider", nil
 	}
 	return "", fmt.Errorf("%w for User", ErrTypeNotFound)
 }
