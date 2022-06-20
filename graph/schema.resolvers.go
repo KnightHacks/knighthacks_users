@@ -5,26 +5,22 @@ package graph
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/KnightHacks/knighthacks_shared/utils"
 	"log"
+	"net/http"
+	"net/url"
 
 	"github.com/KnightHacks/knighthacks_shared/auth"
+	"github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_users/graph/generated"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 )
 
-func (r *mutationResolver) Register(ctx context.Context, provider model.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.User, error) {
-	// convert model.Provider to auth.Provider, TODO: merge them with gqlgen magic
-	var authProvider auth.Provider
-	if provider == model.ProviderGithub {
-		_ = auth.GitHubAuthProvider
-	} else if provider == model.ProviderGmail {
-		_ = auth.GmailAuthProvider
-	} else {
-		panic("new provider not fully implemented")
-	}
+func (r *mutationResolver) Register(ctx context.Context, provider models.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.RegistrationPayload, error) {
 	// Decode the encrypted OAuth AccessToken from base64
 	b, err := base64.URLEncoding.DecodeString(encryptedOauthAccessToken)
 	if err != nil {
@@ -36,7 +32,7 @@ func (r *mutationResolver) Register(ctx context.Context, provider model.Provider
 		return nil, err
 	}
 	// Using the access token retrieve the OAuth provided UID of the user
-	uid, err := r.Auth.GetUID(ctx, authProvider, string(accessToken))
+	uid, err := r.Auth.GetUID(ctx, provider, string(accessToken))
 	if err != nil {
 		return nil, err
 	}
@@ -46,38 +42,81 @@ func (r *mutationResolver) Register(ctx context.Context, provider model.Provider
 		// TODO: Possibly do some error handling hear to filter sql errors out
 		return nil, err
 	}
-	return user, nil
+
+	refresh, access, err := r.Auth.NewTokens(user.ID, user.Role)
+	if err != nil {
+		return nil, err
+	}
+	payload := &model.RegistrationPayload{
+		User:         user,
+		RefreshToken: refresh,
+		AccessToken:  access,
+	}
+	return payload, nil
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
+	claims, ok := ctx.Value("AuthorizationUserClaims").(*auth.UserClaims)
+	if !ok {
+		return nil, errors.New("unable to retrieve user claims, most likely forgot to set @hasRole directive")
+	}
+	if claims.Role != models.RoleAdmin && claims.Id != id {
+		return nil, errors.New("unauthorized to update user that is not you")
+	}
+	// TODO: implement UpdateUser
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, error) {
+	claims, ok := ctx.Value("AuthorizationUserClaims").(*auth.UserClaims)
+	if !ok {
+		return false, errors.New("unable to retrieve user claims, most likely forgot to set @hasRole directive")
+	}
+	if claims.Role != models.RoleAdmin && claims.Id != id {
+		return false, errors.New("unauthorized to update user that is not you")
+	}
+	// TODO: implement DeleteUser
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) GetAuthRedirectLink(ctx context.Context, provider model.Provider) (string, error) {
-	if provider == model.ProviderGithub {
-		return r.Auth.GetAuthCodeURL(auth.GitHubAuthProvider), nil
-	} else if provider == model.ProviderGmail {
-		return r.Auth.GetAuthCodeURL(auth.GmailAuthProvider), nil
+func (r *queryResolver) GetAuthRedirectLink(ctx context.Context, provider models.Provider) (string, error) {
+	ginContext, err := utils.GinContextFromContext(ctx)
+	if err != nil {
+		return "", err
 	}
-	return "", fmt.Errorf("this shouldn't happen, model.Provider & auth.Provider are not in sync")
+
+	b := make([]byte, 16)
+	_, err = rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	state := base64.URLEncoding.EncodeToString(b)
+
+	// TODO: check into enabling secure behind proxy in production
+	ginContext.SetSameSite(http.SameSiteNoneMode)
+	ginContext.SetCookie("oauthstate", state, 60*10, "/", "localhost", false, true)
+	ginContext.Header("Access-Control-Allow-Credentials", "true")
+	return r.Auth.GetAuthCodeURL(provider, state), nil
 }
 
-func (r *queryResolver) Login(ctx context.Context, provider model.Provider, code string) (*model.LoginPayload, error) {
-	// convert model.Provider to auth.Provider, TODO: merge them with gqlgen magic
-	var authProvider auth.Provider
-	if provider == model.ProviderGithub {
-		_ = auth.GitHubAuthProvider
-	} else if provider == model.ProviderGmail {
-		_ = auth.GmailAuthProvider
-	} else {
-		panic("new provider not fully implemented")
+func (r *queryResolver) Login(ctx context.Context, provider models.Provider, code string, state string) (*model.LoginPayload, error) {
+	// todo: this should probably be cleaned up, been at this shit for hours, please god.. no more
+	ginContext, err := utils.GinContextFromContext(ctx)
+	if err != nil {
+		return nil, err
 	}
+	cookieHeader := ginContext.GetHeader("oauthstate")
+	cookieHeader, err = url.QueryUnescape(cookieHeader)
+	if err != nil {
+		return nil, err
+	}
+
+	if cookieHeader != state {
+		return nil, fmt.Errorf("invalid oauth state")
+	}
+
 	// Using the OAuth code provided exchange the code for an access token
-	token, err := r.Auth.ExchangeCode(ctx, authProvider, code)
+	token, err := r.Auth.ExchangeCode(ctx, provider, code)
 	if err != nil {
 		return nil, err
 	}
@@ -87,11 +126,11 @@ func (r *queryResolver) Login(ctx context.Context, provider model.Provider, code
 	}
 	log.Printf("accessToken=%s, refreshToken=%s, type=%s, expiry=%s\n", token.AccessToken, token.RefreshToken, token.Type(), token.Expiry)
 	// Get the user by their OAuth ID, if the user == nil then the user hasn't created an account yet, but will using the Register function
-	uid, err := r.Auth.GetUID(ctx, authProvider, token.AccessToken)
+	uid, err := r.Auth.GetUID(ctx, provider, token.AccessToken)
 	if err != nil {
 		return nil, err
 	}
-	user, err := r.Repository.GetUserByOAuthUID(ctx, uid)
+	user, err := r.Repository.GetUserByOAuthUID(ctx, uid, provider)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +139,13 @@ func (r *queryResolver) Login(ctx context.Context, provider model.Provider, code
 		// Set the user since they exist
 		payload.User = user
 		payload.AccountExists = true
-		// TODO: Implement JWT
+
+		refresh, access, err := r.Auth.NewTokens(user.ID, user.Role)
+		if err != nil {
+			return nil, err
+		}
+		payload.RefreshToken = &refresh
+		payload.AccessToken = &access
 	} else {
 		// Using AES-256 encryption, encrypt the access token to protect against packet sniffing
 		encryptAccessTokenBytes := r.Auth.EncryptAccessToken(token.AccessToken)
@@ -119,6 +164,20 @@ func (r *queryResolver) Login(ctx context.Context, provider model.Provider, code
 	return &payload, nil
 }
 
+func (r *queryResolver) RefreshJwt(ctx context.Context, refreshToken string) (string, error) {
+	refreshTokenUserClaims, err := r.Auth.ParseJWT(refreshToken, auth.RefreshTokenType)
+	if err != nil {
+		// TODO: special handler for auth.TokenNotValid error
+		// if the err is auth.TokenNotValid then the user must login again
+		return "", err
+	}
+	token, err := r.Auth.NewAccessToken(refreshTokenUserClaims.UserID, refreshTokenUserClaims.Role)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -132,7 +191,12 @@ func (r *queryResolver) SearchUser(ctx context.Context, name string) ([]*model.U
 }
 
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	userClaims, err := auth.UserClaimsFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.Entity().FindUserByID(ctx, userClaims.UserID)
 }
 
 func (r *userResolver) FullName(ctx context.Context, obj *model.User) (string, error) {

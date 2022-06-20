@@ -1,18 +1,28 @@
+directive @goModel(model: String, models: [String!]) on OBJECT
+    | INPUT_OBJECT
+    | SCALAR
+    | ENUM
+    | INTERFACE
+    | UNION
+
 directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
     | FIELD_DEFINITION
 
-type User @key(fields:"id") @key(fields:"oAuth { uid }") {
+directive @hasRole(role: Role!) on FIELD_DEFINITION | OBJECT # set minimum layer of security
+
+type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
   id: ID!
   firstName: String!
   lastName: String!
   fullName: String! @goField(forceResolver: true)
 
-  email: String!
-  phoneNumber: String!
+  email: String! @hasRole(role: OWNS)
+  phoneNumber: String! @hasRole(role: OWNS)
   pronouns: Pronouns
-  age: Int
+  age: Int @hasRole(role: OWNS)
+  role: Role! @hasRole(role: OWNS)
 
-  oAuth: OAuth! @goField(forceResolver: true)
+  oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
 }
 
 """
@@ -25,9 +35,19 @@ type Pronouns {
     objective: String!
 }
 
-enum Provider {
+enum Provider @goModel(model: "github.com/KnightHacks/knighthacks_shared/models.Provider") {
     GITHUB
     GMAIL
+}
+
+enum Role @goModel(model: "github.com/KnightHacks/knighthacks_shared/models.Role") {
+    ADMIN
+    """
+    for now keep this the same
+    """
+    SPONSOR
+    NORMAL
+    OWNS
 }
 
 type OAuth {
@@ -55,9 +75,16 @@ type LoginPayload {
     """
     accountExists: Boolean!
     user: User
-    jwt: String
+    accessToken: String
+    refreshToken: String
 
     encryptedOAuthAccessToken: String
+}
+
+type RegistrationPayload {
+    user: User!
+    accessToken: String!
+    refreshToken: String!
 }
 
 type Query {
@@ -66,20 +93,21 @@ type Query {
   Step 1 response https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps
   """
   getAuthRedirectLink(provider: Provider!): String!
-  login(provider: Provider!, code: String!): LoginPayload!
-  users: [User!]!
+  login(provider: Provider!, code: String!, state: String!): LoginPayload!
+  refreshJWT(refreshToken: String!): String! @hasRole(role: NORMAL)
+  users: [User!]! @hasRole(role: ADMIN)
 
-  getUser(id: ID!): User
-  searchUser(name: String!): [User!]!
-  me: User
+  getUser(id: ID!): User @hasRole(role: NORMAL)
+  searchUser(name: String!): [User!]! @hasRole(role: NORMAL)
+  me: User @hasRole(role: NORMAL)
 }
 
 type Mutation {
   """
   To receive an encryptedOAuthAccessToken first call the Login query
   """
-  register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): User!
-  updateUser(id: ID!, input: NewUser!): User!
-  deleteUser(id: ID!): Boolean!
+  register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): RegistrationPayload!
+  updateUser(id: ID!, input: NewUser!): User! @hasRole(role: NORMAL)
+  deleteUser(id: ID!): Boolean! @hasRole(role: NORMAL)
 }
 
