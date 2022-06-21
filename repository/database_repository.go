@@ -3,11 +3,11 @@ package repository
 import (
 	"context"
 	"errors"
-	"strconv"
 	sharedModels "github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"strconv"
 )
 
 var (
@@ -238,70 +238,6 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 	}, nil
 }
 
-// update user add multiple parts go off of create user
-// we will check whether the values in input are nil or empty strings, if not, we execute the update statement
-
-func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
-	var user *model.User
-	// checking to see if input is empty first
-	if input.FirstName == "" && input.LastName == "" && input.Email == "" && input.PhoneNumber == "" && input.Pronouns == nil && input.Age == nil {
-		return nil, errors.New("empty user field")
-	}
-	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		if input.FirstName != "" {
-			err := r.UpdateFirstName(ctx, id, input.FirstName, tx)
-			if err != nil {
-				return err
-			}
-			user.FirstName = input.FirstName
-		}
-		if input.LastName != "" {
-			err := r.UpdateLastName(ctx, id, input.LastName, tx)
-			if err != nil {
-				return err
-			}
-			user.LastName = input.LastName
-		}
-		if input.Email != "" {
-			err := r.UpdateEmail(ctx, id, input.Email, tx)
-			if err != nil {
-				return err
-			}
-			user.Email = input.Email
-		}
-		if input.PhoneNumber != "" {
-			err := r.UpdatePhoneNumber(ctx, id, input.PhoneNumber, tx)
-			if err != nil {
-				return err
-			}
-			user.PhoneNumber = input.PhoneNumber
-		}
-		if input.Pronouns != nil {
-			err := r.UpdatePronouns(ctx, id, input.Pronouns, tx)
-			if err != nil {
-				return err
-			}
-			var pronounsPtr *model.Pronouns
-			pronounsPtr = &model.Pronouns{
-				Subjective: input.Pronouns.Subjective,
-				Objective:  input.Pronouns.Objective,
-			}
-			user.Pronouns = pronounsPtr
-		}
-		if input.Age != nil {
-			err := r.UpdateAge(ctx, id, input.Age, tx)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
-}
-
 func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after string) ([]*model.User, int, error) {
 	users := make([]*model.User, 0, first)
 	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
@@ -354,130 +290,26 @@ func (r *DatabaseRepository) SearchUser(ctx context.Context, name string) ([]*mo
 	if err != nil {
 		return nil, err
 	}
-	return user, nil
+	return users, nil
 }
 
-// this will update first name
-func (r *DatabaseRepository) UpdateFirstName(ctx context.Context, id string, first string, tx pgx.Tx) error {
-	commandTag, err := tx.Exec(ctx, "UPDATE users SET first_name = $1 WHERE id = $2", first, id)
-	if err != nil {
-		return err
-	}
-	if commandTag.RowsAffected() != 1 {
-		return UserNotFound
-	}
-	return nil
-}
+func (r *DatabaseRepository) DeleteUser(ctx context.Context, id string) (bool, error) {
 
-// this function will update last name
-func (r *DatabaseRepository) UpdateLastName(ctx context.Context, id string, last string, tx pgx.Tx) error {
-	commandTag, err := tx.Exec(ctx, "UPDATE users SET last_name = $1 WHERE id = $2", last, id)
+	//query the row using the id with a DELETE statment
+	commandTag, err := r.DatabasePool.Exec(ctx, "DELETE FROM users WHERE id = $1", id)
+
+	//err should return a nil value, if not throw error
 	if err != nil {
-		return err
+		return false, err
 	}
+
+	//there should be one row affected, if not throw error
 	if commandTag.RowsAffected() != 1 {
-		return UserNotFound
+		return false, UserNotFound
 	}
+
 	// then no error
-	return nil
-}
-
-// updates email
-func (r *DatabaseRepository) UpdateEmail(ctx context.Context, id string, email string, tx pgx.Tx) error {
-	commandTag, err := tx.Exec(ctx, "UPDATE users SET email = $1 WHERE id = $2", email, id)
-	if err != nil {
-		return err
-	}
-	if commandTag.RowsAffected() != 1 {
-		return UserNotFound
-	}
-	// then no error
-	return nil
-}
-
-// updates user phone number
-func (r *DatabaseRepository) UpdatePhoneNumber(ctx context.Context, id string, number string, tx pgx.Tx) error {
-	commandTag, err := tx.Exec(ctx, "UPDATE users SET phone_number = $1 WHERE id = $2", number, id)
-	if err != nil {
-		return err
-	}
-	if commandTag.RowsAffected() != 1 {
-		return UserNotFound
-	}
-	// then no error
-	return nil
-}
-
-// updates user Pronouns
-func (r *DatabaseRepository) UpdatePronouns(ctx context.Context, id string, pronoun *model.PronounsInput, tx pgx.Tx) error {
-	// first find pronouns, if it doesnt exist this will add to database and then update user pronoun in database
-	// copied from createUser
-	var pronounsPtr *model.Pronouns
-	pronounsPtr = &model.Pronouns{
-		Subjective: pronoun.Subjective,
-		Objective:  pronoun.Objective,
-	}
-	var pronounIdPtr *int
-	pronouns := *pronounsPtr
-	pronounId, exists := r.GetByPronouns(pronouns)
-
-	if !exists {
-		// check if the pronoun exists in the database
-		err := tx.QueryRow(ctx, "SELECT id FROM pronouns WHERE subjective=$1 AND objective=$2 RETURNING id",
-			pronoun.Subjective,
-			pronoun.Objective,
-		).Scan(&pronounId)
-
-		pronounExist := true
-		if err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				// pronoun does not exist in the database
-				pronounExist = false
-			} else {
-				return err
-			}
-		}
-		if !pronounExist {
-			// since the new pronoun does not exist in the database, we insert it
-			err = tx.QueryRow(ctx, "INSERT INTO pronouns (subjective, objective) VALUES ($1, $2) RETURNING id",
-				pronoun.Subjective,
-				pronoun.Objective,
-			).Scan(&pronounId)
-		}
-
-		if err != nil {
-			return err
-		}
-		// set the pronoun cache
-		r.Set(pronounId, pronouns)
-	}
-
-	pronounIdPtr = &pronounId
-
-	commandTag, err := tx.Exec(ctx, "UPDATE users SET pronoun_id = $1 WHERE id = $2", pronounIdPtr, id)
-	if err != nil {
-		return err
-	}
-	if commandTag.RowsAffected() != 1 {
-		return UserNotFound
-	}
-	// then no error
-	return nil
-}
-
-// updates user age
-func (r *DatabaseRepository) UpdateAge(ctx context.Context, id string, age *int, tx pgx.Tx) error {
-	commandTag, err := tx.Exec(ctx, "UPDATE users SET age = $1 WHERE id = $2", *age, id)
-	if err != nil {
-		return err
-	}
-	if commandTag.RowsAffected() != 1 {
-		return UserNotFound
-	}
-	// then no error
-	return nil
-=======
-	return users, err
+	return true, nil
 }
 
 type Scannable interface {
