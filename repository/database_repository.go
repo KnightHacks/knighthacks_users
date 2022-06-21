@@ -3,11 +3,11 @@ package repository
 import (
 	"context"
 	"errors"
-	"strconv"
 	sharedModels "github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"strconv"
 )
 
 var (
@@ -354,7 +354,7 @@ func (r *DatabaseRepository) SearchUser(ctx context.Context, name string) ([]*mo
 	if err != nil {
 		return nil, err
 	}
-	return user, nil
+	return users, nil
 }
 
 // this will update first name
@@ -476,8 +476,6 @@ func (r *DatabaseRepository) UpdateAge(ctx context.Context, id string, age *int,
 	}
 	// then no error
 	return nil
-=======
-	return users, err
 }
 
 type Scannable interface {
