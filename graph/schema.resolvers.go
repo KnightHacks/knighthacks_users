@@ -80,9 +80,7 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 	if claims.Role != models.RoleAdmin && claims.Id != id {
 		return false, errors.New("unauthorized to update user that is not you")
 	}
-	// TODO: implement DeleteUser
-
-	panic(fmt.Errorf("not implemented"))
+	return r.Repository.DeleteUser(ctx, id)
 }
 
 func (r *queryResolver) GetAuthRedirectLink(ctx context.Context, provider models.Provider) (string, error) {
