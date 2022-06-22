@@ -60,7 +60,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 	if input.FirstName == "" && input.LastName == "" && input.Email == "" && input.PhoneNumber == "" && input.Pronouns == nil && input.Age == nil {
 		return nil, fmt.Errorf("no field has been updated")
 	}
-	
+
 	claims, ok := ctx.Value("AuthorizationUserClaims").(*auth.UserClaims)
 	if !ok {
 		return nil, errors.New("unable to retrieve user claims, most likely forgot to set @hasRole directive")
@@ -68,7 +68,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 	if claims.Role != models.RoleAdmin && claims.Id != id {
 		return nil, errors.New("unauthorized to update user that is not you")
 	}
-	
+
 	return r.Repository.UpdateUser(ctx, id, input)
 }
 
@@ -81,6 +81,7 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 		return false, errors.New("unauthorized to update user that is not you")
 	}
 	// TODO: implement DeleteUser
+
 	panic(fmt.Errorf("not implemented"))
 }
 

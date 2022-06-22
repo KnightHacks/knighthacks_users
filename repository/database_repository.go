@@ -357,6 +357,25 @@ func (r *DatabaseRepository) SearchUser(ctx context.Context, name string) ([]*mo
 	return users, nil
 }
 
+func (r *DatabaseRepository) DeleteUser(ctx context.Context, id string) (bool, error) {
+
+	//query the row using the id with a DELETE statment
+	commandTag, err := r.DatabasePool.Exec(ctx, "DELETE FROM users WHERE id = $1", id)
+
+	//err should return a nil value, if not throw error
+	if err != nil {
+		return false, err
+	}
+
+	//there should be one row affected, if not throw error
+	if commandTag.RowsAffected() != 1 {
+		return false, UserNotFound
+	}
+
+	// then no error
+	return true, nil
+}
+
 // this will update first name
 func (r *DatabaseRepository) UpdateFirstName(ctx context.Context, id string, first string, tx pgx.Tx) error {
 	commandTag, err := tx.Exec(ctx, "UPDATE users SET first_name = $1 WHERE id = $2", first, id)
