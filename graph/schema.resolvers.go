@@ -9,7 +9,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 
@@ -128,7 +127,6 @@ func (r *queryResolver) Login(ctx context.Context, provider models.Provider, cod
 		// this shouldn't happen unless there was man-in-the-middle tampering to the HTTP request involved
 		return nil, errors.New("auth token not valid, nice try hacker")
 	}
-	log.Printf("accessToken=%s, refreshToken=%s, type=%s, expiry=%s\n", token.AccessToken, token.RefreshToken, token.Type(), token.Expiry)
 	// Get the user by their OAuth ID, if the user == nil then the user hasn't created an account yet, but will using the Register function
 	uid, err := r.Auth.GetUID(ctx, provider, token.AccessToken)
 	if err != nil {
@@ -153,11 +151,9 @@ func (r *queryResolver) Login(ctx context.Context, provider models.Provider, cod
 	} else {
 		// Using AES-256 encryption, encrypt the access token to protect against packet sniffing
 		encryptAccessTokenBytes := r.Auth.EncryptAccessToken(token.AccessToken)
-		log.Printf("bytes=%v\n", encryptAccessTokenBytes)
 
 		// Using base64 encoding, encode the access token to be able to be sent using alphanumeric character over HTTP
 		encodedAccessToken := base64.URLEncoding.EncodeToString(encryptAccessTokenBytes)
-		log.Printf("string=%v\n", encodedAccessToken)
 
 		payload.EncryptedOAuthAccessToken = &encodedAccessToken
 	}
