@@ -504,7 +504,7 @@ type Scannable interface {
 func ScanUser[T Scannable](user *model.User, scannable T) (*int32, error) {
 	var pronounId *int32
 	var userIdInt int
-	return pronounId, scannable.Scan(
+	err := scannable.Scan(
 		&userIdInt,
 		&user.FirstName,
 		&user.LastName,
@@ -512,5 +512,11 @@ func ScanUser[T Scannable](user *model.User, scannable T) (*int32, error) {
 		&user.PhoneNumber,
 		&pronounId,
 		&user.Age,
+		&user.Role,
 	)
+	if err != nil {
+		return nil, err
+	}
+	user.ID = strconv.Itoa(userIdInt)
+	return pronounId, nil
 }
