@@ -96,7 +96,7 @@ func (r *DatabaseRepository) getUser(ctx context.Context, query string, args ...
 		}
 		return nil, err
 	}
-	return &user, err
+	return &user, nil
 }
 
 //GetOAuth returns the model.OAuth object that is associated with the user's id
