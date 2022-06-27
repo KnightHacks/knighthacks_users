@@ -30,7 +30,7 @@ func main() {
 		port = defaultPort
 	}
 
-	pool, err := pgxpool.Connect(context.Background(), getEnvOrDie("DATABASE_URI"))
+	pool, err := pgxpool.Connect(context.Background(), utils.GetEnvOrDie("DATABASE_URI"))
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
@@ -45,9 +45,9 @@ func main() {
 		//	Scopes:       nil,
 		//},
 		models.ProviderGithub: {
-			ClientID:     getEnvOrDie("OAUTH_GITHUB_CLIENT_ID"),
-			ClientSecret: getEnvOrDie("OAUTH_GITHUB_CLIENT_SECRET"),
-			RedirectURL:  getEnvOrDie("OAUTH_GITHUB_REDIRECT_URL"),
+			ClientID:     utils.GetEnvOrDie("OAUTH_GITHUB_CLIENT_ID"),
+			ClientSecret: utils.GetEnvOrDie("OAUTH_GITHUB_CLIENT_SECRET"),
+			RedirectURL:  utils.GetEnvOrDie("OAUTH_GITHUB_REDIRECT_URL"),
 			Endpoint:     github.Endpoint,
 			Scopes: []string{
 				"read:user",
@@ -56,7 +56,7 @@ func main() {
 		},
 	}
 
-	newAuth, err := auth.NewAuth(getEnvOrDie("JWT_SIGNING_KEY"), getEnvOrDie("AES_CIPHER"), oauthConfigMap)
+	newAuth, err := auth.NewAuth(utils.GetEnvOrDie("JWT_SIGNING_KEY"), utils.GetEnvOrDie("AES_CIPHER"), oauthConfigMap)
 	if err != nil {
 		log.Fatalf("An error occured when trying to create an instance of Auth: %s\n", err)
 	}
@@ -105,13 +105,4 @@ func playgroundHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
 	}
-}
-
-// TODO: use getEnvOrDie in shared
-func getEnvOrDie(key string) string {
-	env, exists := os.LookupEnv(key)
-	if !exists {
-		log.Fatalf("You must provide the %s environmental variable\n", key)
-	}
-	return env
 }
