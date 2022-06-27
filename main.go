@@ -61,7 +61,7 @@ func graphqlHandler(newAuth *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
 	config := generated.Config{
 		Resolvers: &graph.Resolver{
 			Repository: repository.NewDatabaseRepository(pool),
-			Auth:       *newAuth,
+			Auth:       newAuth,
 		},
 		Directives: generated.DirectiveRoot{
 			HasRole:    hasRoleDirective.Direct,

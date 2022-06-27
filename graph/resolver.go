@@ -11,5 +11,5 @@ import (
 
 type Resolver struct {
 	Repository repository.Repository
-	Auth       auth.Auth
+	Auth       *auth.Auth
 }
