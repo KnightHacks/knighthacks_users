@@ -281,12 +281,10 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input mo
 			if err != nil {
 				return err
 			}
-			var pronounsPtr *model.Pronouns
-			pronounsPtr = &model.Pronouns{
+			user.Pronouns = &model.Pronouns{
 				Subjective: input.Pronouns.Subjective,
 				Objective:  input.Pronouns.Objective,
 			}
-			user.Pronouns = pronounsPtr
 		}
 		if input.Age != nil {
 			err := r.UpdateAge(ctx, id, input.Age, tx)
