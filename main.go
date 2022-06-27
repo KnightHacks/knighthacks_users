@@ -4,15 +4,12 @@ import (
 	"context"
 	"errors"
 	"github.com/KnightHacks/knighthacks_shared/auth"
-	"github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_shared/pagination"
 	"github.com/KnightHacks/knighthacks_shared/utils"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/github"
 	"log"
 	"os"
 
@@ -35,28 +32,7 @@ func main() {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
 
-	oauthConfigMap := map[models.Provider]oauth2.Config{
-		//TODO: implement gmail auth, github is priority
-		//auth.GmailAuthProvider: {
-		//	ClientID:     "",
-		//	ClientSecret: "",
-		//	Endpoint:     oauth2.Endpoint{},
-		//	RedirectURL:  "",
-		//	Scopes:       nil,
-		//},
-		models.ProviderGithub: {
-			ClientID:     utils.GetEnvOrDie("OAUTH_GITHUB_CLIENT_ID"),
-			ClientSecret: utils.GetEnvOrDie("OAUTH_GITHUB_CLIENT_SECRET"),
-			RedirectURL:  utils.GetEnvOrDie("OAUTH_GITHUB_REDIRECT_URL"),
-			Endpoint:     github.Endpoint,
-			Scopes: []string{
-				"read:user",
-				"user:email",
-			},
-		},
-	}
-
-	newAuth, err := auth.NewAuth(utils.GetEnvOrDie("JWT_SIGNING_KEY"), utils.GetEnvOrDie("AES_CIPHER"), oauthConfigMap)
+	newAuth, err := auth.NewAuthWithEnvironment()
 	if err != nil {
 		log.Fatalf("An error occured when trying to create an instance of Auth: %s\n", err)
 	}
