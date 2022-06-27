@@ -242,7 +242,7 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 // we will check whether the values in input are nil or empty strings, if not, we execute the update statement
 
 func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
-	var user *model.User
+	var user model.User
 	// checking to see if input is empty first
 	if input.FirstName == "" && input.LastName == "" && input.Email == "" && input.PhoneNumber == "" && input.Pronouns == nil && input.Age == nil {
 		return nil, errors.New("empty user field")
@@ -299,7 +299,7 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input mo
 	if err != nil {
 		return nil, err
 	}
-	return user, nil
+	return &user, nil
 }
 
 func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after string) ([]*model.User, int, error) {
