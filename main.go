@@ -43,11 +43,10 @@ func main() {
 	ginRouter.POST("/query", graphqlHandler(newAuth, pool))
 	ginRouter.GET("/", playgroundHandler())
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatalln(ginRouter.Run())
+	log.Fatalln(ginRouter.Run(":" + port))
 }
 
-func graphqlHandler(newAuth *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
+func graphqlHandler(a *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
 	hasRoleDirective := auth.HasRoleDirective{GetUserId: func(ctx context.Context, obj interface{}) (string, error) {
 		switch t := obj.(type) {
 		case *model.User:
@@ -61,7 +60,7 @@ func graphqlHandler(newAuth *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
 	config := generated.Config{
 		Resolvers: &graph.Resolver{
 			Repository: repository.NewDatabaseRepository(pool),
-			Auth:       newAuth,
+			Auth:       a,
 		},
 		Directives: generated.DirectiveRoot{
 			HasRole:    hasRoleDirective.Direct,
