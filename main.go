@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/KnightHacks/knighthacks_shared/auth"
 	"github.com/KnightHacks/knighthacks_shared/database"
 	"github.com/KnightHacks/knighthacks_shared/pagination"
@@ -11,8 +13,10 @@ import (
 	"github.com/KnightHacks/knighthacks_users/repository"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 	"log"
 	"os"
+	"runtime/debug"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -23,6 +27,7 @@ import (
 const defaultPort = "8080"
 
 func main() {
+	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Llongfile)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
@@ -69,7 +74,17 @@ func graphqlHandler(a *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
 		},
 	}
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(config))
+	srv.SetRecoverFunc(func(ctx context.Context, iErr interface{}) error {
+		err := fmt.Errorf("%v", iErr)
 
+		log.Println(fmt.Sprintf("runtime error: %v\n\n%v", err, debug.Stack()))
+
+		return gqlerror.Errorf("Internal server error! Check logs for more details!")
+	})
+	srv.SetErrorPresenter(func(ctx context.Context, err error) *gqlerror.Error {
+		log.Println("Error presented: ", err)
+		return graphql.DefaultErrorPresenter(ctx, err)
+	})
 	return func(c *gin.Context) {
 		srv.ServeHTTP(c.Writer, c.Request)
 	}
