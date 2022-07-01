@@ -3,11 +3,9 @@ FROM golang:1.18 as build-env
 WORKDIR /go/src/app
 COPY . .
 
-RUN go get -d -v ./...
+RUN go mod download
 
-RUN go install -v -buildvcs=false ./...
-
-RUN CGO_ENABLED=0 go build -buildvcs=false -o /go/bin/app
+RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 go build -buildvcs=false -o /go/bin/app
 
 FROM gcr.io/distroless/static
 
