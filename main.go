@@ -77,7 +77,7 @@ func graphqlHandler(a *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
 	srv.SetRecoverFunc(func(ctx context.Context, iErr interface{}) error {
 		err := fmt.Errorf("%v", iErr)
 
-		log.Println(fmt.Sprintf("runtime error: %v\n\n%v", err, debug.Stack()))
+		log.Printf("runtime error: %v\n\n%v\n", err, string(debug.Stack()))
 
 		return gqlerror.Errorf("Internal server error! Check logs for more details!")
 	})
