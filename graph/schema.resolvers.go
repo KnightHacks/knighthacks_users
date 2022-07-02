@@ -178,10 +178,12 @@ func (r *queryResolver) RefreshJwt(ctx context.Context, refreshToken string) (st
 	return token, nil
 }
 
-func (r *queryResolver) Users(ctx context.Context, first int, after *string) (*model.UsersConnection, error) {
-	err := pagination.DecodeCursor(after)
-
-	users, total, err := r.Repository.GetUsers(ctx, first, *after)
+func (r *queryResolver) Users(ctx context.Context, first int, a *string) (*model.UsersConnection, error) {
+	after, err := pagination.DecodeCursor(a)
+	if err != nil {
+		return nil, err
+	}
+	users, total, err := r.Repository.GetUsers(ctx, first, after)
 	if err != nil {
 		return nil, err
 	}

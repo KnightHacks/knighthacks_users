@@ -303,7 +303,12 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input mo
 func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after string) ([]*model.User, int, error) {
 	users := make([]*model.User, 0, first)
 	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		rows, err := tx.Query(ctx, "SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role FROM users WHERE id > $1 LIMIT $2 ORDER BY id DESC", after, first)
+		rows, err := tx.Query(
+			ctx,
+			"SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role FROM users WHERE id > $1 LIMIT $2 ORDER BY `id` DESC",
+			after,
+			first,
+		)
 		if err != nil {
 			return err
 		}
