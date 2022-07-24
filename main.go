@@ -82,7 +82,8 @@ func graphqlHandler(a *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
 		return gqlerror.Errorf("Internal server error! Check logs for more details!")
 	})
 	srv.SetErrorPresenter(func(ctx context.Context, err error) *gqlerror.Error {
-		log.Println("Error presented: ", err)
+		log.Printf("Error presented: %v\n", err)
+		debug.PrintStack()
 		return graphql.DefaultErrorPresenter(ctx, err)
 	})
 	return func(c *gin.Context) {
