@@ -170,7 +170,7 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 			// if the pronoun does not exist in the local cache
 			if !exists {
 				// check if the pronoun exists in the database
-				err = tx.QueryRow(ctx, "SELECT id FROM pronouns WHERE subjective=$1 AND objective=$2 RETURNING id",
+				err = tx.QueryRow(ctx, "SELECT id FROM pronouns WHERE subjective=$1 AND objective=$2",
 					input.Pronouns.Subjective,
 					input.Pronouns.Objective,
 				).Scan(&pronounId)
