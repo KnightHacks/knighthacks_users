@@ -15,11 +15,11 @@ var (
 	UserAlreadyExists = errors.New("user with id already exists")
 )
 
-//DatabaseRepository
-//Implements the Repository interface's functions
+// DatabaseRepository
+// Implements the Repository interface's functions
 //
-//PronounMap & PronounReverseMap are the 2 maps that implement a bidirectional
-//map to handle cached pronouns in the database to remove the need to do a SQL join
+// PronounMap & PronounReverseMap are the 2 maps that implement a bidirectional
+// map to handle cached pronouns in the database to remove the need to do a SQL join
 type DatabaseRepository struct {
 	DatabasePool      *pgxpool.Pool
 	PronounMap        map[int]model.Pronouns
@@ -34,25 +34,25 @@ func NewDatabaseRepository(databasePool *pgxpool.Pool) *DatabaseRepository {
 	}
 }
 
-//GetByPronouns gets the sql row id for the pronouns associated with the input
+// GetByPronouns gets the sql row id for the pronouns associated with the input
 func (r *DatabaseRepository) GetByPronouns(pronouns model.Pronouns) (int, bool) {
 	id, exist := r.PronounReverseMap[pronouns]
 	return id, exist
 }
 
-//GetById gets the pronouns by the sql row id
+// GetById gets the pronouns by the sql row id
 func (r *DatabaseRepository) GetById(id int) (model.Pronouns, bool) {
 	pronouns, exist := r.PronounMap[id]
 	return pronouns, exist
 }
 
-//Set inputs the pronouns into the bidirectional map
+// Set inputs the pronouns into the bidirectional map
 func (r *DatabaseRepository) Set(id int, pronouns model.Pronouns) {
 	r.PronounMap[id] = pronouns
 	r.PronounReverseMap[pronouns] = id
 }
 
-//GetUserByID returns the user by their id
+// GetUserByID returns the user by their id
 func (r *DatabaseRepository) GetUserByID(ctx context.Context, id string) (*model.User, error) {
 	return r.getUser(
 		ctx,
@@ -99,9 +99,9 @@ func (r *DatabaseRepository) getUser(ctx context.Context, query string, args ...
 	return &user, nil
 }
 
-//GetOAuth returns the model.OAuth object that is associated with the user's id
-//Used by the OAuth force resolver, this is not a common operation so making this
-//a force resolver is a good idea
+// GetOAuth returns the model.OAuth object that is associated with the user's id
+// Used by the OAuth force resolver, this is not a common operation so making this
+// a force resolver is a good idea
 func (r *DatabaseRepository) GetOAuth(ctx context.Context, id string) (*model.OAuth, error) {
 	var oAuth model.OAuth
 	err := r.DatabasePool.QueryRow(ctx, "SELECT oauth_uid, oauth_provider FROM users WHERE id = $1", id).Scan(&oAuth.UID, &oAuth.Provider)
@@ -132,11 +132,11 @@ func getPronouns(ctx context.Context, tx pgx.Tx, pronounId *int32, r *DatabaseRe
 	return nil
 }
 
-//CreateUser Creates a user in the database and returns the new user struct
+// CreateUser Creates a user in the database and returns the new user struct
 //
-//The NewUser input struct contains all nillable fields so the following function
-//must be able to run regardless of whether of it's input, that is why there is a
-//lot of pointers for nil safety purposes
+// The NewUser input struct contains all nillable fields so the following function
+// must be able to run regardless of whether of it's input, that is why there is a
+// lot of pointers for nil safety purposes
 func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth, input *model.NewUser) (*model.User, error) {
 	var userId string
 	var pronounsPtr *model.Pronouns
@@ -305,7 +305,7 @@ func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after stri
 	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		rows, err := tx.Query(
 			ctx,
-			"SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role FROM users WHERE id > $1 LIMIT $2 ORDER BY `id` DESC",
+			"SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role FROM users WHERE id > $1 ORDER BY `id` DESC LIMIT $2",
 			after,
 			first,
 		)
