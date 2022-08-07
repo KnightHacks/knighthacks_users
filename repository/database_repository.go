@@ -71,32 +71,36 @@ func (r *DatabaseRepository) GetUserByOAuthUID(ctx context.Context, oAuthUID str
 	)
 }
 
-func (r *DatabaseRepository) getUser(ctx context.Context, query string, args ...interface{}) (*model.User, error) {
+func (r *DatabaseRepository) getUserWithTx(ctx context.Context, query string, tx pgx.Tx, args ...interface{}) (*model.User, error) {
 	var user model.User
-	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		pronounId, err := ScanUser(&user, tx.QueryRow(ctx, query, args...))
 
+	if tx == nil {
+		var err error
+		tx, err = r.DatabasePool.Begin(ctx)
 		if err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				return UserNotFound
-			}
-			return err
+			return nil, err
 		}
-		// if the user has their pronouns set
-		err = getPronouns(ctx, tx, pronounId, r, &user)
-		if err != nil {
-			return err
-		}
-		return err
-	})
+		defer tx.Commit(ctx)
+	}
+
+	pronounId, err := ScanUser(&user, tx.QueryRow(ctx, query, args...))
+
 	if err != nil {
-		if errors.Is(err, UserNotFound) {
-			// if the user does not exist then the user is nil, TODO: maybe return error?
-			return nil, nil
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, UserNotFound
 		}
 		return nil, err
 	}
+
+	// if the user has their pronouns set
+	if err = getPronouns(ctx, tx, pronounId, r, &user); err != nil {
+		return nil, err
+	}
 	return &user, nil
+}
+
+func (r *DatabaseRepository) getUser(ctx context.Context, query string, args ...interface{}) (*model.User, error) {
+	return r.getUserWithTx(ctx, query, nil, args...)
 }
 
 // GetOAuth returns the model.OAuth object that is associated with the user's id
@@ -241,62 +245,64 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 // update user add multiple parts go off of create user
 // we will check whether the values in input are nil or empty strings, if not, we execute the update statement
 func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *model.UpdatedUser) (*model.User, error) {
-	var user model.User
+	var user *model.User
+	var err error
 	// checking to see if input is empty first
 	if input.FirstName == nil && input.LastName == nil && input.Email == nil && input.PhoneNumber == nil && input.Pronouns == nil && input.Age == nil {
 		return nil, errors.New("empty user field")
 	}
-	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+	err = r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		if input.FirstName != nil {
-			err := r.UpdateFirstName(ctx, id, *input.FirstName, tx)
+			err = r.UpdateFirstName(ctx, id, *input.FirstName, tx)
 			if err != nil {
 				return err
 			}
-			user.FirstName = *input.FirstName
 		}
 		if input.LastName != nil {
-			err := r.UpdateLastName(ctx, id, *input.LastName, tx)
+			err = r.UpdateLastName(ctx, id, *input.LastName, tx)
 			if err != nil {
 				return err
 			}
-			user.LastName = *input.LastName
 		}
 		if input.Email != nil {
-			err := r.UpdateEmail(ctx, id, *input.Email, tx)
+			err = r.UpdateEmail(ctx, id, *input.Email, tx)
 			if err != nil {
 				return err
 			}
-			user.Email = *input.Email
 		}
 		if input.PhoneNumber != nil {
-			err := r.UpdatePhoneNumber(ctx, id, *input.PhoneNumber, tx)
+			err = r.UpdatePhoneNumber(ctx, id, *input.PhoneNumber, tx)
 			if err != nil {
 				return err
 			}
-			user.PhoneNumber = *input.PhoneNumber
 		}
 		if input.Pronouns != nil {
-			err := r.UpdatePronouns(ctx, id, input.Pronouns, tx)
+			err = r.UpdatePronouns(ctx, id, input.Pronouns, tx)
 			if err != nil {
 				return err
-			}
-			user.Pronouns = &model.Pronouns{
-				Subjective: input.Pronouns.Subjective,
-				Objective:  input.Pronouns.Objective,
 			}
 		}
 		if input.Age != nil {
-			err := r.UpdateAge(ctx, id, input.Age, tx)
+			err = r.UpdateAge(ctx, id, input.Age, tx)
 			if err != nil {
 				return err
 			}
+		}
+
+		user, err = r.getUserWithTx(ctx,
+			`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role FROM users WHERE id = $1 LIMIT 1`,
+			tx,
+			id)
+
+		if err != nil {
+			return err
 		}
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &user, nil
+	return user, nil
 }
 
 func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after string) ([]*model.User, int, error) {
