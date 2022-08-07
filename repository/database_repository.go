@@ -444,7 +444,7 @@ func (r *DatabaseRepository) UpdatePronouns(ctx context.Context, id string, pron
 
 	if !exists {
 		// check if the pronoun exists in the database
-		err := tx.QueryRow(ctx, "SELECT id FROM pronouns WHERE subjective=$1 AND objective=$2 RETURNING id",
+		err := tx.QueryRow(ctx, "SELECT id FROM pronouns WHERE subjective=$1 AND objective=$2",
 			pronoun.Subjective,
 			pronoun.Objective,
 		).Scan(&pronounId)
