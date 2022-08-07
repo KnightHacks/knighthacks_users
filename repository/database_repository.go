@@ -240,41 +240,40 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 
 // update user add multiple parts go off of create user
 // we will check whether the values in input are nil or empty strings, if not, we execute the update statement
-
-func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
+func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *model.UpdatedUser) (*model.User, error) {
 	var user model.User
 	// checking to see if input is empty first
-	if input.FirstName == "" && input.LastName == "" && input.Email == "" && input.PhoneNumber == "" && input.Pronouns == nil && input.Age == nil {
+	if input.FirstName == nil && input.LastName == nil && input.Email == nil && input.PhoneNumber == nil && input.Pronouns == nil && input.Age == nil {
 		return nil, errors.New("empty user field")
 	}
 	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		if input.FirstName != "" {
-			err := r.UpdateFirstName(ctx, id, input.FirstName, tx)
+		if input.FirstName != nil {
+			err := r.UpdateFirstName(ctx, id, *input.FirstName, tx)
 			if err != nil {
 				return err
 			}
-			user.FirstName = input.FirstName
+			user.FirstName = *input.FirstName
 		}
-		if input.LastName != "" {
-			err := r.UpdateLastName(ctx, id, input.LastName, tx)
+		if input.LastName != nil {
+			err := r.UpdateLastName(ctx, id, *input.LastName, tx)
 			if err != nil {
 				return err
 			}
-			user.LastName = input.LastName
+			user.LastName = *input.LastName
 		}
-		if input.Email != "" {
-			err := r.UpdateEmail(ctx, id, input.Email, tx)
+		if input.Email != nil {
+			err := r.UpdateEmail(ctx, id, *input.Email, tx)
 			if err != nil {
 				return err
 			}
-			user.Email = input.Email
+			user.Email = *input.Email
 		}
-		if input.PhoneNumber != "" {
-			err := r.UpdatePhoneNumber(ctx, id, input.PhoneNumber, tx)
+		if input.PhoneNumber != nil {
+			err := r.UpdatePhoneNumber(ctx, id, *input.PhoneNumber, tx)
 			if err != nil {
 				return err
 			}
-			user.PhoneNumber = input.PhoneNumber
+			user.PhoneNumber = *input.PhoneNumber
 		}
 		if input.Pronouns != nil {
 			err := r.UpdatePronouns(ctx, id, input.Pronouns, tx)

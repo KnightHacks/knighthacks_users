@@ -55,8 +55,8 @@ func (r *mutationResolver) Register(ctx context.Context, provider models.Provide
 	return payload, nil
 }
 
-func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
-	if input.FirstName == "" && input.LastName == "" && input.Email == "" && input.PhoneNumber == "" && input.Pronouns == nil && input.Age == nil {
+func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.UpdatedUser) (*model.User, error) {
+	if input.FirstName == nil && input.LastName == nil && input.Email == nil && input.PhoneNumber == nil && input.Pronouns == nil && input.Age == nil {
 		return nil, fmt.Errorf("no field has been updated")
 	}
 
@@ -68,7 +68,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 		return nil, errors.New("unauthorized to update user that is not you")
 	}
 
-	return r.Repository.UpdateUser(ctx, id, input)
+	return r.Repository.UpdateUser(ctx, id, &input)
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, error) {
