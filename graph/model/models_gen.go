@@ -52,6 +52,15 @@ type RegistrationPayload struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+type UpdatedUser struct {
+	FirstName   *string        `json:"firstName"`
+	LastName    *string        `json:"lastName"`
+	Email       *string        `json:"email"`
+	PhoneNumber *string        `json:"phoneNumber"`
+	Pronouns    *PronounsInput `json:"pronouns"`
+	Age         *int           `json:"age"`
+}
+
 type User struct {
 	ID          string      `json:"id"`
 	FirstName   string      `json:"firstName"`

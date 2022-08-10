@@ -9,7 +9,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 
@@ -56,7 +55,11 @@ func (r *mutationResolver) Register(ctx context.Context, provider models.Provide
 	return payload, nil
 }
 
-func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
+func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.UpdatedUser) (*model.User, error) {
+	if input.FirstName == nil && input.LastName == nil && input.Email == nil && input.PhoneNumber == nil && input.Pronouns == nil && input.Age == nil {
+		return nil, fmt.Errorf("no field has been updated")
+	}
+
 	claims, ok := ctx.Value("AuthorizationUserClaims").(*auth.UserClaims)
 	if !ok {
 		return nil, errors.New("unable to retrieve user claims, most likely forgot to set @hasRole directive")
@@ -64,8 +67,8 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 	if claims.Role != models.RoleAdmin && claims.Id != id {
 		return nil, errors.New("unauthorized to update user that is not you")
 	}
-	// TODO: implement UpdateUser
-	panic(fmt.Errorf("not implemented"))
+
+	return r.Repository.UpdateUser(ctx, id, &input)
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, error) {
@@ -76,8 +79,7 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 	if claims.Role != models.RoleAdmin && claims.Id != id {
 		return false, errors.New("unauthorized to update user that is not you")
 	}
-	// TODO: implement DeleteUser
-	panic(fmt.Errorf("not implemented"))
+	return r.Repository.DeleteUser(ctx, id)
 }
 
 func (r *queryResolver) GetAuthRedirectLink(ctx context.Context, provider models.Provider) (string, error) {
@@ -125,7 +127,6 @@ func (r *queryResolver) Login(ctx context.Context, provider models.Provider, cod
 		// this shouldn't happen unless there was man-in-the-middle tampering to the HTTP request involved
 		return nil, errors.New("auth token not valid, nice try hacker")
 	}
-	log.Printf("accessToken=%s, refreshToken=%s, type=%s, expiry=%s\n", token.AccessToken, token.RefreshToken, token.Type(), token.Expiry)
 	// Get the user by their OAuth ID, if the user == nil then the user hasn't created an account yet, but will using the Register function
 	uid, err := r.Auth.GetUID(ctx, provider, token.AccessToken)
 	if err != nil {
@@ -150,11 +151,9 @@ func (r *queryResolver) Login(ctx context.Context, provider models.Provider, cod
 	} else {
 		// Using AES-256 encryption, encrypt the access token to protect against packet sniffing
 		encryptAccessTokenBytes := r.Auth.EncryptAccessToken(token.AccessToken)
-		log.Printf("bytes=%v\n", encryptAccessTokenBytes)
 
 		// Using base64 encoding, encode the access token to be able to be sent using alphanumeric character over HTTP
 		encodedAccessToken := base64.URLEncoding.EncodeToString(encryptAccessTokenBytes)
-		log.Printf("string=%v\n", encodedAccessToken)
 
 		payload.EncryptedOAuthAccessToken = &encodedAccessToken
 	}
@@ -180,9 +179,11 @@ func (r *queryResolver) RefreshJwt(ctx context.Context, refreshToken string) (st
 }
 
 func (r *queryResolver) Users(ctx context.Context, first int, after *string) (*model.UsersConnection, error) {
-	err := pagination.DecodeCursor(after)
-
-	users, total, err := r.Repository.GetUsers(ctx, first, *after)
+	a, err := pagination.DecodeCursor(after)
+	if err != nil {
+		return nil, err
+	}
+	users, total, err := r.Repository.GetUsers(ctx, first, a)
 	if err != nil {
 		return nil, err
 	}

@@ -3,18 +3,20 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/KnightHacks/knighthacks_shared/auth"
-	"github.com/KnightHacks/knighthacks_shared/models"
+	"github.com/KnightHacks/knighthacks_shared/database"
 	"github.com/KnightHacks/knighthacks_shared/pagination"
 	"github.com/KnightHacks/knighthacks_shared/utils"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/github"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 	"log"
 	"os"
+	"runtime/debug"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -25,38 +27,18 @@ import (
 const defaultPort = "8080"
 
 func main() {
+	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Llongfile)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
 	}
 
-	pool, err := pgxpool.Connect(context.Background(), getEnvOrDie("DATABASE_URI"))
+	pool, err := database.ConnectWithRetries(utils.GetEnvOrDie("DATABASE_URI"))
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
 
-	oauthConfigMap := map[models.Provider]oauth2.Config{
-		//TODO: implement gmail auth, github is priority
-		//auth.GmailAuthProvider: {
-		//	ClientID:     "",
-		//	ClientSecret: "",
-		//	Endpoint:     oauth2.Endpoint{},
-		//	RedirectURL:  "",
-		//	Scopes:       nil,
-		//},
-		models.ProviderGithub: {
-			ClientID:     getEnvOrDie("OAUTH_GITHUB_CLIENT_ID"),
-			ClientSecret: getEnvOrDie("OAUTH_GITHUB_CLIENT_SECRET"),
-			RedirectURL:  getEnvOrDie("OAUTH_GITHUB_REDIRECT_URL"),
-			Endpoint:     github.Endpoint,
-			Scopes: []string{
-				"read:user",
-				"user:email",
-			},
-		},
-	}
-
-	newAuth, err := auth.NewAuth(getEnvOrDie("JWT_SIGNING_KEY"), getEnvOrDie("AES_CIPHER"), oauthConfigMap)
+	newAuth, err := auth.NewAuthWithEnvironment()
 	if err != nil {
 		log.Fatalf("An error occured when trying to create an instance of Auth: %s\n", err)
 	}
@@ -67,11 +49,10 @@ func main() {
 	ginRouter.POST("/query", graphqlHandler(newAuth, pool))
 	ginRouter.GET("/", playgroundHandler())
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatalln(ginRouter.Run())
+	log.Fatalln(ginRouter.Run(":" + port))
 }
 
-func graphqlHandler(newAuth *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
+func graphqlHandler(a *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
 	hasRoleDirective := auth.HasRoleDirective{GetUserId: func(ctx context.Context, obj interface{}) (string, error) {
 		switch t := obj.(type) {
 		case *model.User:
@@ -85,7 +66,7 @@ func graphqlHandler(newAuth *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
 	config := generated.Config{
 		Resolvers: &graph.Resolver{
 			Repository: repository.NewDatabaseRepository(pool),
-			Auth:       *newAuth,
+			Auth:       a,
 		},
 		Directives: generated.DirectiveRoot{
 			HasRole:    hasRoleDirective.Direct,
@@ -93,7 +74,18 @@ func graphqlHandler(newAuth *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
 		},
 	}
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(config))
+	srv.SetRecoverFunc(func(ctx context.Context, iErr interface{}) error {
+		err := fmt.Errorf("%v", iErr)
 
+		log.Printf("runtime error: %v\n\n%v\n", err, string(debug.Stack()))
+
+		return gqlerror.Errorf("Internal server error! Check logs for more details!")
+	})
+	srv.SetErrorPresenter(func(ctx context.Context, err error) *gqlerror.Error {
+		log.Printf("Error presented: %v\n", err)
+		debug.PrintStack()
+		return graphql.DefaultErrorPresenter(ctx, err)
+	})
 	return func(c *gin.Context) {
 		srv.ServeHTTP(c.Writer, c.Request)
 	}
@@ -105,13 +97,4 @@ func playgroundHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
 	}
-}
-
-// TODO: use getEnvOrDie in shared
-func getEnvOrDie(key string) string {
-	env, exists := os.LookupEnv(key)
-	if !exists {
-		log.Fatalf("You must provide the %s environmental variable\n", key)
-	}
-	return env
 }

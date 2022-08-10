@@ -92,6 +92,15 @@ input NewUser {
   age: Int
 }
 
+input UpdatedUser {
+    firstName: String
+    lastName: String
+    email: String
+    phoneNumber: String
+    pronouns: PronounsInput
+    age: Int
+}
+
 type LoginPayload {
     """
     If false then you must register immediately following this. Else, you are logged in and have access to your own user.
@@ -129,7 +138,7 @@ type Mutation {
   To receive an encryptedOAuthAccessToken first call the Login query
   """
   register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): RegistrationPayload!
-  updateUser(id: ID!, input: NewUser!): User! @hasRole(role: NORMAL)
+  updateUser(id: ID!, input: UpdatedUser!): User! @hasRole(role: NORMAL)
   deleteUser(id: ID!): Boolean! @hasRole(role: NORMAL)
 }
 

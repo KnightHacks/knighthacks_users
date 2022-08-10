@@ -66,7 +66,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		DeleteUser func(childComplexity int, id string) int
 		Register   func(childComplexity int, provider models.Provider, encryptedOauthAccessToken string, input model.NewUser) int
-		UpdateUser func(childComplexity int, id string, input model.NewUser) int
+		UpdateUser func(childComplexity int, id string, input model.UpdatedUser) int
 	}
 
 	OAuth struct {
@@ -132,7 +132,7 @@ type EntityResolver interface {
 }
 type MutationResolver interface {
 	Register(ctx context.Context, provider models.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.RegistrationPayload, error)
-	UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error)
+	UpdateUser(ctx context.Context, id string, input model.UpdatedUser) (*model.User, error)
 	DeleteUser(ctx context.Context, id string) (bool, error)
 }
 type QueryResolver interface {
@@ -258,7 +258,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateUser(childComplexity, args["id"].(string), args["input"].(model.NewUser)), true
+		return e.complexity.Mutation.UpdateUser(childComplexity, args["id"].(string), args["input"].(model.UpdatedUser)), true
 
 	case "OAuth.provider":
 		if e.complexity.OAuth.Provider == nil {
@@ -529,6 +529,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputNewUser,
 		ec.unmarshalInputPronounsInput,
+		ec.unmarshalInputUpdatedUser,
 	)
 	first := true
 
@@ -683,6 +684,15 @@ input NewUser {
   age: Int
 }
 
+input UpdatedUser {
+    firstName: String
+    lastName: String
+    email: String
+    phoneNumber: String
+    pronouns: PronounsInput
+    age: Int
+}
+
 type LoginPayload {
     """
     If false then you must register immediately following this. Else, you are logged in and have access to your own user.
@@ -720,7 +730,7 @@ type Mutation {
   To receive an encryptedOAuthAccessToken first call the Login query
   """
   register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): RegistrationPayload!
-  updateUser(id: ID!, input: NewUser!): User! @hasRole(role: NORMAL)
+  updateUser(id: ID!, input: UpdatedUser!): User! @hasRole(role: NORMAL)
   deleteUser(id: ID!): Boolean! @hasRole(role: NORMAL)
 }
 
@@ -892,10 +902,10 @@ func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, 
 		}
 	}
 	args["id"] = arg0
-	var arg1 model.NewUser
+	var arg1 model.UpdatedUser
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNNewUser2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐNewUser(ctx, tmp)
+		arg1, err = ec.unmarshalNUpdatedUser2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUpdatedUser(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1551,7 +1561,7 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().UpdateUser(rctx, fc.Args["id"].(string), fc.Args["input"].(model.NewUser))
+			return ec.resolvers.Mutation().UpdateUser(rctx, fc.Args["id"].(string), fc.Args["input"].(model.UpdatedUser))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "NORMAL")
@@ -5584,6 +5594,69 @@ func (ec *executionContext) unmarshalInputPronounsInput(ctx context.Context, obj
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdatedUser(ctx context.Context, obj interface{}) (model.UpdatedUser, error) {
+	var it model.UpdatedUser
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "firstName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("firstName"))
+			it.FirstName, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "lastName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastName"))
+			it.LastName, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "email":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			it.Email, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "phoneNumber":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("phoneNumber"))
+			it.PhoneNumber, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "pronouns":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pronouns"))
+			it.Pronouns, err = ec.unmarshalOPronounsInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐPronounsInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "age":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("age"))
+			it.Age, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -6822,6 +6895,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNUpdatedUser2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUpdatedUser(ctx context.Context, v interface{}) (model.UpdatedUser, error) {
+	res, err := ec.unmarshalInputUpdatedUser(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNUser2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
