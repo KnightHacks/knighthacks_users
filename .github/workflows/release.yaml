@@ -74,7 +74,7 @@ jobs:
           automatic_release_tag: ${{ env.VERSION }}
           prerelease: false
           title: ${{ env.VERSION }}
-#          files: |
+
   create-release:
     needs:
       - release
