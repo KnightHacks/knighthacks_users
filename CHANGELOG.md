@@ -17,6 +17,12 @@ Types of Changes:
 
 ## [Unreleased]
 
+## [0.0.5] - 2022-08-10
+
 ### Added
 
-- Beginning of the officially recorded history of this repository. A bit of an oversight, but better late than never
+-   Beginning of the officially recorded history of this repository. A bit of an oversight, but better late than never
+
+[Unreleased]: https://github.com/KnightHacks/knighthacks_users/compare/0.0.5...HEAD
+
+[0.0.5]: https://github.com/KnightHacks/knighthacks_users/compare/3d051761145f9d96995bdd7733adaab9b3c8e8d9...0.0.5
