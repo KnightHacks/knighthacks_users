@@ -17,6 +17,9 @@ Types of Changes:
 
 ## [Unreleased]
 
+### Fixed
+- Unused yaml in github workflow
+
 ## [0.1.0] - 2022-08-10
 
 ### Added

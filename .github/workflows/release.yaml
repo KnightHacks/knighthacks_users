@@ -74,53 +74,55 @@ jobs:
           automatic_release_tag: ${{ env.VERSION }}
           prerelease: false
           title: ${{ env.VERSION }}
-#          files: |
+
   create-release:
-   runs-on: ubuntu-latest
-   steps:
-     - uses: actions/checkout@v3
+    needs:
+      - release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
 
-     - name: Create release branch
-       run: git checkout -b release/${{ env.VERSION }}
+      - name: Create release branch
+        run: git checkout -b release/${{ env.VERSION }}
 
-     - name: Init git config
-       run: |
-         git config user.name "GitHub Actions"
-         git config user.email noreply@github.com
-     - name: Update Changelog
-       uses: thomaseizinger/keep-a-changelog-new-release@v1
-       with:
-         version: ${{ env.VERSION }}
+      - name: Init git config
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email noreply@github.com
+      - name: Update Changelog
+        uses: thomaseizinger/keep-a-changelog-new-release@v1
+        with:
+          version: ${{ env.VERSION }}
 
-     - name: Commit changelog and version in package
-       id: make-commit
-       run: |
-         git add CHANGELOG.md
-         git commit --message "Prepare release ${{ env.VERSION }}"
-         echo "::set-output name=commit::$(git rev-parse HEAD)"
+      - name: Commit changelog and version in package
+        id: make-commit
+        run: |
+          git add CHANGELOG.md
+          git commit --message "Prepare release ${{ env.VERSION }}"
+          echo "::set-output name=commit::$(git rev-parse HEAD)"
 
-     - name: Push commit
-       run: |
-         git push origin release/${{ env.VERSION }}
-     - name: Create pull request into main
-       uses: thomaseizinger/create-pull-request@1.2.2
-       with:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-         head: release/${{ env.VERSION }}
-         base: main
-         title: ${{ env.VERSION }} into main
-         reviewers: ${{ github.event.issue.user.login }}
-         body: |
-           This PR was created when the Create Release workflow was run.
-           I've updated the version name and code commit: ${{ steps.make-commit.outputs.commit }}.
-     - name: Create pull request into development
-       uses: thomaseizinger/create-pull-request@1.2.2
-       with:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-         head: release/${{ env.VERSION }}
-         base: development
-         title: ${{ env.VERSION }} into development
-         reviewers: ${{ github.event.issue.user.login }}
-         body: |
-           This PR was created when the Create Release workflow was run.
-           I've updated the version name and code commit: ${{ steps.make-commit.outputs.commit }}.
+      - name: Push commit
+        run: |
+          git push origin release/${{ env.VERSION }}
+      - name: Create pull request into main
+        uses: thomaseizinger/create-pull-request@1.2.2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          head: release/${{ env.VERSION }}
+          base: main
+          title: ${{ env.VERSION }} into main
+          reviewers: ${{ github.event.issue.user.login }}
+          body: |
+            This PR was created when the Create Release workflow was run.
+            I've updated the version name and code commit: ${{ steps.make-commit.outputs.commit }}.
+      - name: Create pull request into development
+        uses: thomaseizinger/create-pull-request@1.2.2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          head: release/${{ env.VERSION }}
+          base: development
+          title: ${{ env.VERSION }} into development
+          reviewers: ${{ github.event.issue.user.login }}
+          body: |
+            This PR was created when the Create Release workflow was run.
+            I've updated the version name and code commit: ${{ steps.make-commit.outputs.commit }}.
