@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/KnightHacks/knighthacks_users/repository"
 	"net/http"
 	"net/url"
 
@@ -33,7 +34,7 @@ func (r *mutationResolver) Register(ctx context.Context, provider models.Provide
 	}
 	// Using the access token retrieve the OAuth provided UID of the user
 	uid, err := r.Auth.GetUID(ctx, provider, string(accessToken))
-	if err != nil {
+	if err != nil && !errors.Is(err, repository.UserNotFound) {
 		return nil, err
 	}
 	// Create the user using the UID to check against duplicate accounts
