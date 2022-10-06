@@ -130,7 +130,7 @@ func (r *queryResolver) Login(ctx context.Context, provider models.Provider, cod
 	}
 	// Get the user by their OAuth ID, if the user == nil then the user hasn't created an account yet, but will using the Register function
 	uid, err := r.Auth.GetUID(ctx, provider, token.AccessToken)
-	if err != nil {
+	if err != nil && !errors.Is(err, repository.UserNotFound) {
 		return nil, err
 	}
 	user, err := r.Repository.GetUserByOAuthUID(ctx, uid, provider)
