@@ -9,16 +9,15 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/KnightHacks/knighthacks_users/repository"
-	"net/http"
-	"net/url"
-
 	"github.com/KnightHacks/knighthacks_shared/auth"
 	"github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_shared/pagination"
 	"github.com/KnightHacks/knighthacks_shared/utils"
 	"github.com/KnightHacks/knighthacks_users/graph/generated"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
+	"github.com/KnightHacks/knighthacks_users/repository"
+	"net/http"
+	"net/url"
 )
 
 func (r *mutationResolver) Register(ctx context.Context, provider models.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.RegistrationPayload, error) {
@@ -34,7 +33,7 @@ func (r *mutationResolver) Register(ctx context.Context, provider models.Provide
 	}
 	// Using the access token retrieve the OAuth provided UID of the user
 	uid, err := r.Auth.GetUID(ctx, provider, string(accessToken))
-	if err != nil && !errors.Is(err, repository.UserNotFound) {
+	if err != nil {
 		return nil, err
 	}
 	// Create the user using the UID to check against duplicate accounts
@@ -130,11 +129,11 @@ func (r *queryResolver) Login(ctx context.Context, provider models.Provider, cod
 	}
 	// Get the user by their OAuth ID, if the user == nil then the user hasn't created an account yet, but will using the Register function
 	uid, err := r.Auth.GetUID(ctx, provider, token.AccessToken)
-	if err != nil && !errors.Is(err, repository.UserNotFound) {
+	if err != nil {
 		return nil, err
 	}
 	user, err := r.Repository.GetUserByOAuthUID(ctx, uid, provider)
-	if err != nil {
+	if err != nil && !errors.Is(err, repository.UserNotFound) {
 		return nil, err
 	}
 	payload := model.LoginPayload{}
