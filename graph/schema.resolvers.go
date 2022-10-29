@@ -9,6 +9,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
+
 	"github.com/KnightHacks/knighthacks_shared/auth"
 	"github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_shared/pagination"
@@ -16,8 +19,6 @@ import (
 	"github.com/KnightHacks/knighthacks_users/graph/generated"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
-	"net/http"
-	"net/url"
 )
 
 func (r *mutationResolver) Register(ctx context.Context, provider models.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.RegistrationPayload, error) {
@@ -82,7 +83,7 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 	return r.Repository.DeleteUser(ctx, id)
 }
 
-func (r *queryResolver) GetAuthRedirectLink(ctx context.Context, provider models.Provider) (string, error) {
+func (r *queryResolver) GetAuthRedirectLink(ctx context.Context, provider models.Provider, redirect *string) (string, error) {
 	ginContext, err := utils.GinContextFromContext(ctx)
 	if err != nil {
 		return "", err
@@ -99,7 +100,7 @@ func (r *queryResolver) GetAuthRedirectLink(ctx context.Context, provider models
 	ginContext.SetSameSite(http.SameSiteNoneMode)
 	ginContext.SetCookie("oauthstate", state, 60*10, "/", "", false, true)
 	ginContext.Header("Access-Control-Allow-Credentials", "true")
-	return r.Auth.GetAuthCodeURL(provider, state), nil
+	return r.Auth.GetAuthCodeURL(provider, state, redirect), nil
 }
 
 func (r *queryResolver) Login(ctx context.Context, provider models.Provider, code string, state string) (*model.LoginPayload, error) {

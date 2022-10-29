@@ -307,6 +307,7 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 
 func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after string) ([]*model.User, int, error) {
 	users := make([]*model.User, 0, first)
+	var totalCount int
 	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		rows, err := tx.Query(
 			ctx,
@@ -330,9 +331,18 @@ func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after stri
 			}
 			users = append(users, &user)
 		}
-		return rows.Err()
+
+		if err = rows.Err(); err != nil {
+			return err
+		}
+		row := tx.QueryRow(ctx, "SELECT COUNT(*) FROM users")
+		if err != nil {
+			return err
+		}
+
+		return row.Scan(&totalCount)
 	})
-	return users, 0, err
+	return users, totalCount, err
 }
 
 func (r *DatabaseRepository) SearchUser(ctx context.Context, name string) ([]*model.User, error) {
