@@ -34,18 +34,18 @@ type UsersConnection implements Connection {
 }
 
 type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
-  id: ID!
-  firstName: String!
-  lastName: String!
-  fullName: String! @goField(forceResolver: true)
+    id: ID!
+    firstName: String!
+    lastName: String!
+    fullName: String! @goField(forceResolver: true)
 
-  email: String! @hasRole(role: OWNS)
-  phoneNumber: String! @hasRole(role: OWNS)
-  pronouns: Pronouns
-  age: Int @hasRole(role: OWNS)
-  role: Role! @hasRole(role: OWNS)
+    email: String! @hasRole(role: OWNS)
+    phoneNumber: String! @hasRole(role: OWNS)
+    pronouns: Pronouns
+    age: Int @hasRole(role: OWNS)
+    role: Role! @hasRole(role: OWNS)
 
-  oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
+    oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
 }
 
 """
@@ -84,12 +84,12 @@ input PronounsInput {
 }
 
 input NewUser {
-  firstName: String!
-  lastName: String!
-  email: String!
-  phoneNumber: String!
-  pronouns: PronounsInput
-  age: Int
+    firstName: String!
+    lastName: String!
+    email: String!
+    phoneNumber: String!
+    pronouns: PronounsInput
+    age: Int
 }
 
 input UpdatedUser {
@@ -120,25 +120,25 @@ type RegistrationPayload {
 }
 
 type Query {
-  """
-  The code supplied must be the code given to the frontend by the oauth flow
-  Step 1 response https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps
-  """
-  getAuthRedirectLink(provider: Provider!): String!
-  login(provider: Provider!, code: String!, state: String!): LoginPayload!
-  refreshJWT(refreshToken: String!): String! @hasRole(role: NORMAL)
-  users(first: Int!, after: String): UsersConnection! @pagination(maxLength: 20) @hasRole(role: ADMIN)
-  getUser(id: ID!): User @hasRole(role: NORMAL)
-  searchUser(name: String!): [User!]! @hasRole(role: NORMAL)
-  me: User @hasRole(role: NORMAL)
+    """
+    The code supplied must be the code given to the frontend by the oauth flow
+    Step 1 response https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps
+    """
+    getAuthRedirectLink(provider: Provider!, redirect: String): String!
+    login(provider: Provider!, code: String!, state: String!): LoginPayload!
+    refreshJWT(refreshToken: String!): String! @hasRole(role: NORMAL)
+    users(first: Int!, after: String): UsersConnection! @pagination(maxLength: 20) @hasRole(role: ADMIN)
+    getUser(id: ID!): User @hasRole(role: NORMAL)
+    searchUser(name: String!): [User!]! @hasRole(role: NORMAL)
+    me: User @hasRole(role: NORMAL)
 }
 
 type Mutation {
-  """
-  To receive an encryptedOAuthAccessToken first call the Login query
-  """
-  register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): RegistrationPayload!
-  updateUser(id: ID!, input: UpdatedUser!): User! @hasRole(role: NORMAL)
-  deleteUser(id: ID!): Boolean! @hasRole(role: NORMAL)
+    """
+    To receive an encryptedOAuthAccessToken first call the Login query
+    """
+    register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): RegistrationPayload!
+    updateUser(id: ID!, input: UpdatedUser!): User! @hasRole(role: NORMAL)
+    deleteUser(id: ID!): Boolean! @hasRole(role: NORMAL)
 }
 
