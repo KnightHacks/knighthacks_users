@@ -11,11 +11,13 @@ import (
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 )
 
+// FindUserByID is the resolver for the findUserByID field.
 func (r *entityResolver) FindUserByID(ctx context.Context, id string) (*model.User, error) {
 	user, err := r.Resolver.Repository.GetUserByID(ctx, id)
 	return user, err
 }
 
+// FindUserByOAuthUIDAndOAuthProvider is the resolver for the findUserByOAuthUIDAndOAuthProvider field.
 func (r *entityResolver) FindUserByOAuthUIDAndOAuthProvider(ctx context.Context, oAuthUID string, oAuthProvider models.Provider) (*model.User, error) {
 	user, err := r.Resolver.Repository.GetUserByOAuthUID(ctx, oAuthUID, oAuthProvider)
 	return user, err

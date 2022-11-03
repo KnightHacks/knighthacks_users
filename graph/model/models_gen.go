@@ -3,11 +3,22 @@
 package model
 
 import (
+	"fmt"
+	"io"
+	"strconv"
+
 	"github.com/KnightHacks/knighthacks_shared/models"
 )
 
 type Connection interface {
 	IsConnection()
+}
+
+type EducationInfoInput struct {
+	Name           string        `json:"name"`
+	GraduationDate string        `json:"graduationDate"`
+	Major          string        `json:"major"`
+	Level          *LevelOfStudy `json:"level"`
 }
 
 type LoginPayload struct {
@@ -19,13 +30,32 @@ type LoginPayload struct {
 	EncryptedOAuthAccessToken *string `json:"encryptedOAuthAccessToken"`
 }
 
+type MLHTermsInput struct {
+	SendMessages  bool `json:"sendMessages"`
+	CodeOfConduct bool `json:"codeOfConduct"`
+	ShareInfo     bool `json:"shareInfo"`
+}
+
+type MailingAddressInput struct {
+	Country      string   `json:"country"`
+	State        string   `json:"state"`
+	City         string   `json:"city"`
+	PostalCode   string   `json:"postalCode"`
+	AddressLines []string `json:"addressLines"`
+}
+
 type NewUser struct {
-	FirstName   string         `json:"firstName"`
-	LastName    string         `json:"lastName"`
-	Email       string         `json:"email"`
-	PhoneNumber string         `json:"phoneNumber"`
-	Pronouns    *PronounsInput `json:"pronouns"`
-	Age         *int           `json:"age"`
+	FirstName         string               `json:"firstName"`
+	LastName          string               `json:"lastName"`
+	Email             string               `json:"email"`
+	PhoneNumber       string               `json:"phoneNumber"`
+	Pronouns          *PronounsInput       `json:"pronouns"`
+	Age               *int                 `json:"age"`
+	MailingAddress    *MailingAddressInput `json:"mailingAddress"`
+	Mlh               *MLHTermsInput       `json:"mlh"`
+	ShirtSize         ShirtSize            `json:"shirtSize"`
+	YearsOfExperience *float64             `json:"yearsOfExperience"`
+	EducationInfo     *EducationInfoInput  `json:"educationInfo"`
 }
 
 type OAuth struct {
@@ -83,3 +113,105 @@ type UsersConnection struct {
 }
 
 func (UsersConnection) IsConnection() {}
+
+type LevelOfStudy string
+
+const (
+	LevelOfStudyFreshman    LevelOfStudy = "FRESHMAN"
+	LevelOfStudySophomore   LevelOfStudy = "SOPHOMORE"
+	LevelOfStudyJunior      LevelOfStudy = "JUNIOR"
+	LevelOfStudySenior      LevelOfStudy = "SENIOR"
+	LevelOfStudySuperSenior LevelOfStudy = "SUPER_SENIOR"
+	LevelOfStudyGraduate    LevelOfStudy = "GRADUATE"
+)
+
+var AllLevelOfStudy = []LevelOfStudy{
+	LevelOfStudyFreshman,
+	LevelOfStudySophomore,
+	LevelOfStudyJunior,
+	LevelOfStudySenior,
+	LevelOfStudySuperSenior,
+	LevelOfStudyGraduate,
+}
+
+func (e LevelOfStudy) IsValid() bool {
+	switch e {
+	case LevelOfStudyFreshman, LevelOfStudySophomore, LevelOfStudyJunior, LevelOfStudySenior, LevelOfStudySuperSenior, LevelOfStudyGraduate:
+		return true
+	}
+	return false
+}
+
+func (e LevelOfStudy) String() string {
+	return string(e)
+}
+
+func (e *LevelOfStudy) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = LevelOfStudy(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid LevelOfStudy", str)
+	}
+	return nil
+}
+
+func (e LevelOfStudy) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type ShirtSize string
+
+const (
+	ShirtSizeXs    ShirtSize = "XS"
+	ShirtSizeS     ShirtSize = "S"
+	ShirtSizeM     ShirtSize = "M"
+	ShirtSizeL     ShirtSize = "L"
+	ShirtSizeXl    ShirtSize = "XL"
+	ShirtSizeXxl   ShirtSize = "XXL"
+	ShirtSizeXxxl  ShirtSize = "XXXL"
+	ShirtSizeXxxxl ShirtSize = "XXXXL"
+)
+
+var AllShirtSize = []ShirtSize{
+	ShirtSizeXs,
+	ShirtSizeS,
+	ShirtSizeM,
+	ShirtSizeL,
+	ShirtSizeXl,
+	ShirtSizeXxl,
+	ShirtSizeXxxl,
+	ShirtSizeXxxxl,
+}
+
+func (e ShirtSize) IsValid() bool {
+	switch e {
+	case ShirtSizeXs, ShirtSizeS, ShirtSizeM, ShirtSizeL, ShirtSizeXl, ShirtSizeXxl, ShirtSizeXxxl, ShirtSizeXxxxl:
+		return true
+	}
+	return false
+}
+
+func (e ShirtSize) String() string {
+	return string(e)
+}
+
+func (e *ShirtSize) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ShirtSize(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ShirtSize", str)
+	}
+	return nil
+}
+
+func (e ShirtSize) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}

@@ -83,6 +83,35 @@ input PronounsInput {
     objective: String!
 }
 
+input MLHTermsInput {
+    sendMessages: Boolean!
+    codeOfConduct: Boolean!
+    shareInfo: Boolean!
+}
+
+input MailingAddressInput {
+    country: String!
+    state: String!
+    city: String!
+    postalCode: String!
+    addressLines: [String!]!
+}
+
+input EducationInfoInput {
+    name: String!
+    graduationDate: String!
+    major: String!
+    level: LevelOfStudy
+}
+
+enum LevelOfStudy {
+    FRESHMAN, SOPHOMORE, JUNIOR, SENIOR, SUPER_SENIOR, GRADUATE
+}
+
+enum ShirtSize {
+    XS, S, M, L, XL, XXL, XXXL, XXXXL # idk what sizes, TODO: Look into what shirt sizes we will have
+}
+
 input NewUser {
     firstName: String!
     lastName: String!
@@ -90,6 +119,11 @@ input NewUser {
     phoneNumber: String!
     pronouns: PronounsInput
     age: Int
+    mailingAddress: MailingAddressInput
+    mlh: MLHTermsInput!
+    shirtSize: ShirtSize!
+    yearsOfExperience: Float
+    educationInfo: EducationInfoInput!
 }
 
 input UpdatedUser {
