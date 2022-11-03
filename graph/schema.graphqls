@@ -110,6 +110,9 @@ type LoginPayload {
     accessToken: String
     refreshToken: String
 
+    """
+    Not null when accountExists is false, use this in registration
+    """
     encryptedOAuthAccessToken: String
 }
 
