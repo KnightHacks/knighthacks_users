@@ -14,6 +14,13 @@ type Connection interface {
 	IsConnection()
 }
 
+type EducationInfo struct {
+	Name           string        `json:"name"`
+	GraduationDate string        `json:"graduationDate"`
+	Major          string        `json:"major"`
+	Level          *LevelOfStudy `json:"level"`
+}
+
 type EducationInfoInput struct {
 	Name           string        `json:"name"`
 	GraduationDate string        `json:"graduationDate"`
@@ -30,10 +37,24 @@ type LoginPayload struct {
 	EncryptedOAuthAccessToken *string `json:"encryptedOAuthAccessToken"`
 }
 
+type MLHTerms struct {
+	SendMessages  bool `json:"sendMessages"`
+	CodeOfConduct bool `json:"codeOfConduct"`
+	ShareInfo     bool `json:"shareInfo"`
+}
+
 type MLHTermsInput struct {
 	SendMessages  bool `json:"sendMessages"`
 	CodeOfConduct bool `json:"codeOfConduct"`
 	ShareInfo     bool `json:"shareInfo"`
+}
+
+type MailingAddress struct {
+	Country      string   `json:"country"`
+	State        string   `json:"state"`
+	City         string   `json:"city"`
+	PostalCode   string   `json:"postalCode"`
+	AddressLines []string `json:"addressLines"`
 }
 
 type MailingAddressInput struct {
@@ -83,25 +104,35 @@ type RegistrationPayload struct {
 }
 
 type UpdatedUser struct {
-	FirstName   *string        `json:"firstName"`
-	LastName    *string        `json:"lastName"`
-	Email       *string        `json:"email"`
-	PhoneNumber *string        `json:"phoneNumber"`
-	Pronouns    *PronounsInput `json:"pronouns"`
-	Age         *int           `json:"age"`
+	FirstName         *string              `json:"firstName"`
+	LastName          *string              `json:"lastName"`
+	Email             *string              `json:"email"`
+	PhoneNumber       *string              `json:"phoneNumber"`
+	Pronouns          *PronounsInput       `json:"pronouns"`
+	Age               *int                 `json:"age"`
+	MailingAddress    *MailingAddressInput `json:"mailingAddress"`
+	Mlh               *MLHTermsInput       `json:"mlh"`
+	ShirtSize         *ShirtSize           `json:"shirtSize"`
+	YearsOfExperience *float64             `json:"yearsOfExperience"`
+	EducationInfo     *EducationInfoInput  `json:"educationInfo"`
 }
 
 type User struct {
-	ID          string      `json:"id"`
-	FirstName   string      `json:"firstName"`
-	LastName    string      `json:"lastName"`
-	FullName    string      `json:"fullName"`
-	Email       string      `json:"email"`
-	PhoneNumber string      `json:"phoneNumber"`
-	Pronouns    *Pronouns   `json:"pronouns"`
-	Age         *int        `json:"age"`
-	Role        models.Role `json:"role"`
-	OAuth       *OAuth      `json:"oAuth"`
+	ID                string          `json:"id"`
+	FirstName         string          `json:"firstName"`
+	LastName          string          `json:"lastName"`
+	FullName          string          `json:"fullName"`
+	Email             string          `json:"email"`
+	PhoneNumber       string          `json:"phoneNumber"`
+	Pronouns          *Pronouns       `json:"pronouns"`
+	Age               *int            `json:"age"`
+	Role              models.Role     `json:"role"`
+	OAuth             *OAuth          `json:"oAuth"`
+	MailingAddress    *MailingAddress `json:"mailingAddress"`
+	Mlh               *MLHTerms       `json:"mlh"`
+	ShirtSize         ShirtSize       `json:"shirtSize"`
+	YearsOfExperience *float64        `json:"yearsOfExperience"`
+	EducationInfo     *EducationInfo  `json:"educationInfo"`
 }
 
 func (User) IsEntity() {}

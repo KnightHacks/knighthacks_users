@@ -50,6 +50,13 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	EducationInfo struct {
+		GraduationDate func(childComplexity int) int
+		Level          func(childComplexity int) int
+		Major          func(childComplexity int) int
+		Name           func(childComplexity int) int
+	}
+
 	Entity struct {
 		FindUserByID                       func(childComplexity int, id string) int
 		FindUserByOAuthUIDAndOAuthProvider func(childComplexity int, oAuthUID string, oAuthProvider models.Provider) int
@@ -61,6 +68,20 @@ type ComplexityRoot struct {
 		EncryptedOAuthAccessToken func(childComplexity int) int
 		RefreshToken              func(childComplexity int) int
 		User                      func(childComplexity int) int
+	}
+
+	MLHTerms struct {
+		CodeOfConduct func(childComplexity int) int
+		SendMessages  func(childComplexity int) int
+		ShareInfo     func(childComplexity int) int
+	}
+
+	MailingAddress struct {
+		AddressLines func(childComplexity int) int
+		City         func(childComplexity int) int
+		Country      func(childComplexity int) int
+		PostalCode   func(childComplexity int) int
+		State        func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -103,16 +124,21 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		Age         func(childComplexity int) int
-		Email       func(childComplexity int) int
-		FirstName   func(childComplexity int) int
-		FullName    func(childComplexity int) int
-		ID          func(childComplexity int) int
-		LastName    func(childComplexity int) int
-		OAuth       func(childComplexity int) int
-		PhoneNumber func(childComplexity int) int
-		Pronouns    func(childComplexity int) int
-		Role        func(childComplexity int) int
+		Age               func(childComplexity int) int
+		EducationInfo     func(childComplexity int) int
+		Email             func(childComplexity int) int
+		FirstName         func(childComplexity int) int
+		FullName          func(childComplexity int) int
+		ID                func(childComplexity int) int
+		LastName          func(childComplexity int) int
+		MailingAddress    func(childComplexity int) int
+		Mlh               func(childComplexity int) int
+		OAuth             func(childComplexity int) int
+		PhoneNumber       func(childComplexity int) int
+		Pronouns          func(childComplexity int) int
+		Role              func(childComplexity int) int
+		ShirtSize         func(childComplexity int) int
+		YearsOfExperience func(childComplexity int) int
 	}
 
 	UsersConnection struct {
@@ -148,6 +174,11 @@ type UserResolver interface {
 	FullName(ctx context.Context, obj *model.User) (string, error)
 
 	OAuth(ctx context.Context, obj *model.User) (*model.OAuth, error)
+	MailingAddress(ctx context.Context, obj *model.User) (*model.MailingAddress, error)
+	Mlh(ctx context.Context, obj *model.User) (*model.MLHTerms, error)
+	ShirtSize(ctx context.Context, obj *model.User) (model.ShirtSize, error)
+	YearsOfExperience(ctx context.Context, obj *model.User) (*float64, error)
+	EducationInfo(ctx context.Context, obj *model.User) (*model.EducationInfo, error)
 }
 
 type executableSchema struct {
@@ -164,6 +195,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "EducationInfo.graduationDate":
+		if e.complexity.EducationInfo.GraduationDate == nil {
+			break
+		}
+
+		return e.complexity.EducationInfo.GraduationDate(childComplexity), true
+
+	case "EducationInfo.level":
+		if e.complexity.EducationInfo.Level == nil {
+			break
+		}
+
+		return e.complexity.EducationInfo.Level(childComplexity), true
+
+	case "EducationInfo.major":
+		if e.complexity.EducationInfo.Major == nil {
+			break
+		}
+
+		return e.complexity.EducationInfo.Major(childComplexity), true
+
+	case "EducationInfo.name":
+		if e.complexity.EducationInfo.Name == nil {
+			break
+		}
+
+		return e.complexity.EducationInfo.Name(childComplexity), true
 
 	case "Entity.findUserByID":
 		if e.complexity.Entity.FindUserByID == nil {
@@ -223,6 +282,62 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.LoginPayload.User(childComplexity), true
+
+	case "MLHTerms.codeOfConduct":
+		if e.complexity.MLHTerms.CodeOfConduct == nil {
+			break
+		}
+
+		return e.complexity.MLHTerms.CodeOfConduct(childComplexity), true
+
+	case "MLHTerms.sendMessages":
+		if e.complexity.MLHTerms.SendMessages == nil {
+			break
+		}
+
+		return e.complexity.MLHTerms.SendMessages(childComplexity), true
+
+	case "MLHTerms.shareInfo":
+		if e.complexity.MLHTerms.ShareInfo == nil {
+			break
+		}
+
+		return e.complexity.MLHTerms.ShareInfo(childComplexity), true
+
+	case "MailingAddress.addressLines":
+		if e.complexity.MailingAddress.AddressLines == nil {
+			break
+		}
+
+		return e.complexity.MailingAddress.AddressLines(childComplexity), true
+
+	case "MailingAddress.city":
+		if e.complexity.MailingAddress.City == nil {
+			break
+		}
+
+		return e.complexity.MailingAddress.City(childComplexity), true
+
+	case "MailingAddress.country":
+		if e.complexity.MailingAddress.Country == nil {
+			break
+		}
+
+		return e.complexity.MailingAddress.Country(childComplexity), true
+
+	case "MailingAddress.postalCode":
+		if e.complexity.MailingAddress.PostalCode == nil {
+			break
+		}
+
+		return e.complexity.MailingAddress.PostalCode(childComplexity), true
+
+	case "MailingAddress.state":
+		if e.complexity.MailingAddress.State == nil {
+			break
+		}
+
+		return e.complexity.MailingAddress.State(childComplexity), true
 
 	case "Mutation.deleteUser":
 		if e.complexity.Mutation.DeleteUser == nil {
@@ -428,6 +543,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.Age(childComplexity), true
 
+	case "User.educationInfo":
+		if e.complexity.User.EducationInfo == nil {
+			break
+		}
+
+		return e.complexity.User.EducationInfo(childComplexity), true
+
 	case "User.email":
 		if e.complexity.User.Email == nil {
 			break
@@ -463,6 +585,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.LastName(childComplexity), true
 
+	case "User.mailingAddress":
+		if e.complexity.User.MailingAddress == nil {
+			break
+		}
+
+		return e.complexity.User.MailingAddress(childComplexity), true
+
+	case "User.mlh":
+		if e.complexity.User.Mlh == nil {
+			break
+		}
+
+		return e.complexity.User.Mlh(childComplexity), true
+
 	case "User.oAuth":
 		if e.complexity.User.OAuth == nil {
 			break
@@ -490,6 +626,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Role(childComplexity), true
+
+	case "User.shirtSize":
+		if e.complexity.User.ShirtSize == nil {
+			break
+		}
+
+		return e.complexity.User.ShirtSize(childComplexity), true
+
+	case "User.yearsOfExperience":
+		if e.complexity.User.YearsOfExperience == nil {
+			break
+		}
+
+		return e.complexity.User.YearsOfExperience(childComplexity), true
 
 	case "UsersConnection.pageInfo":
 		if e.complexity.UsersConnection.PageInfo == nil {
@@ -641,6 +791,12 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     role: Role! @hasRole(role: OWNS)
 
     oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
+
+    mailingAddress: MailingAddress @goField(forceResolver: true) @hasRole(role: OWNS)
+    mlh: MLHTerms! @goField(forceResolver: true) @hasRole(role: OWNS)
+    shirtSize: ShirtSize! @goField(forceResolver: true) @hasRole(role: OWNS)
+    yearsOfExperience: Float @goField(forceResolver: true) @hasRole(role: OWNS)
+    educationInfo: EducationInfo! @goField(forceResolver: true) @hasRole(role: OWNS)
 }
 
 """
@@ -678,10 +834,24 @@ input PronounsInput {
     objective: String!
 }
 
+type MLHTerms {
+    sendMessages: Boolean!
+    codeOfConduct: Boolean!
+    shareInfo: Boolean!
+}
+
 input MLHTermsInput {
     sendMessages: Boolean!
     codeOfConduct: Boolean!
     shareInfo: Boolean!
+}
+
+type MailingAddress {
+    country: String!
+    state: String!
+    city: String!
+    postalCode: String!
+    addressLines: [String!]!
 }
 
 input MailingAddressInput {
@@ -690,6 +860,13 @@ input MailingAddressInput {
     city: String!
     postalCode: String!
     addressLines: [String!]!
+}
+
+type EducationInfo {
+    name: String!
+    graduationDate: String!
+    major: String!
+    level: LevelOfStudy
 }
 
 input EducationInfoInput {
@@ -728,6 +905,12 @@ input UpdatedUser {
     phoneNumber: String
     pronouns: PronounsInput
     age: Int
+
+    mailingAddress: MailingAddressInput
+    mlh: MLHTermsInput
+    shirtSize: ShirtSize
+    yearsOfExperience: Float
+    educationInfo: EducationInfoInput
 }
 
 type LoginPayload {
@@ -758,7 +941,7 @@ type Query {
     refreshJWT(refreshToken: String!): String! @hasRole(role: NORMAL)
     users(first: Int!, after: String): UsersConnection! @pagination(maxLength: 20) @hasRole(role: ADMIN)
     getUser(id: ID!): User @hasRole(role: NORMAL)
-    searchUser(name: String!): [User!]! @hasRole(role: NORMAL)
+    searchUser(name: String!): [User!]! @hasRole(role: ADMIN)
     me: User @hasRole(role: NORMAL)
 }
 
@@ -1145,6 +1328,179 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
+func (ec *executionContext) _EducationInfo_name(ctx context.Context, field graphql.CollectedField, obj *model.EducationInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EducationInfo_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EducationInfo_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EducationInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EducationInfo_graduationDate(ctx context.Context, field graphql.CollectedField, obj *model.EducationInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EducationInfo_graduationDate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GraduationDate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EducationInfo_graduationDate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EducationInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EducationInfo_major(ctx context.Context, field graphql.CollectedField, obj *model.EducationInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EducationInfo_major(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Major, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EducationInfo_major(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EducationInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EducationInfo_level(ctx context.Context, field graphql.CollectedField, obj *model.EducationInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EducationInfo_level(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Level, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.LevelOfStudy)
+	fc.Result = res
+	return ec.marshalOLevelOfStudy2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐLevelOfStudy(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EducationInfo_level(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EducationInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type LevelOfStudy does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Entity_findUserByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Entity_findUserByID(ctx, field)
 	if err != nil {
@@ -1204,6 +1560,16 @@ func (ec *executionContext) fieldContext_Entity_findUserByID(ctx context.Context
 				return ec.fieldContext_User_role(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
+			case "mailingAddress":
+				return ec.fieldContext_User_mailingAddress(ctx, field)
+			case "mlh":
+				return ec.fieldContext_User_mlh(ctx, field)
+			case "shirtSize":
+				return ec.fieldContext_User_shirtSize(ctx, field)
+			case "yearsOfExperience":
+				return ec.fieldContext_User_yearsOfExperience(ctx, field)
+			case "educationInfo":
+				return ec.fieldContext_User_educationInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1281,6 +1647,16 @@ func (ec *executionContext) fieldContext_Entity_findUserByOAuthUIDAndOAuthProvid
 				return ec.fieldContext_User_role(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
+			case "mailingAddress":
+				return ec.fieldContext_User_mailingAddress(ctx, field)
+			case "mlh":
+				return ec.fieldContext_User_mlh(ctx, field)
+			case "shirtSize":
+				return ec.fieldContext_User_shirtSize(ctx, field)
+			case "yearsOfExperience":
+				return ec.fieldContext_User_yearsOfExperience(ctx, field)
+			case "educationInfo":
+				return ec.fieldContext_User_educationInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1399,6 +1775,16 @@ func (ec *executionContext) fieldContext_LoginPayload_user(ctx context.Context, 
 				return ec.fieldContext_User_role(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
+			case "mailingAddress":
+				return ec.fieldContext_User_mailingAddress(ctx, field)
+			case "mlh":
+				return ec.fieldContext_User_mlh(ctx, field)
+			case "shirtSize":
+				return ec.fieldContext_User_shirtSize(ctx, field)
+			case "yearsOfExperience":
+				return ec.fieldContext_User_yearsOfExperience(ctx, field)
+			case "educationInfo":
+				return ec.fieldContext_User_educationInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1519,6 +1905,358 @@ func (ec *executionContext) _LoginPayload_encryptedOAuthAccessToken(ctx context.
 func (ec *executionContext) fieldContext_LoginPayload_encryptedOAuthAccessToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "LoginPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MLHTerms_sendMessages(ctx context.Context, field graphql.CollectedField, obj *model.MLHTerms) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MLHTerms_sendMessages(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SendMessages, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MLHTerms_sendMessages(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MLHTerms",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MLHTerms_codeOfConduct(ctx context.Context, field graphql.CollectedField, obj *model.MLHTerms) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MLHTerms_codeOfConduct(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CodeOfConduct, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MLHTerms_codeOfConduct(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MLHTerms",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MLHTerms_shareInfo(ctx context.Context, field graphql.CollectedField, obj *model.MLHTerms) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MLHTerms_shareInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ShareInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MLHTerms_shareInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MLHTerms",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MailingAddress_country(ctx context.Context, field graphql.CollectedField, obj *model.MailingAddress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MailingAddress_country(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Country, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MailingAddress_country(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MailingAddress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MailingAddress_state(ctx context.Context, field graphql.CollectedField, obj *model.MailingAddress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MailingAddress_state(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.State, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MailingAddress_state(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MailingAddress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MailingAddress_city(ctx context.Context, field graphql.CollectedField, obj *model.MailingAddress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MailingAddress_city(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.City, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MailingAddress_city(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MailingAddress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MailingAddress_postalCode(ctx context.Context, field graphql.CollectedField, obj *model.MailingAddress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MailingAddress_postalCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PostalCode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MailingAddress_postalCode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MailingAddress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MailingAddress_addressLines(ctx context.Context, field graphql.CollectedField, obj *model.MailingAddress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MailingAddress_addressLines(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AddressLines, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MailingAddress_addressLines(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MailingAddress",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -1675,6 +2413,16 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 				return ec.fieldContext_User_role(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
+			case "mailingAddress":
+				return ec.fieldContext_User_mailingAddress(ctx, field)
+			case "mlh":
+				return ec.fieldContext_User_mlh(ctx, field)
+			case "shirtSize":
+				return ec.fieldContext_User_shirtSize(ctx, field)
+			case "yearsOfExperience":
+				return ec.fieldContext_User_yearsOfExperience(ctx, field)
+			case "educationInfo":
+				return ec.fieldContext_User_educationInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2414,6 +3162,16 @@ func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, fiel
 				return ec.fieldContext_User_role(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
+			case "mailingAddress":
+				return ec.fieldContext_User_mailingAddress(ctx, field)
+			case "mlh":
+				return ec.fieldContext_User_mlh(ctx, field)
+			case "shirtSize":
+				return ec.fieldContext_User_shirtSize(ctx, field)
+			case "yearsOfExperience":
+				return ec.fieldContext_User_yearsOfExperience(ctx, field)
+			case "educationInfo":
+				return ec.fieldContext_User_educationInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2450,7 +3208,7 @@ func (ec *executionContext) _Query_searchUser(ctx context.Context, field graphql
 			return ec.resolvers.Query().SearchUser(rctx, fc.Args["name"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "NORMAL")
+			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "ADMIN")
 			if err != nil {
 				return nil, err
 			}
@@ -2515,6 +3273,16 @@ func (ec *executionContext) fieldContext_Query_searchUser(ctx context.Context, f
 				return ec.fieldContext_User_role(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
+			case "mailingAddress":
+				return ec.fieldContext_User_mailingAddress(ctx, field)
+			case "mlh":
+				return ec.fieldContext_User_mlh(ctx, field)
+			case "shirtSize":
+				return ec.fieldContext_User_shirtSize(ctx, field)
+			case "yearsOfExperience":
+				return ec.fieldContext_User_yearsOfExperience(ctx, field)
+			case "educationInfo":
+				return ec.fieldContext_User_educationInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2613,6 +3381,16 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 				return ec.fieldContext_User_role(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
+			case "mailingAddress":
+				return ec.fieldContext_User_mailingAddress(ctx, field)
+			case "mlh":
+				return ec.fieldContext_User_mlh(ctx, field)
+			case "shirtSize":
+				return ec.fieldContext_User_shirtSize(ctx, field)
+			case "yearsOfExperience":
+				return ec.fieldContext_User_yearsOfExperience(ctx, field)
+			case "educationInfo":
+				return ec.fieldContext_User_educationInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2911,6 +3689,16 @@ func (ec *executionContext) fieldContext_RegistrationPayload_user(ctx context.Co
 				return ec.fieldContext_User_role(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
+			case "mailingAddress":
+				return ec.fieldContext_User_mailingAddress(ctx, field)
+			case "mlh":
+				return ec.fieldContext_User_mlh(ctx, field)
+			case "shirtSize":
+				return ec.fieldContext_User_shirtSize(ctx, field)
+			case "yearsOfExperience":
+				return ec.fieldContext_User_yearsOfExperience(ctx, field)
+			case "educationInfo":
+				return ec.fieldContext_User_educationInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -3572,6 +4360,370 @@ func (ec *executionContext) fieldContext_User_oAuth(ctx context.Context, field g
 	return fc, nil
 }
 
+func (ec *executionContext) _User_mailingAddress(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_mailingAddress(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.User().MailingAddress(rctx, obj)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.MailingAddress); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/KnightHacks/knighthacks_users/graph/model.MailingAddress`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.MailingAddress)
+	fc.Result = res
+	return ec.marshalOMailingAddress2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMailingAddress(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_mailingAddress(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "country":
+				return ec.fieldContext_MailingAddress_country(ctx, field)
+			case "state":
+				return ec.fieldContext_MailingAddress_state(ctx, field)
+			case "city":
+				return ec.fieldContext_MailingAddress_city(ctx, field)
+			case "postalCode":
+				return ec.fieldContext_MailingAddress_postalCode(ctx, field)
+			case "addressLines":
+				return ec.fieldContext_MailingAddress_addressLines(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MailingAddress", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_mlh(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_mlh(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.User().Mlh(rctx, obj)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.MLHTerms); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/KnightHacks/knighthacks_users/graph/model.MLHTerms`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.MLHTerms)
+	fc.Result = res
+	return ec.marshalNMLHTerms2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTerms(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_mlh(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "sendMessages":
+				return ec.fieldContext_MLHTerms_sendMessages(ctx, field)
+			case "codeOfConduct":
+				return ec.fieldContext_MLHTerms_codeOfConduct(ctx, field)
+			case "shareInfo":
+				return ec.fieldContext_MLHTerms_shareInfo(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MLHTerms", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_shirtSize(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_shirtSize(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.User().ShirtSize(rctx, obj)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(model.ShirtSize); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be github.com/KnightHacks/knighthacks_users/graph/model.ShirtSize`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.ShirtSize)
+	fc.Result = res
+	return ec.marshalNShirtSize2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐShirtSize(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_shirtSize(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ShirtSize does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_yearsOfExperience(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_yearsOfExperience(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.User().YearsOfExperience(rctx, obj)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*float64); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *float64`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_yearsOfExperience(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_educationInfo(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_educationInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.User().EducationInfo(rctx, obj)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.EducationInfo); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/KnightHacks/knighthacks_users/graph/model.EducationInfo`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.EducationInfo)
+	fc.Result = res
+	return ec.marshalNEducationInfo2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_educationInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "name":
+				return ec.fieldContext_EducationInfo_name(ctx, field)
+			case "graduationDate":
+				return ec.fieldContext_EducationInfo_graduationDate(ctx, field)
+			case "major":
+				return ec.fieldContext_EducationInfo_major(ctx, field)
+			case "level":
+				return ec.fieldContext_EducationInfo_level(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type EducationInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _UsersConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *model.UsersConnection) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_UsersConnection_totalCount(ctx, field)
 	if err != nil {
@@ -3725,6 +4877,16 @@ func (ec *executionContext) fieldContext_UsersConnection_users(ctx context.Conte
 				return ec.fieldContext_User_role(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
+			case "mailingAddress":
+				return ec.fieldContext_User_mailingAddress(ctx, field)
+			case "mlh":
+				return ec.fieldContext_User_mlh(ctx, field)
+			case "shirtSize":
+				return ec.fieldContext_User_shirtSize(ctx, field)
+			case "yearsOfExperience":
+				return ec.fieldContext_User_yearsOfExperience(ctx, field)
+			case "educationInfo":
+				return ec.fieldContext_User_educationInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -5853,7 +7015,7 @@ func (ec *executionContext) unmarshalInputUpdatedUser(ctx context.Context, obj i
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"firstName", "lastName", "email", "phoneNumber", "pronouns", "age"}
+	fieldsInOrder := [...]string{"firstName", "lastName", "email", "phoneNumber", "pronouns", "age", "mailingAddress", "mlh", "shirtSize", "yearsOfExperience", "educationInfo"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5908,6 +7070,46 @@ func (ec *executionContext) unmarshalInputUpdatedUser(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
+		case "mailingAddress":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mailingAddress"))
+			it.MailingAddress, err = ec.unmarshalOMailingAddressInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMailingAddressInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "mlh":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mlh"))
+			it.Mlh, err = ec.unmarshalOMLHTermsInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTermsInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "shirtSize":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shirtSize"))
+			it.ShirtSize, err = ec.unmarshalOShirtSize2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐShirtSize(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "yearsOfExperience":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("yearsOfExperience"))
+			it.YearsOfExperience, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "educationInfo":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("educationInfo"))
+			it.EducationInfo, err = ec.unmarshalOEducationInfoInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfoInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -5953,6 +7155,52 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var educationInfoImplementors = []string{"EducationInfo"}
+
+func (ec *executionContext) _EducationInfo(ctx context.Context, sel ast.SelectionSet, obj *model.EducationInfo) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, educationInfoImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("EducationInfo")
+		case "name":
+
+			out.Values[i] = ec._EducationInfo_name(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "graduationDate":
+
+			out.Values[i] = ec._EducationInfo_graduationDate(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "major":
+
+			out.Values[i] = ec._EducationInfo_major(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "level":
+
+			out.Values[i] = ec._EducationInfo_level(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
 
 var entityImplementors = []string{"Entity"}
 
@@ -6063,6 +7311,104 @@ func (ec *executionContext) _LoginPayload(ctx context.Context, sel ast.Selection
 
 			out.Values[i] = ec._LoginPayload_encryptedOAuthAccessToken(ctx, field, obj)
 
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var mLHTermsImplementors = []string{"MLHTerms"}
+
+func (ec *executionContext) _MLHTerms(ctx context.Context, sel ast.SelectionSet, obj *model.MLHTerms) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mLHTermsImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MLHTerms")
+		case "sendMessages":
+
+			out.Values[i] = ec._MLHTerms_sendMessages(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "codeOfConduct":
+
+			out.Values[i] = ec._MLHTerms_codeOfConduct(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "shareInfo":
+
+			out.Values[i] = ec._MLHTerms_shareInfo(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var mailingAddressImplementors = []string{"MailingAddress"}
+
+func (ec *executionContext) _MailingAddress(ctx context.Context, sel ast.SelectionSet, obj *model.MailingAddress) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mailingAddressImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MailingAddress")
+		case "country":
+
+			out.Values[i] = ec._MailingAddress_country(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "state":
+
+			out.Values[i] = ec._MailingAddress_state(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "city":
+
+			out.Values[i] = ec._MailingAddress_city(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "postalCode":
+
+			out.Values[i] = ec._MailingAddress_postalCode(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "addressLines":
+
+			out.Values[i] = ec._MailingAddress_addressLines(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6621,6 +7967,100 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 				return innerFunc(ctx)
 
 			})
+		case "mailingAddress":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_mailingAddress(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "mlh":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_mlh(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "shirtSize":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_shirtSize(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "yearsOfExperience":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_yearsOfExperience(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "educationInfo":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_educationInfo(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7032,6 +8472,20 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalNEducationInfo2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfo(ctx context.Context, sel ast.SelectionSet, v model.EducationInfo) graphql.Marshaler {
+	return ec._EducationInfo(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNEducationInfo2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfo(ctx context.Context, sel ast.SelectionSet, v *model.EducationInfo) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._EducationInfo(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNEducationInfoInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfoInput(ctx context.Context, v interface{}) (*model.EducationInfoInput, error) {
 	res, err := ec.unmarshalInputEducationInfoInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
@@ -7079,6 +8533,20 @@ func (ec *executionContext) marshalNLoginPayload2ᚖgithubᚗcomᚋKnightHacks�
 		return graphql.Null
 	}
 	return ec._LoginPayload(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNMLHTerms2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTerms(ctx context.Context, sel ast.SelectionSet, v model.MLHTerms) graphql.Marshaler {
+	return ec._MLHTerms(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMLHTerms2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTerms(ctx context.Context, sel ast.SelectionSet, v *model.MLHTerms) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._MLHTerms(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNMLHTermsInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTermsInput(ctx context.Context, v interface{}) (*model.MLHTermsInput, error) {
@@ -7672,6 +9140,14 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) unmarshalOEducationInfoInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfoInput(ctx context.Context, v interface{}) (*model.EducationInfoInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputEducationInfoInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v interface{}) (*float64, error) {
 	if v == nil {
 		return nil, nil
@@ -7720,6 +9196,21 @@ func (ec *executionContext) marshalOLevelOfStudy2ᚖgithubᚗcomᚋKnightHacks�
 	return v
 }
 
+func (ec *executionContext) unmarshalOMLHTermsInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTermsInput(ctx context.Context, v interface{}) (*model.MLHTermsInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputMLHTermsInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOMailingAddress2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMailingAddress(ctx context.Context, sel ast.SelectionSet, v *model.MailingAddress) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MailingAddress(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOMailingAddressInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMailingAddressInput(ctx context.Context, v interface{}) (*model.MailingAddressInput, error) {
 	if v == nil {
 		return nil, nil
@@ -7741,6 +9232,22 @@ func (ec *executionContext) unmarshalOPronounsInput2ᚖgithubᚗcomᚋKnightHack
 	}
 	res, err := ec.unmarshalInputPronounsInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOShirtSize2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐShirtSize(ctx context.Context, v interface{}) (*model.ShirtSize, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.ShirtSize)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOShirtSize2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐShirtSize(ctx context.Context, sel ast.SelectionSet, v *model.ShirtSize) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

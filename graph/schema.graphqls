@@ -46,6 +46,12 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     role: Role! @hasRole(role: OWNS)
 
     oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
+
+    mailingAddress: MailingAddress @goField(forceResolver: true) @hasRole(role: OWNS)
+    mlh: MLHTerms! @goField(forceResolver: true) @hasRole(role: OWNS)
+    shirtSize: ShirtSize! @goField(forceResolver: true) @hasRole(role: OWNS)
+    yearsOfExperience: Float @goField(forceResolver: true) @hasRole(role: OWNS)
+    educationInfo: EducationInfo! @goField(forceResolver: true) @hasRole(role: OWNS)
 }
 
 """
@@ -83,10 +89,24 @@ input PronounsInput {
     objective: String!
 }
 
+type MLHTerms {
+    sendMessages: Boolean!
+    codeOfConduct: Boolean!
+    shareInfo: Boolean!
+}
+
 input MLHTermsInput {
     sendMessages: Boolean!
     codeOfConduct: Boolean!
     shareInfo: Boolean!
+}
+
+type MailingAddress {
+    country: String!
+    state: String!
+    city: String!
+    postalCode: String!
+    addressLines: [String!]!
 }
 
 input MailingAddressInput {
@@ -95,6 +115,13 @@ input MailingAddressInput {
     city: String!
     postalCode: String!
     addressLines: [String!]!
+}
+
+type EducationInfo {
+    name: String!
+    graduationDate: String!
+    major: String!
+    level: LevelOfStudy
 }
 
 input EducationInfoInput {
@@ -133,6 +160,12 @@ input UpdatedUser {
     phoneNumber: String
     pronouns: PronounsInput
     age: Int
+
+    mailingAddress: MailingAddressInput
+    mlh: MLHTermsInput
+    shirtSize: ShirtSize
+    yearsOfExperience: Float
+    educationInfo: EducationInfoInput
 }
 
 type LoginPayload {
@@ -163,7 +196,7 @@ type Query {
     refreshJWT(refreshToken: String!): String! @hasRole(role: NORMAL)
     users(first: Int!, after: String): UsersConnection! @pagination(maxLength: 20) @hasRole(role: ADMIN)
     getUser(id: ID!): User @hasRole(role: NORMAL)
-    searchUser(name: String!): [User!]! @hasRole(role: NORMAL)
+    searchUser(name: String!): [User!]! @hasRole(role: ADMIN)
     me: User @hasRole(role: NORMAL)
 }
 
