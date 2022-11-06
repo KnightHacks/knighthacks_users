@@ -248,21 +248,6 @@ func (r *userResolver) Mlh(ctx context.Context, obj *model.User) (*model.MLHTerm
 	panic(fmt.Errorf("not implemented"))
 }
 
-// ShirtSize is the resolver for the shirtSize field.
-func (r *userResolver) ShirtSize(ctx context.Context, obj *model.User) (model.ShirtSize, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-// YearsOfExperience is the resolver for the yearsOfExperience field.
-func (r *userResolver) YearsOfExperience(ctx context.Context, obj *model.User) (*float64, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-// EducationInfo is the resolver for the educationInfo field.
-func (r *userResolver) EducationInfo(ctx context.Context, obj *model.User) (*model.EducationInfo, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

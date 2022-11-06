@@ -176,9 +176,6 @@ type UserResolver interface {
 	OAuth(ctx context.Context, obj *model.User) (*model.OAuth, error)
 	MailingAddress(ctx context.Context, obj *model.User) (*model.MailingAddress, error)
 	Mlh(ctx context.Context, obj *model.User) (*model.MLHTerms, error)
-	ShirtSize(ctx context.Context, obj *model.User) (model.ShirtSize, error)
-	YearsOfExperience(ctx context.Context, obj *model.User) (*float64, error)
-	EducationInfo(ctx context.Context, obj *model.User) (*model.EducationInfo, error)
 }
 
 type executableSchema struct {
@@ -794,9 +791,9 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
 
     mailingAddress: MailingAddress @goField(forceResolver: true) @hasRole(role: OWNS)
     mlh: MLHTerms! @goField(forceResolver: true) @hasRole(role: OWNS)
-    shirtSize: ShirtSize! @goField(forceResolver: true) @hasRole(role: OWNS)
-    yearsOfExperience: Float @goField(forceResolver: true) @hasRole(role: OWNS)
-    educationInfo: EducationInfo! @goField(forceResolver: true) @hasRole(role: OWNS)
+    shirtSize: ShirtSize! @hasRole(role: OWNS)
+    yearsOfExperience: Float @hasRole(role: OWNS)
+    educationInfo: EducationInfo! @hasRole(role: OWNS)
 }
 
 """
@@ -4528,7 +4525,7 @@ func (ec *executionContext) _User_shirtSize(ctx context.Context, field graphql.C
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.User().ShirtSize(rctx, obj)
+			return obj.ShirtSize, nil
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
@@ -4572,8 +4569,8 @@ func (ec *executionContext) fieldContext_User_shirtSize(ctx context.Context, fie
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ShirtSize does not have child fields")
 		},
@@ -4596,7 +4593,7 @@ func (ec *executionContext) _User_yearsOfExperience(ctx context.Context, field g
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.User().YearsOfExperience(rctx, obj)
+			return obj.YearsOfExperience, nil
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
@@ -4637,8 +4634,8 @@ func (ec *executionContext) fieldContext_User_yearsOfExperience(ctx context.Cont
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Float does not have child fields")
 		},
@@ -4661,7 +4658,7 @@ func (ec *executionContext) _User_educationInfo(ctx context.Context, field graph
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.User().EducationInfo(rctx, obj)
+			return obj.EducationInfo, nil
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
@@ -4705,8 +4702,8 @@ func (ec *executionContext) fieldContext_User_educationInfo(ctx context.Context,
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "name":
@@ -8005,62 +8002,23 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 
 			})
 		case "shirtSize":
-			field := field
 
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._User_shirtSize(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._User_shirtSize(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
 			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
 		case "yearsOfExperience":
-			field := field
 
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._User_yearsOfExperience(ctx, field, obj)
-				return res
-			}
+			out.Values[i] = ec._User_yearsOfExperience(ctx, field, obj)
 
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
 		case "educationInfo":
-			field := field
 
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._User_educationInfo(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._User_educationInfo(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
 			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8470,10 +8428,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) marshalNEducationInfo2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfo(ctx context.Context, sel ast.SelectionSet, v model.EducationInfo) graphql.Marshaler {
-	return ec._EducationInfo(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNEducationInfo2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfo(ctx context.Context, sel ast.SelectionSet, v *model.EducationInfo) graphql.Marshaler {
