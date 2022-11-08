@@ -1,3 +1,5 @@
+scalar Time
+
 directive @goModel(model: String, models: [String!]) on OBJECT
     | INPUT_OBJECT
     | SCALAR
@@ -119,14 +121,14 @@ input MailingAddressInput {
 
 type EducationInfo {
     name: String!
-    graduationDate: String!
+    graduationDate: Time!
     major: String!
     level: LevelOfStudy
 }
 
 input EducationInfoInput {
     name: String!
-    graduationDate: String!
+    graduationDate: Time!
     major: String!
     level: LevelOfStudy
 }

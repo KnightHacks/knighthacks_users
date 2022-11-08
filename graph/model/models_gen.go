@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 
 	"github.com/KnightHacks/knighthacks_shared/models"
 )
@@ -16,14 +17,14 @@ type Connection interface {
 
 type EducationInfo struct {
 	Name           string        `json:"name"`
-	GraduationDate string        `json:"graduationDate"`
+	GraduationDate time.Time     `json:"graduationDate"`
 	Major          string        `json:"major"`
 	Level          *LevelOfStudy `json:"level"`
 }
 
 type EducationInfoInput struct {
 	Name           string        `json:"name"`
-	GraduationDate string        `json:"graduationDate"`
+	GraduationDate time.Time     `json:"graduationDate"`
 	Major          string        `json:"major"`
 	Level          *LevelOfStudy `json:"level"`
 }

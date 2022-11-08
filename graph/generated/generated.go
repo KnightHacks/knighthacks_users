@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -740,7 +741,9 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "../schema.graphqls", Input: `directive @goModel(model: String, models: [String!]) on OBJECT
+	{Name: "../schema.graphqls", Input: `scalar Time
+
+directive @goModel(model: String, models: [String!]) on OBJECT
     | INPUT_OBJECT
     | SCALAR
     | ENUM
@@ -861,14 +864,14 @@ input MailingAddressInput {
 
 type EducationInfo {
     name: String!
-    graduationDate: String!
+    graduationDate: Time!
     major: String!
     level: LevelOfStudy
 }
 
 input EducationInfoInput {
     name: String!
-    graduationDate: String!
+    graduationDate: Time!
     major: String!
     level: LevelOfStudy
 }
@@ -1395,9 +1398,9 @@ func (ec *executionContext) _EducationInfo_graduationDate(ctx context.Context, f
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_EducationInfo_graduationDate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1407,7 +1410,7 @@ func (ec *executionContext) fieldContext_EducationInfo_graduationDate(ctx contex
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6731,7 +6734,7 @@ func (ec *executionContext) unmarshalInputEducationInfoInput(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("graduationDate"))
-			it.GraduationDate, err = ec.unmarshalNString2string(ctx, v)
+			it.GraduationDate, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8626,6 +8629,21 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	}
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+	res, err := graphql.UnmarshalTime(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
+	res := graphql.MarshalTime(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalNUpdatedUser2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUpdatedUser(ctx context.Context, v interface{}) (model.UpdatedUser, error) {
