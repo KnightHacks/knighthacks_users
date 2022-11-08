@@ -1,18 +1,14 @@
-package repository
+package database
 
 import (
 	"context"
 	"errors"
 	sharedModels "github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
+	"github.com/KnightHacks/knighthacks_users/repository"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"strconv"
-)
-
-var (
-	UserNotFound      = errors.New("user not found")
-	UserAlreadyExists = errors.New("user with id already exists")
 )
 
 // DatabaseRepository
@@ -87,7 +83,7 @@ func (r *DatabaseRepository) getUserWithTx(ctx context.Context, query string, tx
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, UserNotFound
+			return nil, repository.UserNotFound
 		}
 		return nil, err
 	}
@@ -159,7 +155,7 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 		var discoveredId = new(int)
 		err := tx.QueryRow(ctx, "SELECT id FROM users WHERE oauth_uid=$1 AND oauth_provider=$2 LIMIT 1", oAuth.UID, oAuth.Provider.String()).Scan(discoveredId)
 		if err == nil && discoveredId != nil {
-			return UserAlreadyExists
+			return repository.UserAlreadyExists
 		}
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 			return err
@@ -387,7 +383,7 @@ func (r *DatabaseRepository) DeleteUser(ctx context.Context, id string) (bool, e
 
 	//there should be one row affected, if not throw error
 	if commandTag.RowsAffected() != 1 {
-		return false, UserNotFound
+		return false, repository.UserNotFound
 	}
 
 	// then no error
@@ -401,7 +397,7 @@ func (r *DatabaseRepository) UpdateFirstName(ctx context.Context, id string, fir
 		return err
 	}
 	if commandTag.RowsAffected() != 1 {
-		return UserNotFound
+		return repository.UserNotFound
 	}
 	return nil
 }
@@ -413,7 +409,7 @@ func (r *DatabaseRepository) UpdateLastName(ctx context.Context, id string, last
 		return err
 	}
 	if commandTag.RowsAffected() != 1 {
-		return UserNotFound
+		return repository.UserNotFound
 	}
 	// then no error
 	return nil
@@ -426,7 +422,7 @@ func (r *DatabaseRepository) UpdateEmail(ctx context.Context, id string, email s
 		return err
 	}
 	if commandTag.RowsAffected() != 1 {
-		return UserNotFound
+		return repository.UserNotFound
 	}
 	// then no error
 	return nil
@@ -439,7 +435,7 @@ func (r *DatabaseRepository) UpdatePhoneNumber(ctx context.Context, id string, n
 		return err
 	}
 	if commandTag.RowsAffected() != 1 {
-		return UserNotFound
+		return repository.UserNotFound
 	}
 	// then no error
 	return nil
@@ -496,7 +492,7 @@ func (r *DatabaseRepository) UpdatePronouns(ctx context.Context, id string, pron
 		return err
 	}
 	if commandTag.RowsAffected() != 1 {
-		return UserNotFound
+		return repository.UserNotFound
 	}
 	// then no error
 	return nil
@@ -509,7 +505,7 @@ func (r *DatabaseRepository) UpdateAge(ctx context.Context, id string, age *int,
 		return err
 	}
 	if commandTag.RowsAffected() != 1 {
-		return UserNotFound
+		return repository.UserNotFound
 	}
 	// then no error
 	return nil

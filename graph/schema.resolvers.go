@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/KnightHacks/knighthacks_users/repository"
 	"net/http"
 	"net/url"
 
@@ -18,7 +19,6 @@ import (
 	"github.com/KnightHacks/knighthacks_shared/utils"
 	"github.com/KnightHacks/knighthacks_users/graph/generated"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
-	"github.com/KnightHacks/knighthacks_users/repository"
 )
 
 // Register is the resolver for the register field.
