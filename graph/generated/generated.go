@@ -676,8 +676,11 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputEducationInfoInput,
+		ec.unmarshalInputEducationInfoUpdate,
 		ec.unmarshalInputMLHTermsInput,
+		ec.unmarshalInputMLHTermsUpdate,
 		ec.unmarshalInputMailingAddressInput,
+		ec.unmarshalInputMailingAddressUpdate,
 		ec.unmarshalInputNewUser,
 		ec.unmarshalInputPronounsInput,
 		ec.unmarshalInputUpdatedUser,
@@ -846,6 +849,12 @@ input MLHTermsInput {
     shareInfo: Boolean!
 }
 
+input MLHTermsUpdate {
+    sendMessages: Boolean
+    codeOfConduct: Boolean
+    shareInfo: Boolean
+}
+
 type MailingAddress {
     country: String!
     state: String!
@@ -862,6 +871,14 @@ input MailingAddressInput {
     addressLines: [String!]!
 }
 
+input MailingAddressUpdate {
+    country: String
+    state: String
+    city: String
+    postalCode: String
+    addressLines: [String!]
+}
+
 type EducationInfo {
     name: String!
     graduationDate: Time!
@@ -873,6 +890,13 @@ input EducationInfoInput {
     name: String!
     graduationDate: Time!
     major: String!
+    level: LevelOfStudy
+}
+
+input EducationInfoUpdate {
+    name: String
+    graduationDate: Time
+    major: String
     level: LevelOfStudy
 }
 
@@ -906,11 +930,11 @@ input UpdatedUser {
     pronouns: PronounsInput
     age: Int
 
-    mailingAddress: MailingAddressInput
-    mlh: MLHTermsInput
+    mailingAddress: MailingAddressUpdate
+    mlh: MLHTermsUpdate
     shirtSize: ShirtSize
     yearsOfExperience: Float
-    educationInfo: EducationInfoInput
+    educationInfo: EducationInfoUpdate
 }
 
 type LoginPayload {
@@ -6760,6 +6784,58 @@ func (ec *executionContext) unmarshalInputEducationInfoInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputEducationInfoUpdate(ctx context.Context, obj interface{}) (model.EducationInfoUpdate, error) {
+	var it model.EducationInfoUpdate
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "graduationDate", "major", "level"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "graduationDate":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("graduationDate"))
+			it.GraduationDate, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "major":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("major"))
+			it.Major, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "level":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("level"))
+			it.Level, err = ec.unmarshalOLevelOfStudy2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐLevelOfStudy(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputMLHTermsInput(ctx context.Context, obj interface{}) (model.MLHTermsInput, error) {
 	var it model.MLHTermsInput
 	asMap := map[string]interface{}{}
@@ -6795,6 +6871,50 @@ func (ec *executionContext) unmarshalInputMLHTermsInput(ctx context.Context, obj
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shareInfo"))
 			it.ShareInfo, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputMLHTermsUpdate(ctx context.Context, obj interface{}) (model.MLHTermsUpdate, error) {
+	var it model.MLHTermsUpdate
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"sendMessages", "codeOfConduct", "shareInfo"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "sendMessages":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sendMessages"))
+			it.SendMessages, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "codeOfConduct":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("codeOfConduct"))
+			it.CodeOfConduct, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "shareInfo":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shareInfo"))
+			it.ShareInfo, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6855,6 +6975,66 @@ func (ec *executionContext) unmarshalInputMailingAddressInput(ctx context.Contex
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addressLines"))
 			it.AddressLines, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputMailingAddressUpdate(ctx context.Context, obj interface{}) (model.MailingAddressUpdate, error) {
+	var it model.MailingAddressUpdate
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"country", "state", "city", "postalCode", "addressLines"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "country":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("country"))
+			it.Country, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "state":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("state"))
+			it.State, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "city":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("city"))
+			it.City, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "postalCode":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postalCode"))
+			it.PostalCode, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "addressLines":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addressLines"))
+			it.AddressLines, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7074,7 +7254,7 @@ func (ec *executionContext) unmarshalInputUpdatedUser(ctx context.Context, obj i
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mailingAddress"))
-			it.MailingAddress, err = ec.unmarshalOMailingAddressInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMailingAddressInput(ctx, v)
+			it.MailingAddress, err = ec.unmarshalOMailingAddressUpdate2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMailingAddressUpdate(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7082,7 +7262,7 @@ func (ec *executionContext) unmarshalInputUpdatedUser(ctx context.Context, obj i
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mlh"))
-			it.Mlh, err = ec.unmarshalOMLHTermsInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTermsInput(ctx, v)
+			it.Mlh, err = ec.unmarshalOMLHTermsUpdate2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTermsUpdate(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7106,7 +7286,7 @@ func (ec *executionContext) unmarshalInputUpdatedUser(ctx context.Context, obj i
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("educationInfo"))
-			it.EducationInfo, err = ec.unmarshalOEducationInfoInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfoInput(ctx, v)
+			it.EducationInfo, err = ec.unmarshalOEducationInfoUpdate2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfoUpdate(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9112,11 +9292,11 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) unmarshalOEducationInfoInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfoInput(ctx context.Context, v interface{}) (*model.EducationInfoInput, error) {
+func (ec *executionContext) unmarshalOEducationInfoUpdate2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfoUpdate(ctx context.Context, v interface{}) (*model.EducationInfoUpdate, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalInputEducationInfoInput(ctx, v)
+	res, err := ec.unmarshalInputEducationInfoUpdate(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -9168,11 +9348,11 @@ func (ec *executionContext) marshalOLevelOfStudy2ᚖgithubᚗcomᚋKnightHacks�
 	return v
 }
 
-func (ec *executionContext) unmarshalOMLHTermsInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTermsInput(ctx context.Context, v interface{}) (*model.MLHTermsInput, error) {
+func (ec *executionContext) unmarshalOMLHTermsUpdate2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTermsUpdate(ctx context.Context, v interface{}) (*model.MLHTermsUpdate, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalInputMLHTermsInput(ctx, v)
+	res, err := ec.unmarshalInputMLHTermsUpdate(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -9188,6 +9368,14 @@ func (ec *executionContext) unmarshalOMailingAddressInput2ᚖgithubᚗcomᚋKnig
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputMailingAddressInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOMailingAddressUpdate2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMailingAddressUpdate(ctx context.Context, v interface{}) (*model.MailingAddressUpdate, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputMailingAddressUpdate(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -9283,6 +9471,22 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	res := graphql.MarshalString(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalTime(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalTime(*v)
 	return res
 }
 

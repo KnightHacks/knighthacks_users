@@ -103,6 +103,12 @@ input MLHTermsInput {
     shareInfo: Boolean!
 }
 
+input MLHTermsUpdate {
+    sendMessages: Boolean
+    codeOfConduct: Boolean
+    shareInfo: Boolean
+}
+
 type MailingAddress {
     country: String!
     state: String!
@@ -119,6 +125,14 @@ input MailingAddressInput {
     addressLines: [String!]!
 }
 
+input MailingAddressUpdate {
+    country: String
+    state: String
+    city: String
+    postalCode: String
+    addressLines: [String!]
+}
+
 type EducationInfo {
     name: String!
     graduationDate: Time!
@@ -130,6 +144,13 @@ input EducationInfoInput {
     name: String!
     graduationDate: Time!
     major: String!
+    level: LevelOfStudy
+}
+
+input EducationInfoUpdate {
+    name: String
+    graduationDate: Time
+    major: String
     level: LevelOfStudy
 }
 
@@ -163,11 +184,11 @@ input UpdatedUser {
     pronouns: PronounsInput
     age: Int
 
-    mailingAddress: MailingAddressInput
-    mlh: MLHTermsInput
+    mailingAddress: MailingAddressUpdate
+    mlh: MLHTermsUpdate
     shirtSize: ShirtSize
     yearsOfExperience: Float
-    educationInfo: EducationInfoInput
+    educationInfo: EducationInfoUpdate
 }
 
 type LoginPayload {

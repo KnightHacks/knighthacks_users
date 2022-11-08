@@ -29,6 +29,13 @@ type EducationInfoInput struct {
 	Level          *LevelOfStudy `json:"level"`
 }
 
+type EducationInfoUpdate struct {
+	Name           *string       `json:"name"`
+	GraduationDate *time.Time    `json:"graduationDate"`
+	Major          *string       `json:"major"`
+	Level          *LevelOfStudy `json:"level"`
+}
+
 type LoginPayload struct {
 	// If false then you must register immediately following this. Else, you are logged in and have access to your own user.
 	AccountExists             bool    `json:"accountExists"`
@@ -50,6 +57,12 @@ type MLHTermsInput struct {
 	ShareInfo     bool `json:"shareInfo"`
 }
 
+type MLHTermsUpdate struct {
+	SendMessages  *bool `json:"sendMessages"`
+	CodeOfConduct *bool `json:"codeOfConduct"`
+	ShareInfo     *bool `json:"shareInfo"`
+}
+
 type MailingAddress struct {
 	Country      string   `json:"country"`
 	State        string   `json:"state"`
@@ -63,6 +76,14 @@ type MailingAddressInput struct {
 	State        string   `json:"state"`
 	City         string   `json:"city"`
 	PostalCode   string   `json:"postalCode"`
+	AddressLines []string `json:"addressLines"`
+}
+
+type MailingAddressUpdate struct {
+	Country      *string  `json:"country"`
+	State        *string  `json:"state"`
+	City         *string  `json:"city"`
+	PostalCode   *string  `json:"postalCode"`
 	AddressLines []string `json:"addressLines"`
 }
 
@@ -105,17 +126,17 @@ type RegistrationPayload struct {
 }
 
 type UpdatedUser struct {
-	FirstName         *string              `json:"firstName"`
-	LastName          *string              `json:"lastName"`
-	Email             *string              `json:"email"`
-	PhoneNumber       *string              `json:"phoneNumber"`
-	Pronouns          *PronounsInput       `json:"pronouns"`
-	Age               *int                 `json:"age"`
-	MailingAddress    *MailingAddressInput `json:"mailingAddress"`
-	Mlh               *MLHTermsInput       `json:"mlh"`
-	ShirtSize         *ShirtSize           `json:"shirtSize"`
-	YearsOfExperience *float64             `json:"yearsOfExperience"`
-	EducationInfo     *EducationInfoInput  `json:"educationInfo"`
+	FirstName         *string               `json:"firstName"`
+	LastName          *string               `json:"lastName"`
+	Email             *string               `json:"email"`
+	PhoneNumber       *string               `json:"phoneNumber"`
+	Pronouns          *PronounsInput        `json:"pronouns"`
+	Age               *int                  `json:"age"`
+	MailingAddress    *MailingAddressUpdate `json:"mailingAddress"`
+	Mlh               *MLHTermsUpdate       `json:"mlh"`
+	ShirtSize         *ShirtSize            `json:"shirtSize"`
+	YearsOfExperience *float64              `json:"yearsOfExperience"`
+	EducationInfo     *EducationInfoUpdate  `json:"educationInfo"`
 }
 
 type User struct {
