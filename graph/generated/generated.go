@@ -130,6 +130,7 @@ type ComplexityRoot struct {
 		Email             func(childComplexity int) int
 		FirstName         func(childComplexity int) int
 		FullName          func(childComplexity int) int
+		Gender            func(childComplexity int) int
 		ID                func(childComplexity int) int
 		LastName          func(childComplexity int) int
 		MailingAddress    func(childComplexity int) int
@@ -137,6 +138,7 @@ type ComplexityRoot struct {
 		OAuth             func(childComplexity int) int
 		PhoneNumber       func(childComplexity int) int
 		Pronouns          func(childComplexity int) int
+		Race              func(childComplexity int) int
 		Role              func(childComplexity int) int
 		ShirtSize         func(childComplexity int) int
 		YearsOfExperience func(childComplexity int) int
@@ -569,6 +571,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.FullName(childComplexity), true
 
+	case "User.gender":
+		if e.complexity.User.Gender == nil {
+			break
+		}
+
+		return e.complexity.User.Gender(childComplexity), true
+
 	case "User.id":
 		if e.complexity.User.ID == nil {
 			break
@@ -617,6 +626,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Pronouns(childComplexity), true
+
+	case "User.race":
+		if e.complexity.User.Race == nil {
+			break
+		}
+
+		return e.complexity.User.Race(childComplexity), true
 
 	case "User.role":
 		if e.complexity.User.Role == nil {
@@ -793,6 +809,9 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     age: Int @hasRole(role: OWNS)
     role: Role! @hasRole(role: OWNS)
 
+    gender: String @hasRole(role: OWNS)
+    race: [String] @hasRole(role: OWNS)
+
     oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
 
     mailingAddress: MailingAddress @goField(forceResolver: true) @hasRole(role: OWNS)
@@ -920,6 +939,8 @@ input NewUser {
     shirtSize: ShirtSize!
     yearsOfExperience: Float
     educationInfo: EducationInfoInput!
+    gender: String
+    race: [String]
 }
 
 input UpdatedUser {
@@ -929,12 +950,13 @@ input UpdatedUser {
     phoneNumber: String
     pronouns: PronounsInput
     age: Int
-
     mailingAddress: MailingAddressUpdate
     mlh: MLHTermsUpdate
     shirtSize: ShirtSize
     yearsOfExperience: Float
     educationInfo: EducationInfoUpdate
+    gender: String
+    race: [String]
 }
 
 type LoginPayload {
@@ -1582,6 +1604,10 @@ func (ec *executionContext) fieldContext_Entity_findUserByID(ctx context.Context
 				return ec.fieldContext_User_age(ctx, field)
 			case "role":
 				return ec.fieldContext_User_role(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
+			case "race":
+				return ec.fieldContext_User_race(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -1669,6 +1695,10 @@ func (ec *executionContext) fieldContext_Entity_findUserByOAuthUIDAndOAuthProvid
 				return ec.fieldContext_User_age(ctx, field)
 			case "role":
 				return ec.fieldContext_User_role(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
+			case "race":
+				return ec.fieldContext_User_race(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -1797,6 +1827,10 @@ func (ec *executionContext) fieldContext_LoginPayload_user(ctx context.Context, 
 				return ec.fieldContext_User_age(ctx, field)
 			case "role":
 				return ec.fieldContext_User_role(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
+			case "race":
+				return ec.fieldContext_User_race(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -2435,6 +2469,10 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 				return ec.fieldContext_User_age(ctx, field)
 			case "role":
 				return ec.fieldContext_User_role(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
+			case "race":
+				return ec.fieldContext_User_race(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -3184,6 +3222,10 @@ func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, fiel
 				return ec.fieldContext_User_age(ctx, field)
 			case "role":
 				return ec.fieldContext_User_role(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
+			case "race":
+				return ec.fieldContext_User_race(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -3295,6 +3337,10 @@ func (ec *executionContext) fieldContext_Query_searchUser(ctx context.Context, f
 				return ec.fieldContext_User_age(ctx, field)
 			case "role":
 				return ec.fieldContext_User_role(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
+			case "race":
+				return ec.fieldContext_User_race(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -3403,6 +3449,10 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 				return ec.fieldContext_User_age(ctx, field)
 			case "role":
 				return ec.fieldContext_User_role(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
+			case "race":
+				return ec.fieldContext_User_race(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -3711,6 +3761,10 @@ func (ec *executionContext) fieldContext_RegistrationPayload_user(ctx context.Co
 				return ec.fieldContext_User_age(ctx, field)
 			case "role":
 				return ec.fieldContext_User_role(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
+			case "race":
+				return ec.fieldContext_User_race(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -4310,6 +4364,136 @@ func (ec *executionContext) fieldContext_User_role(ctx context.Context, field gr
 	return fc, nil
 }
 
+func (ec *executionContext) _User_gender(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_gender(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return obj.Gender, nil
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *string`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_gender(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_race(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_race(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return obj.Race, nil
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*string`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_race(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_oAuth(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_oAuth(ctx, field)
 	if err != nil {
@@ -4899,6 +5083,10 @@ func (ec *executionContext) fieldContext_UsersConnection_users(ctx context.Conte
 				return ec.fieldContext_User_age(ctx, field)
 			case "role":
 				return ec.fieldContext_User_role(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
+			case "race":
+				return ec.fieldContext_User_race(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -7051,7 +7239,7 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"firstName", "lastName", "email", "phoneNumber", "pronouns", "age", "mailingAddress", "mlh", "shirtSize", "yearsOfExperience", "educationInfo"}
+	fieldsInOrder := [...]string{"firstName", "lastName", "email", "phoneNumber", "pronouns", "age", "mailingAddress", "mlh", "shirtSize", "yearsOfExperience", "educationInfo", "gender", "race"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7146,6 +7334,22 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 			if err != nil {
 				return it, err
 			}
+		case "gender":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gender"))
+			it.Gender, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "race":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("race"))
+			it.Race, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -7195,7 +7399,7 @@ func (ec *executionContext) unmarshalInputUpdatedUser(ctx context.Context, obj i
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"firstName", "lastName", "email", "phoneNumber", "pronouns", "age", "mailingAddress", "mlh", "shirtSize", "yearsOfExperience", "educationInfo"}
+	fieldsInOrder := [...]string{"firstName", "lastName", "email", "phoneNumber", "pronouns", "age", "mailingAddress", "mlh", "shirtSize", "yearsOfExperience", "educationInfo", "gender", "race"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7287,6 +7491,22 @@ func (ec *executionContext) unmarshalInputUpdatedUser(ctx context.Context, obj i
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("educationInfo"))
 			it.EducationInfo, err = ec.unmarshalOEducationInfoUpdate2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfoUpdate(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "gender":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gender"))
+			it.Gender, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "race":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("race"))
+			it.Race, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8127,6 +8347,14 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "gender":
+
+			out.Values[i] = ec._User_gender(ctx, field, obj)
+
+		case "race":
+
+			out.Values[i] = ec._User_race(ctx, field, obj)
+
 		case "oAuth":
 			field := field
 
@@ -9453,6 +9681,38 @@ func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel
 		if e == graphql.Null {
 			return graphql.Null
 		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
 	}
 
 	return ret

@@ -47,6 +47,9 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     age: Int @hasRole(role: OWNS)
     role: Role! @hasRole(role: OWNS)
 
+    gender: String @hasRole(role: OWNS)
+    race: [String] @hasRole(role: OWNS)
+
     oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
 
     mailingAddress: MailingAddress @goField(forceResolver: true) @hasRole(role: OWNS)
@@ -174,6 +177,8 @@ input NewUser {
     shirtSize: ShirtSize!
     yearsOfExperience: Float
     educationInfo: EducationInfoInput!
+    gender: String
+    race: [String]
 }
 
 input UpdatedUser {
@@ -183,12 +188,13 @@ input UpdatedUser {
     phoneNumber: String
     pronouns: PronounsInput
     age: Int
-
     mailingAddress: MailingAddressUpdate
     mlh: MLHTermsUpdate
     shirtSize: ShirtSize
     yearsOfExperience: Float
     educationInfo: EducationInfoUpdate
+    gender: String
+    race: [String]
 }
 
 type LoginPayload {

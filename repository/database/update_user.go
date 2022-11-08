@@ -8,6 +8,7 @@ import (
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
 	"github.com/jackc/pgx/v4"
+	"strconv"
 )
 
 /*
@@ -35,6 +36,7 @@ func Validate[T *string |
 	*float64 |
 	*model.ShirtSize |
 	*int |
+	[]*string |
 	*model.PronounsInput |
 	*model.MailingAddressUpdate |
 	*model.EducationInfoUpdate |
@@ -89,12 +91,18 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 		if err = Validate(ctx, tx, id, input.ShirtSize, r.UpdateShirtSize); err != nil {
 			return err
 		}
+		if err = Validate(ctx, tx, id, input.Gender, r.UpdateGender); err != nil {
+			return err
+		}
+		if err = Validate(ctx, tx, id, input.Race, r.UpdateRace); err != nil {
+			return err
+		}
 		if err = Validate(ctx, tx, id, input.YearsOfExperience, r.UpdateYearsOfExperience); err != nil {
 			return err
 		}
 
 		user, err = r.getUserWithTx(ctx,
-			`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role FROM users WHERE id = $1 LIMIT 1`,
+			`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race FROM users WHERE id = $1 LIMIT 1`,
 			tx,
 			id)
 
@@ -190,6 +198,32 @@ func (r *DatabaseRepository) UpdateShirtSize(ctx context.Context, id string, shi
 // UpdateYearsOfExperience updates years of experience
 func (r *DatabaseRepository) UpdateYearsOfExperience(ctx context.Context, id string, years *float64, tx pgx.Tx) error {
 	commandTag, err := tx.Exec(ctx, "UPDATE users SET years_of_experience = $1 WHERE id = $2", *years, id)
+	if err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() != 1 {
+		return repository.UserNotFound
+	}
+	// then no error
+	return nil
+}
+
+// UpdateRace updates race
+func (r *DatabaseRepository) UpdateRace(ctx context.Context, id string, race []*string, tx pgx.Tx) error {
+	commandTag, err := tx.Exec(ctx, "UPDATE users SET race = $1 WHERE id = $2", race, id)
+	if err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() != 1 {
+		return repository.UserNotFound
+	}
+	// then no error
+	return nil
+}
+
+// UpdateGender updates gender
+func (r *DatabaseRepository) UpdateGender(ctx context.Context, id string, gender *string, tx pgx.Tx) error {
+	commandTag, err := tx.Exec(ctx, "UPDATE users SET gender = $1 WHERE id = $2", *gender, id)
 	if err != nil {
 		return err
 	}
@@ -379,4 +413,34 @@ func (r *DatabaseRepository) UpdatePronouns(ctx context.Context, id string, pron
 	}
 	// then no error
 	return nil
+}
+
+type Scannable interface {
+	Scan(dest ...interface{}) error
+}
+
+func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
+	var pronounId *int32
+	var userIdInt int
+	err := scannable.Scan(
+		&userIdInt,
+		&user.FirstName,
+		&user.LastName,
+		&user.Email,
+		&user.PhoneNumber,
+		&pronounId,
+		&user.Age,
+		&user.Role,
+		&user.Gender,
+		&user.Race,
+	)
+	if err != nil {
+		return nil, err
+	}
+	user.ID = strconv.Itoa(userIdInt)
+	if pronounId != nil {
+		i := int(*pronounId)
+		return &i, nil
+	}
+	return nil, nil
 }

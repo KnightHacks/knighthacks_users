@@ -5,7 +5,6 @@ import (
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"strconv"
 )
 
 // DatabaseRepository
@@ -44,32 +43,4 @@ func (r *DatabaseRepository) DeleteUser(ctx context.Context, id string) (bool, e
 
 	// then no error
 	return true, nil
-}
-
-type Scannable interface {
-	Scan(dest ...interface{}) error
-}
-
-func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
-	var pronounId *int32
-	var userIdInt int
-	err := scannable.Scan(
-		&userIdInt,
-		&user.FirstName,
-		&user.LastName,
-		&user.Email,
-		&user.PhoneNumber,
-		&pronounId,
-		&user.Age,
-		&user.Role,
-	)
-	if err != nil {
-		return nil, err
-	}
-	user.ID = strconv.Itoa(userIdInt)
-	if pronounId != nil {
-		i := int(*pronounId)
-		return &i, nil
-	}
-	return nil, nil
 }

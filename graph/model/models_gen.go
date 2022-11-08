@@ -99,6 +99,8 @@ type NewUser struct {
 	ShirtSize         ShirtSize            `json:"shirtSize"`
 	YearsOfExperience *float64             `json:"yearsOfExperience"`
 	EducationInfo     *EducationInfoInput  `json:"educationInfo"`
+	Gender            *string              `json:"gender"`
+	Race              []*string            `json:"race"`
 }
 
 type OAuth struct {
@@ -137,6 +139,8 @@ type UpdatedUser struct {
 	ShirtSize         *ShirtSize            `json:"shirtSize"`
 	YearsOfExperience *float64              `json:"yearsOfExperience"`
 	EducationInfo     *EducationInfoUpdate  `json:"educationInfo"`
+	Gender            *string               `json:"gender"`
+	Race              []*string             `json:"race"`
 }
 
 type User struct {
@@ -149,6 +153,8 @@ type User struct {
 	Pronouns          *Pronouns       `json:"pronouns"`
 	Age               *int            `json:"age"`
 	Role              models.Role     `json:"role"`
+	Gender            *string         `json:"gender"`
+	Race              []*string       `json:"race"`
 	OAuth             *OAuth          `json:"oAuth"`
 	MailingAddress    *MailingAddress `json:"mailingAddress"`
 	Mlh               *MLHTerms       `json:"mlh"`
