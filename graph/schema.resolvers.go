@@ -240,12 +240,12 @@ func (r *userResolver) OAuth(ctx context.Context, obj *model.User) (*model.OAuth
 
 // MailingAddress is the resolver for the mailingAddress field.
 func (r *userResolver) MailingAddress(ctx context.Context, obj *model.User) (*model.MailingAddress, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.Repository.GetUserMailingAddress(ctx, obj.ID)
 }
 
 // Mlh is the resolver for the mlh field.
 func (r *userResolver) Mlh(ctx context.Context, obj *model.User) (*model.MLHTerms, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.Repository.GetUserMLHTerms(ctx, obj.ID)
 }
 
 // Mutation returns generated.MutationResolver implementation.

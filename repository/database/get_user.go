@@ -159,3 +159,13 @@ func (r *DatabaseRepository) GetOAuth(ctx context.Context, id string) (*model.OA
 	}
 	return &oAuth, err
 }
+
+func (r *DatabaseRepository) GetUserMailingAddress(ctx context.Context, userId string) (*model.MailingAddress, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *DatabaseRepository) GetUserMLHTerms(ctx context.Context, userId string) (*model.MLHTerms, error) {
+	//TODO implement me
+	panic("implement me")
+}
