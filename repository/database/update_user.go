@@ -22,6 +22,18 @@ $$ |  $$ |$$ |  $$ |$$ |  $$ |$$  __$$ | $$ |$$\ $$   ____|      $$ |  $$ | \___
           \__|
 */
 
+type UpdateFunc[T any] func(ctx context.Context, id string, input T, tx pgx.Tx) error
+
+func Validate[T any](ctx context.Context, tx pgx.Tx, id string, input *T, updateFunc UpdateFunc[T]) error {
+	if input != nil {
+		err := updateFunc(ctx, id, *input, tx)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // UpdateUser
 // update user add multiple parts go off of create user
 // we will check whether the values in input are nil or empty strings, if not, we execute the update statement
@@ -33,42 +45,23 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 		return nil, errors.New("empty user field")
 	}
 	err = r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
-
-		if input.FirstName != nil {
-			err = r.UpdateFirstName(ctx, id, *input.FirstName, tx)
-			if err != nil {
-				return err
-			}
+		if err = Validate(ctx, tx, id, input.FirstName, r.UpdateFirstName); err != nil {
+			return err
 		}
-		if input.LastName != nil {
-			err = r.UpdateLastName(ctx, id, *input.LastName, tx)
-			if err != nil {
-				return err
-			}
+		if err = Validate(ctx, tx, id, input.LastName, r.UpdateLastName); err != nil {
+			return err
 		}
-		if input.Email != nil {
-			err = r.UpdateEmail(ctx, id, *input.Email, tx)
-			if err != nil {
-				return err
-			}
+		if err = Validate(ctx, tx, id, input.Email, r.UpdateEmail); err != nil {
+			return err
 		}
-		if input.PhoneNumber != nil {
-			err = r.UpdatePhoneNumber(ctx, id, *input.PhoneNumber, tx)
-			if err != nil {
-				return err
-			}
+		if err = Validate(ctx, tx, id, input.PhoneNumber, r.UpdatePhoneNumber); err != nil {
+			return err
 		}
-		if input.Pronouns != nil {
-			err = r.UpdatePronouns(ctx, id, input.Pronouns, tx)
-			if err != nil {
-				return err
-			}
+		if err = Validate(ctx, tx, id, &input.Pronouns, r.UpdatePronouns); err != nil {
+			return err
 		}
-		if input.Age != nil {
-			err = r.UpdateAge(ctx, id, input.Age, tx)
-			if err != nil {
-				return err
-			}
+		if err = Validate(ctx, tx, id, &input.Age, r.UpdateAge); err != nil {
+			return err
 		}
 
 		user, err = r.getUserWithTx(ctx,
