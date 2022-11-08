@@ -3,6 +3,8 @@ package database
 import (
 	"context"
 	"errors"
+	"fmt"
+	"github.com/KnightHacks/knighthacks_shared/database"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
 	"github.com/jackc/pgx/v4"
@@ -22,11 +24,23 @@ $$ |  $$ |$$ |  $$ |$$ |  $$ |$$  __$$ | $$ |$$\ $$   ____|      $$ |  $$ | \___
           \__|
 */
 
+// UpdatePronouns(ctx context.Context, id string, pronoun *model.PronounsInput, tx pgx.Tx) error
+// func (ctx context.Context, id string, t *T, tx pgx.Tx)
 type UpdateFunc[T any] func(ctx context.Context, id string, input T, tx pgx.Tx) error
 
-func Validate[T any](ctx context.Context, tx pgx.Tx, id string, input *T, updateFunc UpdateFunc[T]) error {
+// Validate Yes, I understand this function is generic hell but there is no other way to do it.
+// *any does not work bc when you use *any it passes your generic type into any and not as *any.
+// that would make it a double pointer and not a single pointer.
+func Validate[T *string |
+	*float64 |
+	*model.ShirtSize |
+	*int |
+	*model.PronounsInput |
+	*model.MailingAddressUpdate |
+	*model.EducationInfoUpdate |
+	*model.MLHTermsUpdate](ctx context.Context, tx pgx.Tx, id string, input T, updateFunc UpdateFunc[T]) error {
 	if input != nil {
-		err := updateFunc(ctx, id, *input, tx)
+		err := updateFunc(ctx, id, input, tx)
 		if err != nil {
 			return err
 		}
@@ -57,10 +71,25 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 		if err = Validate(ctx, tx, id, input.PhoneNumber, r.UpdatePhoneNumber); err != nil {
 			return err
 		}
-		if err = Validate(ctx, tx, id, &input.Pronouns, r.UpdatePronouns); err != nil {
+		if err = Validate(ctx, tx, id, input.Pronouns, r.UpdatePronouns); err != nil {
 			return err
 		}
-		if err = Validate(ctx, tx, id, &input.Age, r.UpdateAge); err != nil {
+		if err = Validate(ctx, tx, id, input.Age, r.UpdateAge); err != nil {
+			return err
+		}
+		if err = Validate(ctx, tx, id, input.EducationInfo, r.UpdateEducationInfo); err != nil {
+			return err
+		}
+		if err = Validate(ctx, tx, id, input.Mlh, r.UpdateMLHTerms); err != nil {
+			return err
+		}
+		if err = Validate(ctx, tx, id, input.MailingAddress, r.UpdateMailingAddress); err != nil {
+			return err
+		}
+		if err = Validate(ctx, tx, id, input.ShirtSize, r.UpdateShirtSize); err != nil {
+			return err
+		}
+		if err = Validate(ctx, tx, id, input.YearsOfExperience, r.UpdateYearsOfExperience); err != nil {
 			return err
 		}
 
@@ -81,7 +110,7 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 }
 
 // UpdateFirstName this will update first name
-func (r *DatabaseRepository) UpdateFirstName(ctx context.Context, id string, first string, tx pgx.Tx) error {
+func (r *DatabaseRepository) UpdateFirstName(ctx context.Context, id string, first *string, tx pgx.Tx) error {
 
 	commandTag, err := tx.Exec(ctx, "UPDATE users SET first_name = $1 WHERE id = $2", first, id)
 	if err != nil {
@@ -94,7 +123,7 @@ func (r *DatabaseRepository) UpdateFirstName(ctx context.Context, id string, fir
 }
 
 // UpdateLastName this function will update last name
-func (r *DatabaseRepository) UpdateLastName(ctx context.Context, id string, last string, tx pgx.Tx) error {
+func (r *DatabaseRepository) UpdateLastName(ctx context.Context, id string, last *string, tx pgx.Tx) error {
 	commandTag, err := tx.Exec(ctx, "UPDATE users SET last_name = $1 WHERE id = $2", last, id)
 	if err != nil {
 		return err
@@ -107,7 +136,7 @@ func (r *DatabaseRepository) UpdateLastName(ctx context.Context, id string, last
 }
 
 // UpdateEmail updates email
-func (r *DatabaseRepository) UpdateEmail(ctx context.Context, id string, email string, tx pgx.Tx) error {
+func (r *DatabaseRepository) UpdateEmail(ctx context.Context, id string, email *string, tx pgx.Tx) error {
 	commandTag, err := tx.Exec(ctx, "UPDATE users SET email = $1 WHERE id = $2", email, id)
 	if err != nil {
 		return err
@@ -120,7 +149,7 @@ func (r *DatabaseRepository) UpdateEmail(ctx context.Context, id string, email s
 }
 
 // UpdatePhoneNumber updates user phone number
-func (r *DatabaseRepository) UpdatePhoneNumber(ctx context.Context, id string, number string, tx pgx.Tx) error {
+func (r *DatabaseRepository) UpdatePhoneNumber(ctx context.Context, id string, number *string, tx pgx.Tx) error {
 	commandTag, err := tx.Exec(ctx, "UPDATE users SET phone_number = $1 WHERE id = $2", number, id)
 	if err != nil {
 		return err
@@ -135,6 +164,161 @@ func (r *DatabaseRepository) UpdatePhoneNumber(ctx context.Context, id string, n
 // UpdateAge updates user age
 func (r *DatabaseRepository) UpdateAge(ctx context.Context, id string, age *int, tx pgx.Tx) error {
 	commandTag, err := tx.Exec(ctx, "UPDATE users SET age = $1 WHERE id = $2", *age, id)
+	if err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() != 1 {
+		return repository.UserNotFound
+	}
+	// then no error
+	return nil
+}
+
+// UpdateShirtSize updates shirt size
+func (r *DatabaseRepository) UpdateShirtSize(ctx context.Context, id string, shirtSize *model.ShirtSize, tx pgx.Tx) error {
+	commandTag, err := tx.Exec(ctx, "UPDATE users SET shirt_size = $1 WHERE id = $2", shirtSize.String(), id)
+	if err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() != 1 {
+		return repository.UserNotFound
+	}
+	// then no error
+	return nil
+}
+
+// UpdateYearsOfExperience updates years of experience
+func (r *DatabaseRepository) UpdateYearsOfExperience(ctx context.Context, id string, years *float64, tx pgx.Tx) error {
+	commandTag, err := tx.Exec(ctx, "UPDATE users SET years_of_experience = $1 WHERE id = $2", *years, id)
+	if err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() != 1 {
+		return repository.UserNotFound
+	}
+	// then no error
+	return nil
+}
+
+// UpdateMLHTerms updates user's MLH Terms
+func (r *DatabaseRepository) UpdateMLHTerms(ctx context.Context, id string, input *model.MLHTermsUpdate, tx pgx.Tx) error {
+	var keys []any
+	var values []any
+
+	if input.CodeOfConduct != nil {
+		keys = append(keys, "code_of_conduct")
+		values = append(values, *input.CodeOfConduct)
+	}
+	if input.ShareInfo != nil {
+		keys = append(keys, "share_info")
+		values = append(values, *input.ShareInfo)
+	}
+	if input.SendMessages != nil {
+		keys = append(keys, "send_messages")
+		values = append(values, *input.SendMessages)
+	}
+	// Extra check to ensure there is something being sent, should never happen
+	if len(keys) == 0 || len(values) == 0 || len(values) != len(keys) {
+		return errors.New("something went wrong calculating keys and values for sql")
+	}
+
+	sql := fmt.Sprintf(`UPDATE mlh_terms SET (%s) = (%s) WHERE user_id = $1`,
+		database.GeneratePlaceholderNumbers(2, len(keys)+1),
+		database.GeneratePlaceholderNumbers(len(keys)+2, len(keys)+len(values)+1))
+
+	combined := append(keys, values...)
+
+	commandTag, err := tx.Exec(ctx, sql, id, combined)
+	if err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() != 1 {
+		return repository.UserNotFound
+	}
+	// then no error
+	return nil
+}
+
+// UpdateEducationInfo updates user's Edu info
+func (r *DatabaseRepository) UpdateEducationInfo(ctx context.Context, id string, input *model.EducationInfoUpdate, tx pgx.Tx) error {
+	var keys []any
+	var values []any
+
+	if input.Level != nil {
+		keys = append(keys, "level")
+		values = append(values, *input.Level)
+	}
+	if input.Name != nil {
+		keys = append(keys, "name")
+		values = append(values, *input.Name)
+	}
+	if input.GraduationDate != nil {
+		keys = append(keys, "graduation_date")
+		values = append(values, *input.GraduationDate)
+	}
+	if input.Major != nil {
+		keys = append(keys, "major")
+		values = append(values, *input.Major)
+	}
+	// Extra check to ensure there is something being sent, should never happen
+	if len(keys) == 0 || len(values) == 0 || len(values) != len(keys) {
+		return errors.New("something went wrong calculating keys and values for sql")
+	}
+
+	sql := fmt.Sprintf(`UPDATE education_info SET (%s) = (%s) WHERE user_id = $1`,
+		database.GeneratePlaceholderNumbers(2, len(keys)+1),
+		database.GeneratePlaceholderNumbers(len(keys)+2, len(keys)+len(values)+1))
+
+	combined := append(keys, values...)
+
+	commandTag, err := tx.Exec(ctx, sql, id, combined)
+	if err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() != 1 {
+		return repository.UserNotFound
+	}
+	// then no error
+	return nil
+}
+
+// UpdateMailingAddress updates user's mailing address
+func (r *DatabaseRepository) UpdateMailingAddress(ctx context.Context, id string, input *model.MailingAddressUpdate, tx pgx.Tx) error {
+	var keys []any
+	var values []any
+
+	if input.Country != nil {
+		keys = append(keys, "country")
+		values = append(values, *input.Country)
+	}
+	if input.State != nil {
+		keys = append(keys, "state")
+		values = append(values, *input.State)
+	}
+	if input.City != nil {
+		keys = append(keys, "city")
+		values = append(values, *input.City)
+	}
+	if input.PostalCode != nil {
+		keys = append(keys, "postal_code")
+		values = append(values, *input.PostalCode)
+	}
+	if input.AddressLines != nil && len(input.AddressLines) > 0 {
+		keys = append(keys, "address_lines")
+		values = append(values, input.AddressLines)
+	}
+	// Extra check to ensure there is something being sent, should never happen
+	if len(keys) == 0 || len(values) == 0 || len(values) != len(keys) {
+		return errors.New("something went wrong calculating keys and values for sql")
+	}
+
+	sql := fmt.Sprintf(`UPDATE mailing_addresses SET (%s) = (%s) WHERE user_id = $1`,
+		database.GeneratePlaceholderNumbers(2, len(keys)+1),
+		database.GeneratePlaceholderNumbers(len(keys)+2, len(keys)+len(values)+1))
+
+	combined := append(keys, values...)
+
+	commandTag, err := tx.Exec(ctx, sql, id, combined)
 	if err != nil {
 		return err
 	}
