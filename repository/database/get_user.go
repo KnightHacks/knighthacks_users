@@ -161,6 +161,8 @@ func (r *DatabaseRepository) GetOAuth(ctx context.Context, id string) (*model.OA
 	return &oAuth, err
 }
 
+// GetUserMailingAddress get the mailing address of the user specified by a userID.
+// Uses SQL command to extract all parts of the data for mailing address.
 func (r *DatabaseRepository) GetUserMailingAddress(ctx context.Context, userId string) (*model.MailingAddress, error) {
 	var mailingAddress model.MailingAddress
 	err := r.DatabasePool.QueryRow(ctx, "SELECT country, state, city, postal_code, address_lines FROM users WHERE user_id = $1", userId).Scan(&mailingAddress.Country, &mailingAddress.State, &mailingAddress.City, &mailingAddress.PostalCode, &mailingAddress.AddressLines)
