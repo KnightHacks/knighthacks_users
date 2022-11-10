@@ -165,7 +165,7 @@ func (r *DatabaseRepository) GetOAuth(ctx context.Context, id string) (*model.OA
 // Uses SQL command to extract all parts of the data for mailing address.
 func (r *DatabaseRepository) GetUserMailingAddress(ctx context.Context, userId string) (*model.MailingAddress, error) {
 	var mailingAddress model.MailingAddress
-	err := r.DatabasePool.QueryRow(ctx, "SELECT country, state, city, postal_code, address_lines FROM users WHERE user_id = $1", userId).Scan(&mailingAddress.Country, &mailingAddress.State, &mailingAddress.City, &mailingAddress.PostalCode, &mailingAddress.AddressLines)
+	err := r.DatabasePool.QueryRow(ctx, "SELECT country, state, city, postal_code, address_lines FROM mailing_addresses WHERE user_id = $1", userId).Scan(&mailingAddress.Country, &mailingAddress.State, &mailingAddress.City, &mailingAddress.PostalCode, &mailingAddress.AddressLines)
 	if (err != nil) {
 		return nil, err
 	}
