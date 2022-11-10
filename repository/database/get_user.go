@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"errors"
+
 	sharedModels "github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
@@ -165,7 +166,16 @@ func (r *DatabaseRepository) GetUserMailingAddress(ctx context.Context, userId s
 	panic("implement me")
 }
 
+// GetUserMLHTerms returns the SQL fields (listed inside the function below) from the mlh_terms table
+// Var mlhTerms is returning a result from the inputted SQL selection from the mlh_terms table
+// The SQL function in err is selecting all of the boolean values to process our search request
+// return &mlhTerms delivers the result to the user
 func (r *DatabaseRepository) GetUserMLHTerms(ctx context.Context, userId string) (*model.MLHTerms, error) {
-	//TODO implement me
-	panic("implement me")
+	var mlhTerms model.MLHTerms
+	err := r.DatabasePool.QueryRow(ctx, "SELECT send_messages, share_info, code_of_conduct FROM mlh_terms WHERE user_id = $1", userId).Scan(&mlhTerms.SendMessages, &mlhTerms.ShareInfo, &mlhTerms.CodeOfConduct)
+	if err != nil {
+		return nil, err
+	}
+	return &mlhTerms, err
+
 }
