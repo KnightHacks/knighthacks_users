@@ -162,8 +162,12 @@ func (r *DatabaseRepository) GetOAuth(ctx context.Context, id string) (*model.OA
 }
 
 func (r *DatabaseRepository) GetUserMailingAddress(ctx context.Context, userId string) (*model.MailingAddress, error) {
-	//TODO implement me
-	panic("implement me")
+	var mailingAddress model.MailingAddress
+	err := r.DatabasePool.QueryRow(ctx, "SELECT country, state, city, postal_code, address_lines FROM users WHERE user_id = $1", userId).Scan(&mailingAddress.Country, &mailingAddress.State, &mailingAddress.City, &mailingAddress.PostalCode, &mailingAddress.AddressLines)
+	if (err != nil) {
+		return nil, err
+	}
+	return &mailingAddress, nil
 }
 
 // GetUserMLHTerms returns the SQL fields (listed inside the function below) from the mlh_terms table
