@@ -21,6 +21,7 @@ import (
 	"github.com/KnightHacks/knighthacks_users/repository"
 )
 
+// Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, provider models.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.RegistrationPayload, error) {
 	// Decode the encrypted OAuth AccessToken from base64
 	b, err := base64.URLEncoding.DecodeString(encryptedOauthAccessToken)
@@ -56,6 +57,7 @@ func (r *mutationResolver) Register(ctx context.Context, provider models.Provide
 	return payload, nil
 }
 
+// UpdateUser is the resolver for the updateUser field.
 func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.UpdatedUser) (*model.User, error) {
 	if input.FirstName == nil && input.LastName == nil && input.Email == nil && input.PhoneNumber == nil && input.Pronouns == nil && input.Age == nil {
 		return nil, fmt.Errorf("no field has been updated")
@@ -72,6 +74,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 	return r.Repository.UpdateUser(ctx, id, &input)
 }
 
+// DeleteUser is the resolver for the deleteUser field.
 func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, error) {
 	claims, ok := ctx.Value("AuthorizationUserClaims").(*auth.UserClaims)
 	if !ok {
@@ -83,6 +86,7 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 	return r.Repository.DeleteUser(ctx, id)
 }
 
+// GetAuthRedirectLink is the resolver for the getAuthRedirectLink field.
 func (r *queryResolver) GetAuthRedirectLink(ctx context.Context, provider models.Provider, redirect *string) (string, error) {
 	ginContext, err := utils.GinContextFromContext(ctx)
 	if err != nil {
@@ -103,6 +107,7 @@ func (r *queryResolver) GetAuthRedirectLink(ctx context.Context, provider models
 	return r.Auth.GetAuthCodeURL(provider, state, redirect), nil
 }
 
+// Login is the resolver for the login field.
 func (r *queryResolver) Login(ctx context.Context, provider models.Provider, code string, state string) (*model.LoginPayload, error) {
 	// todo: this should probably be cleaned up, been at this shit for hours, please god.. no more
 	ginContext, err := utils.GinContextFromContext(ctx)
@@ -165,6 +170,7 @@ func (r *queryResolver) Login(ctx context.Context, provider models.Provider, cod
 	return &payload, nil
 }
 
+// RefreshJwt is the resolver for the refreshJWT field.
 func (r *queryResolver) RefreshJwt(ctx context.Context, refreshToken string) (string, error) {
 	refreshTokenUserClaims, err := r.Auth.ParseJWT(refreshToken, auth.RefreshTokenType)
 	if err != nil {
@@ -179,6 +185,7 @@ func (r *queryResolver) RefreshJwt(ctx context.Context, refreshToken string) (st
 	return token, nil
 }
 
+// Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context, first int, after *string) (*model.UsersConnection, error) {
 	a, err := pagination.DecodeCursor(after)
 	if err != nil {
@@ -196,10 +203,12 @@ func (r *queryResolver) Users(ctx context.Context, first int, after *string) (*m
 	}, nil
 }
 
+// GetUser is the resolver for the getUser field.
 func (r *queryResolver) GetUser(ctx context.Context, id string) (*model.User, error) {
 	return r.Repository.GetUserByID(ctx, id)
 }
 
+// SearchUser is the resolver for the searchUser field.
 func (r *queryResolver) SearchUser(ctx context.Context, name string) ([]*model.User, error) {
 	if !utils.IsASCII(name) {
 		// TODO: how to handle non ascii names? do they exist? idk
@@ -209,6 +218,7 @@ func (r *queryResolver) SearchUser(ctx context.Context, name string) ([]*model.U
 	return r.Repository.SearchUser(ctx, name)
 }
 
+// Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 	userClaims, err := auth.UserClaimsFromContext(ctx)
 	if err != nil {
@@ -218,12 +228,24 @@ func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 	return r.Entity().FindUserByID(ctx, userClaims.UserID)
 }
 
+// FullName is the resolver for the fullName field.
 func (r *userResolver) FullName(ctx context.Context, obj *model.User) (string, error) {
 	return fmt.Sprintf("%s %s", obj.FirstName, obj.LastName), nil
 }
 
+// OAuth is the resolver for the oAuth field.
 func (r *userResolver) OAuth(ctx context.Context, obj *model.User) (*model.OAuth, error) {
 	return r.Repository.GetOAuth(ctx, obj.ID)
+}
+
+// MailingAddress is the resolver for the mailingAddress field.
+func (r *userResolver) MailingAddress(ctx context.Context, obj *model.User) (*model.MailingAddress, error) {
+	return r.Repository.GetUserMailingAddress(ctx, obj.ID)
+}
+
+// Mlh is the resolver for the mlh field.
+func (r *userResolver) Mlh(ctx context.Context, obj *model.User) (*model.MLHTerms, error) {
+	return r.Repository.GetUserMLHTerms(ctx, obj.ID)
 }
 
 // Mutation returns generated.MutationResolver implementation.

@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/KnightHacks/knighthacks_shared/auth"
-	"github.com/KnightHacks/knighthacks_shared/database"
+	databaseUtils "github.com/KnightHacks/knighthacks_shared/database"
 	"github.com/KnightHacks/knighthacks_shared/pagination"
 	"github.com/KnightHacks/knighthacks_shared/utils"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
-	"github.com/KnightHacks/knighthacks_users/repository"
+	"github.com/KnightHacks/knighthacks_users/repository/database"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -33,7 +33,7 @@ func main() {
 		port = defaultPort
 	}
 
-	pool, err := database.ConnectWithRetries(utils.GetEnvOrDie("DATABASE_URI"))
+	pool, err := databaseUtils.ConnectWithRetries(utils.GetEnvOrDie("DATABASE_URI"))
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
@@ -65,7 +65,7 @@ func graphqlHandler(a *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
 
 	config := generated.Config{
 		Resolvers: &graph.Resolver{
-			Repository: repository.NewDatabaseRepository(pool),
+			Repository: database.NewDatabaseRepository(pool),
 			Auth:       a,
 		},
 		Directives: generated.DirectiveRoot{

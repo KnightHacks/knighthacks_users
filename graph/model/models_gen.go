@@ -3,11 +3,37 @@
 package model
 
 import (
+	"fmt"
+	"io"
+	"strconv"
+	"time"
+
 	"github.com/KnightHacks/knighthacks_shared/models"
 )
 
 type Connection interface {
 	IsConnection()
+}
+
+type EducationInfo struct {
+	Name           string        `json:"name"`
+	GraduationDate time.Time     `json:"graduationDate"`
+	Major          string        `json:"major"`
+	Level          *LevelOfStudy `json:"level"`
+}
+
+type EducationInfoInput struct {
+	Name           string        `json:"name"`
+	GraduationDate time.Time     `json:"graduationDate"`
+	Major          string        `json:"major"`
+	Level          *LevelOfStudy `json:"level"`
+}
+
+type EducationInfoUpdate struct {
+	Name           *string       `json:"name"`
+	GraduationDate *time.Time    `json:"graduationDate"`
+	Major          *string       `json:"major"`
+	Level          *LevelOfStudy `json:"level"`
 }
 
 type LoginPayload struct {
@@ -19,13 +45,62 @@ type LoginPayload struct {
 	EncryptedOAuthAccessToken *string `json:"encryptedOAuthAccessToken"`
 }
 
+type MLHTerms struct {
+	SendMessages  bool `json:"sendMessages"`
+	CodeOfConduct bool `json:"codeOfConduct"`
+	ShareInfo     bool `json:"shareInfo"`
+}
+
+type MLHTermsInput struct {
+	SendMessages  bool `json:"sendMessages"`
+	CodeOfConduct bool `json:"codeOfConduct"`
+	ShareInfo     bool `json:"shareInfo"`
+}
+
+type MLHTermsUpdate struct {
+	SendMessages  *bool `json:"sendMessages"`
+	CodeOfConduct *bool `json:"codeOfConduct"`
+	ShareInfo     *bool `json:"shareInfo"`
+}
+
+type MailingAddress struct {
+	Country      string   `json:"country"`
+	State        string   `json:"state"`
+	City         string   `json:"city"`
+	PostalCode   string   `json:"postalCode"`
+	AddressLines []string `json:"addressLines"`
+}
+
+type MailingAddressInput struct {
+	Country      string   `json:"country"`
+	State        string   `json:"state"`
+	City         string   `json:"city"`
+	PostalCode   string   `json:"postalCode"`
+	AddressLines []string `json:"addressLines"`
+}
+
+type MailingAddressUpdate struct {
+	Country      *string  `json:"country"`
+	State        *string  `json:"state"`
+	City         *string  `json:"city"`
+	PostalCode   *string  `json:"postalCode"`
+	AddressLines []string `json:"addressLines"`
+}
+
 type NewUser struct {
-	FirstName   string         `json:"firstName"`
-	LastName    string         `json:"lastName"`
-	Email       string         `json:"email"`
-	PhoneNumber string         `json:"phoneNumber"`
-	Pronouns    *PronounsInput `json:"pronouns"`
-	Age         *int           `json:"age"`
+	FirstName         string               `json:"firstName"`
+	LastName          string               `json:"lastName"`
+	Email             string               `json:"email"`
+	PhoneNumber       string               `json:"phoneNumber"`
+	Pronouns          *PronounsInput       `json:"pronouns"`
+	Age               *int                 `json:"age"`
+	MailingAddress    *MailingAddressInput `json:"mailingAddress"`
+	Mlh               *MLHTermsInput       `json:"mlh"`
+	ShirtSize         ShirtSize            `json:"shirtSize"`
+	YearsOfExperience *float64             `json:"yearsOfExperience"`
+	EducationInfo     *EducationInfoInput  `json:"educationInfo"`
+	Gender            *string              `json:"gender"`
+	Race              []Race               `json:"race"`
 }
 
 type OAuth struct {
@@ -53,25 +128,39 @@ type RegistrationPayload struct {
 }
 
 type UpdatedUser struct {
-	FirstName   *string        `json:"firstName"`
-	LastName    *string        `json:"lastName"`
-	Email       *string        `json:"email"`
-	PhoneNumber *string        `json:"phoneNumber"`
-	Pronouns    *PronounsInput `json:"pronouns"`
-	Age         *int           `json:"age"`
+	FirstName         *string               `json:"firstName"`
+	LastName          *string               `json:"lastName"`
+	Email             *string               `json:"email"`
+	PhoneNumber       *string               `json:"phoneNumber"`
+	Pronouns          *PronounsInput        `json:"pronouns"`
+	Age               *int                  `json:"age"`
+	MailingAddress    *MailingAddressUpdate `json:"mailingAddress"`
+	Mlh               *MLHTermsUpdate       `json:"mlh"`
+	ShirtSize         *ShirtSize            `json:"shirtSize"`
+	YearsOfExperience *float64              `json:"yearsOfExperience"`
+	EducationInfo     *EducationInfoUpdate  `json:"educationInfo"`
+	Gender            *string               `json:"gender"`
+	Race              []Race                `json:"race"`
 }
 
 type User struct {
-	ID          string      `json:"id"`
-	FirstName   string      `json:"firstName"`
-	LastName    string      `json:"lastName"`
-	FullName    string      `json:"fullName"`
-	Email       string      `json:"email"`
-	PhoneNumber string      `json:"phoneNumber"`
-	Pronouns    *Pronouns   `json:"pronouns"`
-	Age         *int        `json:"age"`
-	Role        models.Role `json:"role"`
-	OAuth       *OAuth      `json:"oAuth"`
+	ID                string          `json:"id"`
+	FirstName         string          `json:"firstName"`
+	LastName          string          `json:"lastName"`
+	FullName          string          `json:"fullName"`
+	Email             string          `json:"email"`
+	PhoneNumber       string          `json:"phoneNumber"`
+	Pronouns          *Pronouns       `json:"pronouns"`
+	Age               *int            `json:"age"`
+	Role              models.Role     `json:"role"`
+	Gender            *string         `json:"gender"`
+	Race              []Race          `json:"race"`
+	OAuth             *OAuth          `json:"oAuth"`
+	MailingAddress    *MailingAddress `json:"mailingAddress"`
+	Mlh               *MLHTerms       `json:"mlh"`
+	ShirtSize         ShirtSize       `json:"shirtSize"`
+	YearsOfExperience *float64        `json:"yearsOfExperience"`
+	EducationInfo     *EducationInfo  `json:"educationInfo"`
 }
 
 func (User) IsEntity() {}
@@ -83,3 +172,152 @@ type UsersConnection struct {
 }
 
 func (UsersConnection) IsConnection() {}
+
+type LevelOfStudy string
+
+const (
+	LevelOfStudyFreshman    LevelOfStudy = "FRESHMAN"
+	LevelOfStudySophomore   LevelOfStudy = "SOPHOMORE"
+	LevelOfStudyJunior      LevelOfStudy = "JUNIOR"
+	LevelOfStudySenior      LevelOfStudy = "SENIOR"
+	LevelOfStudySuperSenior LevelOfStudy = "SUPER_SENIOR"
+	LevelOfStudyGraduate    LevelOfStudy = "GRADUATE"
+)
+
+var AllLevelOfStudy = []LevelOfStudy{
+	LevelOfStudyFreshman,
+	LevelOfStudySophomore,
+	LevelOfStudyJunior,
+	LevelOfStudySenior,
+	LevelOfStudySuperSenior,
+	LevelOfStudyGraduate,
+}
+
+func (e LevelOfStudy) IsValid() bool {
+	switch e {
+	case LevelOfStudyFreshman, LevelOfStudySophomore, LevelOfStudyJunior, LevelOfStudySenior, LevelOfStudySuperSenior, LevelOfStudyGraduate:
+		return true
+	}
+	return false
+}
+
+func (e LevelOfStudy) String() string {
+	return string(e)
+}
+
+func (e *LevelOfStudy) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = LevelOfStudy(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid LevelOfStudy", str)
+	}
+	return nil
+}
+
+func (e LevelOfStudy) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type Race string
+
+const (
+	RaceAfricanAmerican      Race = "AFRICAN_AMERICAN"
+	RaceAsianPacificIslander Race = "ASIAN_PACIFIC_ISLANDER"
+	RaceCaucasian            Race = "CAUCASIAN"
+	RaceLatino               Race = "LATINO"
+	RacePrefer               Race = "PREFER"
+)
+
+var AllRace = []Race{
+	RaceAfricanAmerican,
+	RaceAsianPacificIslander,
+	RaceCaucasian,
+	RaceLatino,
+	RacePrefer,
+}
+
+func (e Race) IsValid() bool {
+	switch e {
+	case RaceAfricanAmerican, RaceAsianPacificIslander, RaceCaucasian, RaceLatino, RacePrefer:
+		return true
+	}
+	return false
+}
+
+func (e Race) String() string {
+	return string(e)
+}
+
+func (e *Race) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Race(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Race", str)
+	}
+	return nil
+}
+
+func (e Race) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type ShirtSize string
+
+const (
+	ShirtSizeXs    ShirtSize = "XS"
+	ShirtSizeS     ShirtSize = "S"
+	ShirtSizeM     ShirtSize = "M"
+	ShirtSizeL     ShirtSize = "L"
+	ShirtSizeXl    ShirtSize = "XL"
+	ShirtSizeXxl   ShirtSize = "XXL"
+	ShirtSizeXxxl  ShirtSize = "XXXL"
+	ShirtSizeXxxxl ShirtSize = "XXXXL"
+)
+
+var AllShirtSize = []ShirtSize{
+	ShirtSizeXs,
+	ShirtSizeS,
+	ShirtSizeM,
+	ShirtSizeL,
+	ShirtSizeXl,
+	ShirtSizeXxl,
+	ShirtSizeXxxl,
+	ShirtSizeXxxxl,
+}
+
+func (e ShirtSize) IsValid() bool {
+	switch e {
+	case ShirtSizeXs, ShirtSizeS, ShirtSizeM, ShirtSizeL, ShirtSizeXl, ShirtSizeXxl, ShirtSizeXxxl, ShirtSizeXxxxl:
+		return true
+	}
+	return false
+}
+
+func (e ShirtSize) String() string {
+	return string(e)
+}
+
+func (e *ShirtSize) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ShirtSize(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ShirtSize", str)
+	}
+	return nil
+}
+
+func (e ShirtSize) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
