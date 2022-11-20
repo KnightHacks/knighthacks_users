@@ -4,6 +4,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/toml v1.1.0/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/KnightHacks/knighthacks_shared v0.0.0-20221108080447-3d7bd40b913a h1:R474w9kB/3X1TcgRaboPBy/zO6lL3CRon7g/6g8YFFw=
 github.com/KnightHacks/knighthacks_shared v0.0.0-20221108080447-3d7bd40b913a/go.mod h1:W6x/SycHYHMTE51Mo1MZeGQJUTJGME5LF3hdPFdGp4c=
+github.com/KnightHacks/knighthacks_shared v0.0.0-20221120025925-541d81e10069 h1:yvEO67PhIBcBO/Yn3Mh2iUPSgVC0az/T3ls7IRg3ZRk=
+github.com/KnightHacks/knighthacks_shared v0.0.0-20221120025925-541d81e10069/go.mod h1:1PTL6VJL44UN/BdfFyxT8GsAa46W2+9C5dDRnfqKJYA=
 github.com/Masterminds/semver/v3 v3.1.1/go.mod h1:VPu/7SZ7ePZ3QOrcuXROw5FAcLl4a0cBrbBpGY/8hQs=
 github.com/agnivade/levenshtein v1.0.1/go.mod h1:CURSv5d9Uaml+FovSIICkLbAUZ9S4RqaHDIsdSBg7lM=
 github.com/agnivade/levenshtein v1.1.1 h1:QY8M92nrzkmr798gCo3kmMyqXFzdQVpxLlGPRBij0P8=
