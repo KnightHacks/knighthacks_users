@@ -165,8 +165,14 @@ func (r *DatabaseRepository) GetOAuth(ctx context.Context, id string) (*model.OA
 // Uses SQL command to extract all parts of the data for mailing address.
 func (r *DatabaseRepository) GetUserMailingAddress(ctx context.Context, userId string) (*model.MailingAddress, error) {
 	var mailingAddress model.MailingAddress
-	err := r.DatabasePool.QueryRow(ctx, "SELECT country, state, city, postal_code, address_lines FROM mailing_addresses WHERE user_id = $1", userId).Scan(&mailingAddress.Country, &mailingAddress.State, &mailingAddress.City, &mailingAddress.PostalCode, &mailingAddress.AddressLines)
-	if (err != nil) {
+	err := r.DatabasePool.QueryRow(ctx, "SELECT country, state, city, postal_code, address_lines FROM mailing_addresses WHERE user_id = $1", userId).Scan(
+		&mailingAddress.Country,
+		&mailingAddress.State,
+		&mailingAddress.City,
+		&mailingAddress.PostalCode,
+		&mailingAddress.AddressLines,
+	)
+	if err != nil {
 		return nil, err
 	}
 	return &mailingAddress, nil
@@ -178,7 +184,11 @@ func (r *DatabaseRepository) GetUserMailingAddress(ctx context.Context, userId s
 // return &mlhTerms delivers the result to the user
 func (r *DatabaseRepository) GetUserMLHTerms(ctx context.Context, userId string) (*model.MLHTerms, error) {
 	var mlhTerms model.MLHTerms
-	err := r.DatabasePool.QueryRow(ctx, "SELECT send_messages, share_info, code_of_conduct FROM mlh_terms WHERE user_id = $1", userId).Scan(&mlhTerms.SendMessages, &mlhTerms.ShareInfo, &mlhTerms.CodeOfConduct)
+	err := r.DatabasePool.QueryRow(ctx, "SELECT send_messages, share_info, code_of_conduct FROM mlh_terms WHERE user_id = $1", userId).Scan(
+		&mlhTerms.SendMessages,
+		&mlhTerms.ShareInfo,
+		&mlhTerms.CodeOfConduct,
+	)
 	if err != nil {
 		return nil, err
 	}
