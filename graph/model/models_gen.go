@@ -100,7 +100,7 @@ type NewUser struct {
 	YearsOfExperience *float64             `json:"yearsOfExperience"`
 	EducationInfo     *EducationInfoInput  `json:"educationInfo"`
 	Gender            *string              `json:"gender"`
-	Race              []*string            `json:"race"`
+	Race              []Race               `json:"race"`
 }
 
 type OAuth struct {
@@ -140,7 +140,7 @@ type UpdatedUser struct {
 	YearsOfExperience *float64              `json:"yearsOfExperience"`
 	EducationInfo     *EducationInfoUpdate  `json:"educationInfo"`
 	Gender            *string               `json:"gender"`
-	Race              []*string             `json:"race"`
+	Race              []Race                `json:"race"`
 }
 
 type User struct {
@@ -154,7 +154,7 @@ type User struct {
 	Age               *int            `json:"age"`
 	Role              models.Role     `json:"role"`
 	Gender            *string         `json:"gender"`
-	Race              []*string       `json:"race"`
+	Race              []Race          `json:"race"`
 	OAuth             *OAuth          `json:"oAuth"`
 	MailingAddress    *MailingAddress `json:"mailingAddress"`
 	Mlh               *MLHTerms       `json:"mlh"`
@@ -219,6 +219,53 @@ func (e *LevelOfStudy) UnmarshalGQL(v interface{}) error {
 }
 
 func (e LevelOfStudy) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type Race string
+
+const (
+	RaceAfricanAmerican      Race = "AFRICAN_AMERICAN"
+	RaceAsianPacificIslander Race = "ASIAN_PACIFIC_ISLANDER"
+	RaceCaucasian            Race = "CAUCASIAN"
+	RaceLatino               Race = "LATINO"
+	RacePrefer               Race = "PREFER"
+)
+
+var AllRace = []Race{
+	RaceAfricanAmerican,
+	RaceAsianPacificIslander,
+	RaceCaucasian,
+	RaceLatino,
+	RacePrefer,
+}
+
+func (e Race) IsValid() bool {
+	switch e {
+	case RaceAfricanAmerican, RaceAsianPacificIslander, RaceCaucasian, RaceLatino, RacePrefer:
+		return true
+	}
+	return false
+}
+
+func (e Race) String() string {
+	return string(e)
+}
+
+func (e *Race) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Race(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Race", str)
+	}
+	return nil
+}
+
+func (e Race) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

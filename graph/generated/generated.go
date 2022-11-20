@@ -797,6 +797,14 @@ type UsersConnection implements Connection {
     users: [User!]!
 }
 
+enum Race {
+    AFRICAN_AMERICAN
+    ASIAN_PACIFIC_ISLANDER
+    CAUCASIAN
+    LATINO
+    PREFER
+}
+
 type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     id: ID!
     firstName: String!
@@ -810,7 +818,7 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     role: Role! @hasRole(role: OWNS)
 
     gender: String @hasRole(role: OWNS)
-    race: [String] @hasRole(role: OWNS)
+    race: [Race!] @hasRole(role: OWNS)
 
     oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
 
@@ -940,7 +948,7 @@ input NewUser {
     yearsOfExperience: Float
     educationInfo: EducationInfoInput!
     gender: String
-    race: [String]
+    race: [Race!]
 }
 
 input UpdatedUser {
@@ -956,7 +964,7 @@ input UpdatedUser {
     yearsOfExperience: Float
     educationInfo: EducationInfoUpdate
     gender: String
-    race: [String]
+    race: [Race!]
 }
 
 type LoginPayload {
@@ -4464,10 +4472,10 @@ func (ec *executionContext) _User_race(ctx context.Context, field graphql.Collec
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.([]*string); ok {
+		if data, ok := tmp.([]model.Race); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*string`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/KnightHacks/knighthacks_users/graph/model.Race`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4476,9 +4484,9 @@ func (ec *executionContext) _User_race(ctx context.Context, field graphql.Collec
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*string)
+	res := resTmp.([]model.Race)
 	fc.Result = res
-	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+	return ec.marshalORace2ᚕgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRaceᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_race(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4488,7 +4496,7 @@ func (ec *executionContext) fieldContext_User_race(ctx context.Context, field gr
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Race does not have child fields")
 		},
 	}
 	return fc, nil
@@ -7346,7 +7354,7 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("race"))
-			it.Race, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			it.Race, err = ec.unmarshalORace2ᚕgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRaceᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7506,7 +7514,7 @@ func (ec *executionContext) unmarshalInputUpdatedUser(ctx context.Context, obj i
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("race"))
-			it.Race, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			it.Race, err = ec.unmarshalORace2ᚕgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRaceᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8958,6 +8966,16 @@ func (ec *executionContext) marshalNProvider2githubᚗcomᚋKnightHacksᚋknight
 	return v
 }
 
+func (ec *executionContext) unmarshalNRace2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRace(ctx context.Context, v interface{}) (model.Race, error) {
+	var res model.Race
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNRace2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRace(ctx context.Context, sel ast.SelectionSet, v model.Race) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) marshalNRegistrationPayload2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRegistrationPayload(ctx context.Context, sel ast.SelectionSet, v model.RegistrationPayload) graphql.Marshaler {
 	return ec._RegistrationPayload(ctx, sel, &v)
 }
@@ -9622,6 +9640,73 @@ func (ec *executionContext) unmarshalOPronounsInput2ᚖgithubᚗcomᚋKnightHack
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalORace2ᚕgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRaceᚄ(ctx context.Context, v interface{}) ([]model.Race, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]model.Race, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNRace2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRace(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalORace2ᚕgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRaceᚄ(ctx context.Context, sel ast.SelectionSet, v []model.Race) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNRace2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRace(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOShirtSize2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐShirtSize(ctx context.Context, v interface{}) (*model.ShirtSize, error) {
 	if v == nil {
 		return nil, nil
@@ -9681,38 +9766,6 @@ func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel
 		if e == graphql.Null {
 			return graphql.Null
 		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]*string, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalOString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
 	}
 
 	return ret
