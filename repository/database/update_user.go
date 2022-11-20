@@ -40,7 +40,8 @@ func Validate[T *string |
 	*model.PronounsInput |
 	*model.MailingAddressUpdate |
 	*model.EducationInfoUpdate |
-	*model.MLHTermsUpdate](ctx context.Context, tx pgx.Tx, id string, input T, updateFunc UpdateFunc[T]) error {
+	*model.MLHTermsUpdate |
+	[]model.Race](ctx context.Context, tx pgx.Tx, id string, input T, updateFunc UpdateFunc[T]) error {
 	if input != nil {
 		err := updateFunc(ctx, id, input, tx)
 		if err != nil {
@@ -209,8 +210,15 @@ func (r *DatabaseRepository) UpdateYearsOfExperience(ctx context.Context, id str
 }
 
 // UpdateRace updates race
-func (r *DatabaseRepository) UpdateRace(ctx context.Context, id string, race []*string, tx pgx.Tx) error {
-	commandTag, err := tx.Exec(ctx, "UPDATE users SET race = $1 WHERE id = $2", race, id)
+func (r *DatabaseRepository) UpdateRace(ctx context.Context, id string, races []model.Race, tx pgx.Tx) error {
+	var raceStringArray []string
+	if races != nil && len(races) > 0 {
+		raceStringArray = make([]string, 0, len(races))
+		for _, race := range races {
+			raceStringArray = append(raceStringArray, race.String())
+		}
+	}
+	commandTag, err := tx.Exec(ctx, "UPDATE users SET race = $1 WHERE id = $2", raceStringArray, id)
 	if err != nil {
 		return err
 	}
