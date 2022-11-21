@@ -1,10 +1,10 @@
 module github.com/KnightHacks/knighthacks_users
 
-go 1.18
+go 1.19
 
 require (
 	github.com/99designs/gqlgen v0.17.13
-	github.com/KnightHacks/knighthacks_shared v0.0.0-20221029020239-4248bfa6f0dd
+	github.com/KnightHacks/knighthacks_shared v0.0.0-20221121010043-cf2a1397df2e
 	github.com/gin-gonic/gin v1.8.1
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/vektah/gqlparser/v2 v2.4.7

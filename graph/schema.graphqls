@@ -1,3 +1,5 @@
+scalar Time
+
 directive @goModel(model: String, models: [String!]) on OBJECT
     | INPUT_OBJECT
     | SCALAR
@@ -33,6 +35,14 @@ type UsersConnection implements Connection {
     users: [User!]!
 }
 
+enum Race {
+    AFRICAN_AMERICAN
+    ASIAN_PACIFIC_ISLANDER
+    CAUCASIAN
+    LATINO
+    PREFER
+}
+
 type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     id: ID!
     firstName: String!
@@ -45,7 +55,23 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     age: Int @hasRole(role: OWNS)
     role: Role! @hasRole(role: OWNS)
 
+    gender: String @hasRole(role: OWNS)
+    race: [Race!] @hasRole(role: OWNS)
+
     oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
+
+    mailingAddress: MailingAddress @goField(forceResolver: true) @hasRole(role: OWNS)
+    mlh: MLHTerms! @goField(forceResolver: true) @hasRole(role: OWNS)
+    shirtSize: ShirtSize! @hasRole(role: OWNS)
+    yearsOfExperience: Float @hasRole(role: OWNS)
+    educationInfo: EducationInfo! @hasRole(role: OWNS)
+
+    apiKey: APIKey! @goField(forceResolver: true) @hasRole(role: OWNS)
+}
+
+type APIKey {
+    created: Time!
+    key: String!
 }
 
 """
@@ -83,6 +109,77 @@ input PronounsInput {
     objective: String!
 }
 
+type MLHTerms {
+    sendMessages: Boolean!
+    codeOfConduct: Boolean!
+    shareInfo: Boolean!
+}
+
+input MLHTermsInput {
+    sendMessages: Boolean!
+    codeOfConduct: Boolean!
+    shareInfo: Boolean!
+}
+
+input MLHTermsUpdate {
+    sendMessages: Boolean
+    codeOfConduct: Boolean
+    shareInfo: Boolean
+}
+
+type MailingAddress {
+    country: String!
+    state: String!
+    city: String!
+    postalCode: String!
+    addressLines: [String!]!
+}
+
+input MailingAddressInput {
+    country: String!
+    state: String!
+    city: String!
+    postalCode: String!
+    addressLines: [String!]!
+}
+
+input MailingAddressUpdate {
+    country: String
+    state: String
+    city: String
+    postalCode: String
+    addressLines: [String!]
+}
+
+type EducationInfo {
+    name: String!
+    graduationDate: Time!
+    major: String!
+    level: LevelOfStudy
+}
+
+input EducationInfoInput {
+    name: String!
+    graduationDate: Time!
+    major: String!
+    level: LevelOfStudy
+}
+
+input EducationInfoUpdate {
+    name: String
+    graduationDate: Time
+    major: String
+    level: LevelOfStudy
+}
+
+enum LevelOfStudy {
+    FRESHMAN, SOPHOMORE, JUNIOR, SENIOR, SUPER_SENIOR, GRADUATE
+}
+
+enum ShirtSize {
+    XS, S, M, L, XL, XXL, XXXL, XXXXL # idk what sizes, TODO: Look into what shirt sizes we will have
+}
+
 input NewUser {
     firstName: String!
     lastName: String!
@@ -90,6 +187,13 @@ input NewUser {
     phoneNumber: String!
     pronouns: PronounsInput
     age: Int
+    mailingAddress: MailingAddressInput
+    mlh: MLHTermsInput!
+    shirtSize: ShirtSize!
+    yearsOfExperience: Float
+    educationInfo: EducationInfoInput!
+    gender: String
+    race: [Race!]
 }
 
 input UpdatedUser {
@@ -99,6 +203,13 @@ input UpdatedUser {
     phoneNumber: String
     pronouns: PronounsInput
     age: Int
+    mailingAddress: MailingAddressUpdate
+    mlh: MLHTermsUpdate
+    shirtSize: ShirtSize
+    yearsOfExperience: Float
+    educationInfo: EducationInfoUpdate
+    gender: String
+    race: [Race!]
 }
 
 type LoginPayload {
@@ -110,6 +221,9 @@ type LoginPayload {
     accessToken: String
     refreshToken: String
 
+    """
+    Not null when accountExists is false, use this in registration
+    """
     encryptedOAuthAccessToken: String
 }
 
@@ -129,7 +243,7 @@ type Query {
     refreshJWT(refreshToken: String!): String! @hasRole(role: NORMAL)
     users(first: Int!, after: String): UsersConnection! @pagination(maxLength: 20) @hasRole(role: ADMIN)
     getUser(id: ID!): User @hasRole(role: NORMAL)
-    searchUser(name: String!): [User!]! @hasRole(role: NORMAL)
+    searchUser(name: String!): [User!]! @hasRole(role: ADMIN)
     me: User @hasRole(role: NORMAL)
 }
 
@@ -140,5 +254,8 @@ type Mutation {
     register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): RegistrationPayload!
     updateUser(id: ID!, input: UpdatedUser!): User! @hasRole(role: NORMAL)
     deleteUser(id: ID!): Boolean! @hasRole(role: NORMAL)
+
+    addAPIKey(userId: ID!): APIKey
+    deleteAPIKey(userId: ID!): Boolean!
 }
 
