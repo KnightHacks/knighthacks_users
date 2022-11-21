@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"errors"
-
 	sharedModels "github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
@@ -194,4 +193,12 @@ func (r *DatabaseRepository) GetUserMLHTerms(ctx context.Context, userId string)
 	}
 	return &mlhTerms, err
 
+}
+
+func (r *DatabaseRepository) GetAPIKey(ctx context.Context, obj *model.User) (apiKey *model.APIKey, err error) {
+	err = r.DatabasePool.QueryRow(ctx, "SELECT key, created FROM api_keys WHERE user_id = $1", obj.ID).Scan(&apiKey.Key, &apiKey.Created)
+	if err != nil {
+		return nil, err
+	}
+	return apiKey, nil
 }

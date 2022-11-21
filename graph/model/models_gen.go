@@ -15,6 +15,11 @@ type Connection interface {
 	IsConnection()
 }
 
+type APIKey struct {
+	Created time.Time `json:"created"`
+	Key     string    `json:"key"`
+}
+
 type EducationInfo struct {
 	Name           string        `json:"name"`
 	GraduationDate time.Time     `json:"graduationDate"`
@@ -38,10 +43,11 @@ type EducationInfoUpdate struct {
 
 type LoginPayload struct {
 	// If false then you must register immediately following this. Else, you are logged in and have access to your own user.
-	AccountExists             bool    `json:"accountExists"`
-	User                      *User   `json:"user"`
-	AccessToken               *string `json:"accessToken"`
-	RefreshToken              *string `json:"refreshToken"`
+	AccountExists bool    `json:"accountExists"`
+	User          *User   `json:"user"`
+	AccessToken   *string `json:"accessToken"`
+	RefreshToken  *string `json:"refreshToken"`
+	// Not null when accountExists is false, use this in registration
 	EncryptedOAuthAccessToken *string `json:"encryptedOAuthAccessToken"`
 }
 
@@ -161,6 +167,7 @@ type User struct {
 	ShirtSize         ShirtSize       `json:"shirtSize"`
 	YearsOfExperience *float64        `json:"yearsOfExperience"`
 	EducationInfo     *EducationInfo  `json:"educationInfo"`
+	APIKey            *APIKey         `json:"apiKey"`
 }
 
 func (User) IsEntity() {}

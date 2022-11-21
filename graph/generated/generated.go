@@ -51,6 +51,11 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	APIKey struct {
+		Created func(childComplexity int) int
+		Key     func(childComplexity int) int
+	}
+
 	EducationInfo struct {
 		GraduationDate func(childComplexity int) int
 		Level          func(childComplexity int) int
@@ -86,9 +91,11 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		DeleteUser func(childComplexity int, id string) int
-		Register   func(childComplexity int, provider models.Provider, encryptedOauthAccessToken string, input model.NewUser) int
-		UpdateUser func(childComplexity int, id string, input model.UpdatedUser) int
+		AddAPIKey    func(childComplexity int, userID string) int
+		DeleteAPIKey func(childComplexity int, userID string) int
+		DeleteUser   func(childComplexity int, id string) int
+		Register     func(childComplexity int, provider models.Provider, encryptedOauthAccessToken string, input model.NewUser) int
+		UpdateUser   func(childComplexity int, id string, input model.UpdatedUser) int
 	}
 
 	OAuth struct {
@@ -125,6 +132,7 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
+		APIKey            func(childComplexity int) int
 		Age               func(childComplexity int) int
 		EducationInfo     func(childComplexity int) int
 		Email             func(childComplexity int) int
@@ -163,6 +171,8 @@ type MutationResolver interface {
 	Register(ctx context.Context, provider models.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.RegistrationPayload, error)
 	UpdateUser(ctx context.Context, id string, input model.UpdatedUser) (*model.User, error)
 	DeleteUser(ctx context.Context, id string) (bool, error)
+	AddAPIKey(ctx context.Context, userID string) (*model.APIKey, error)
+	DeleteAPIKey(ctx context.Context, userID string) (bool, error)
 }
 type QueryResolver interface {
 	GetAuthRedirectLink(ctx context.Context, provider models.Provider, redirect *string) (string, error)
@@ -179,6 +189,8 @@ type UserResolver interface {
 	OAuth(ctx context.Context, obj *model.User) (*model.OAuth, error)
 	MailingAddress(ctx context.Context, obj *model.User) (*model.MailingAddress, error)
 	Mlh(ctx context.Context, obj *model.User) (*model.MLHTerms, error)
+
+	APIKey(ctx context.Context, obj *model.User) (*model.APIKey, error)
 }
 
 type executableSchema struct {
@@ -195,6 +207,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "APIKey.created":
+		if e.complexity.APIKey.Created == nil {
+			break
+		}
+
+		return e.complexity.APIKey.Created(childComplexity), true
+
+	case "APIKey.key":
+		if e.complexity.APIKey.Key == nil {
+			break
+		}
+
+		return e.complexity.APIKey.Key(childComplexity), true
 
 	case "EducationInfo.graduationDate":
 		if e.complexity.EducationInfo.GraduationDate == nil {
@@ -338,6 +364,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MailingAddress.State(childComplexity), true
+
+	case "Mutation.addAPIKey":
+		if e.complexity.Mutation.AddAPIKey == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addAPIKey_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddAPIKey(childComplexity, args["userId"].(string)), true
+
+	case "Mutation.deleteAPIKey":
+		if e.complexity.Mutation.DeleteAPIKey == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteAPIKey_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteAPIKey(childComplexity, args["userId"].(string)), true
 
 	case "Mutation.deleteUser":
 		if e.complexity.Mutation.DeleteUser == nil {
@@ -535,6 +585,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.RegistrationPayload.User(childComplexity), true
+
+	case "User.apiKey":
+		if e.complexity.User.APIKey == nil {
+			break
+		}
+
+		return e.complexity.User.APIKey(childComplexity), true
 
 	case "User.age":
 		if e.complexity.User.Age == nil {
@@ -827,6 +884,13 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     shirtSize: ShirtSize! @hasRole(role: OWNS)
     yearsOfExperience: Float @hasRole(role: OWNS)
     educationInfo: EducationInfo! @hasRole(role: OWNS)
+
+    apiKey: APIKey! @goField(forceResolver: true) @hasRole(role: OWNS)
+}
+
+type APIKey {
+    created: Time!
+    key: String!
 }
 
 """
@@ -976,6 +1040,9 @@ type LoginPayload {
     accessToken: String
     refreshToken: String
 
+    """
+    Not null when accountExists is false, use this in registration
+    """
     encryptedOAuthAccessToken: String
 }
 
@@ -1006,6 +1073,9 @@ type Mutation {
     register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): RegistrationPayload!
     updateUser(id: ID!, input: UpdatedUser!): User! @hasRole(role: NORMAL)
     deleteUser(id: ID!): Boolean! @hasRole(role: NORMAL)
+
+    addAPIKey(userId: ID!): APIKey
+    deleteAPIKey(userId: ID!): Boolean!
 }
 
 `, BuiltIn: false},
@@ -1113,6 +1183,36 @@ func (ec *executionContext) field_Entity_findUserByOAuthUIDAndOAuthProvider_args
 		}
 	}
 	args["oAuthProvider"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_addAPIKey_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["userId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteAPIKey_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["userId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userId"] = arg0
 	return args, nil
 }
 
@@ -1382,6 +1482,94 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
+func (ec *executionContext) _APIKey_created(ctx context.Context, field graphql.CollectedField, obj *model.APIKey) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_APIKey_created(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Created, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_APIKey_created(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "APIKey",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _APIKey_key(ctx context.Context, field graphql.CollectedField, obj *model.APIKey) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_APIKey_key(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Key, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_APIKey_key(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "APIKey",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _EducationInfo_name(ctx context.Context, field graphql.CollectedField, obj *model.EducationInfo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_EducationInfo_name(ctx, field)
 	if err != nil {
@@ -1628,6 +1816,8 @@ func (ec *executionContext) fieldContext_Entity_findUserByID(ctx context.Context
 				return ec.fieldContext_User_yearsOfExperience(ctx, field)
 			case "educationInfo":
 				return ec.fieldContext_User_educationInfo(ctx, field)
+			case "apiKey":
+				return ec.fieldContext_User_apiKey(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1719,6 +1909,8 @@ func (ec *executionContext) fieldContext_Entity_findUserByOAuthUIDAndOAuthProvid
 				return ec.fieldContext_User_yearsOfExperience(ctx, field)
 			case "educationInfo":
 				return ec.fieldContext_User_educationInfo(ctx, field)
+			case "apiKey":
+				return ec.fieldContext_User_apiKey(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1851,6 +2043,8 @@ func (ec *executionContext) fieldContext_LoginPayload_user(ctx context.Context, 
 				return ec.fieldContext_User_yearsOfExperience(ctx, field)
 			case "educationInfo":
 				return ec.fieldContext_User_educationInfo(ctx, field)
+			case "apiKey":
+				return ec.fieldContext_User_apiKey(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2493,6 +2687,8 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 				return ec.fieldContext_User_yearsOfExperience(ctx, field)
 			case "educationInfo":
 				return ec.fieldContext_User_educationInfo(ctx, field)
+			case "apiKey":
+				return ec.fieldContext_User_apiKey(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2584,6 +2780,119 @@ func (ec *executionContext) fieldContext_Mutation_deleteUser(ctx context.Context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deleteUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_addAPIKey(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_addAPIKey(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddAPIKey(rctx, fc.Args["userId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.APIKey)
+	fc.Result = res
+	return ec.marshalOAPIKey2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐAPIKey(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_addAPIKey(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "created":
+				return ec.fieldContext_APIKey_created(ctx, field)
+			case "key":
+				return ec.fieldContext_APIKey_key(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type APIKey", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addAPIKey_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteAPIKey(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteAPIKey(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteAPIKey(rctx, fc.Args["userId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteAPIKey(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteAPIKey_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3246,6 +3555,8 @@ func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, fiel
 				return ec.fieldContext_User_yearsOfExperience(ctx, field)
 			case "educationInfo":
 				return ec.fieldContext_User_educationInfo(ctx, field)
+			case "apiKey":
+				return ec.fieldContext_User_apiKey(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -3361,6 +3672,8 @@ func (ec *executionContext) fieldContext_Query_searchUser(ctx context.Context, f
 				return ec.fieldContext_User_yearsOfExperience(ctx, field)
 			case "educationInfo":
 				return ec.fieldContext_User_educationInfo(ctx, field)
+			case "apiKey":
+				return ec.fieldContext_User_apiKey(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -3473,6 +3786,8 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 				return ec.fieldContext_User_yearsOfExperience(ctx, field)
 			case "educationInfo":
 				return ec.fieldContext_User_educationInfo(ctx, field)
+			case "apiKey":
+				return ec.fieldContext_User_apiKey(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -3785,6 +4100,8 @@ func (ec *executionContext) fieldContext_RegistrationPayload_user(ctx context.Co
 				return ec.fieldContext_User_yearsOfExperience(ctx, field)
 			case "educationInfo":
 				return ec.fieldContext_User_educationInfo(ctx, field)
+			case "apiKey":
+				return ec.fieldContext_User_apiKey(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -4940,6 +5257,80 @@ func (ec *executionContext) fieldContext_User_educationInfo(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _User_apiKey(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_apiKey(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.User().APIKey(rctx, obj)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.APIKey); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/KnightHacks/knighthacks_users/graph/model.APIKey`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.APIKey)
+	fc.Result = res
+	return ec.marshalNAPIKey2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐAPIKey(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_apiKey(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "created":
+				return ec.fieldContext_APIKey_created(ctx, field)
+			case "key":
+				return ec.fieldContext_APIKey_key(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type APIKey", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _UsersConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *model.UsersConnection) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_UsersConnection_totalCount(ctx, field)
 	if err != nil {
@@ -5107,6 +5498,8 @@ func (ec *executionContext) fieldContext_UsersConnection_users(ctx context.Conte
 				return ec.fieldContext_User_yearsOfExperience(ctx, field)
 			case "educationInfo":
 				return ec.fieldContext_User_educationInfo(ctx, field)
+			case "apiKey":
+				return ec.fieldContext_User_apiKey(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -7564,6 +7957,41 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 
 // region    **************************** object.gotpl ****************************
 
+var aPIKeyImplementors = []string{"APIKey"}
+
+func (ec *executionContext) _APIKey(ctx context.Context, sel ast.SelectionSet, obj *model.APIKey) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, aPIKeyImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("APIKey")
+		case "created":
+
+			out.Values[i] = ec._APIKey_created(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "key":
+
+			out.Values[i] = ec._APIKey_key(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var educationInfoImplementors = []string{"EducationInfo"}
 
 func (ec *executionContext) _EducationInfo(ctx context.Context, sel ast.SelectionSet, obj *model.EducationInfo) graphql.Marshaler {
@@ -7869,6 +8297,21 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteUser(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "addAPIKey":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addAPIKey(ctx, field)
+			})
+
+		case "deleteAPIKey":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteAPIKey(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -8438,6 +8881,26 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "apiKey":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_apiKey(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8833,6 +9296,20 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
+
+func (ec *executionContext) marshalNAPIKey2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐAPIKey(ctx context.Context, sel ast.SelectionSet, v model.APIKey) graphql.Marshaler {
+	return ec._APIKey(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAPIKey2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐAPIKey(ctx context.Context, sel ast.SelectionSet, v *model.APIKey) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._APIKey(ctx, sel, v)
+}
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
@@ -9510,6 +9987,13 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalOAPIKey2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐAPIKey(ctx context.Context, sel ast.SelectionSet, v *model.APIKey) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._APIKey(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {

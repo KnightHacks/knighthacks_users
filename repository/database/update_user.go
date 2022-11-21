@@ -8,7 +8,9 @@ import (
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
 	"github.com/jackc/pgx/v4"
+	"math/rand"
 	"strconv"
+	"time"
 )
 
 /*
@@ -451,4 +453,31 @@ func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
 		return &i, nil
 	}
 	return nil, nil
+}
+
+func (r *DatabaseRepository) DeleteAPIKey(ctx context.Context, id string) error {
+	_, err := r.DatabasePool.Exec(ctx, "DELETE FROM api_keys WHERE user_id = $1", id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *DatabaseRepository) AddAPIKey(ctx context.Context, id string) (*model.APIKey, error) {
+	apiKey := GenerateAPIKey(100)
+	_, err := r.DatabasePool.Exec(ctx, "INSERT INTO api_keys (user_id, key, created) VALUES ($1, $2, $3)", id, apiKey, time.Now())
+	if err != nil {
+		return nil, err
+	}
+	return &model.APIKey{Key: apiKey, Created: time.Now()}, nil
+}
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func GenerateAPIKey(length int) string {
+	b := make([]rune, length)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
 }

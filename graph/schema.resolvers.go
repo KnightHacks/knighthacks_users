@@ -86,6 +86,20 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 	return r.Repository.DeleteUser(ctx, id)
 }
 
+// AddAPIKey is the resolver for the addAPIKey field.
+func (r *mutationResolver) AddAPIKey(ctx context.Context, userID string) (*model.APIKey, error) {
+	return r.Repository.AddAPIKey(ctx, userID)
+}
+
+// DeleteAPIKey is the resolver for the deleteAPIKey field.
+func (r *mutationResolver) DeleteAPIKey(ctx context.Context, userID string) (bool, error) {
+	err := r.Repository.DeleteAPIKey(ctx, userID)
+	if err != nil {
+		return true, err
+	}
+	return false, nil
+}
+
 // GetAuthRedirectLink is the resolver for the getAuthRedirectLink field.
 func (r *queryResolver) GetAuthRedirectLink(ctx context.Context, provider models.Provider, redirect *string) (string, error) {
 	ginContext, err := utils.GinContextFromContext(ctx)
@@ -246,6 +260,11 @@ func (r *userResolver) MailingAddress(ctx context.Context, obj *model.User) (*mo
 // Mlh is the resolver for the mlh field.
 func (r *userResolver) Mlh(ctx context.Context, obj *model.User) (*model.MLHTerms, error) {
 	return r.Repository.GetUserMLHTerms(ctx, obj.ID)
+}
+
+// APIKey is the resolver for the apiKey field.
+func (r *userResolver) APIKey(ctx context.Context, obj *model.User) (*model.APIKey, error) {
+	return r.Repository.GetAPIKey(ctx, obj)
 }
 
 // Mutation returns generated.MutationResolver implementation.

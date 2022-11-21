@@ -65,6 +65,13 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     shirtSize: ShirtSize! @hasRole(role: OWNS)
     yearsOfExperience: Float @hasRole(role: OWNS)
     educationInfo: EducationInfo! @hasRole(role: OWNS)
+
+    apiKey: APIKey! @goField(forceResolver: true) @hasRole(role: OWNS)
+}
+
+type APIKey {
+    created: Time!
+    key: String!
 }
 
 """
@@ -247,5 +254,8 @@ type Mutation {
     register(provider: Provider!, encryptedOAuthAccessToken: String!, input: NewUser!): RegistrationPayload!
     updateUser(id: ID!, input: UpdatedUser!): User! @hasRole(role: NORMAL)
     deleteUser(id: ID!): Boolean! @hasRole(role: NORMAL)
+
+    addAPIKey(userId: ID!): APIKey
+    deleteAPIKey(userId: ID!): Boolean!
 }
 
