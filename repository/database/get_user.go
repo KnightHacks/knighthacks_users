@@ -6,7 +6,7 @@ import (
 	sharedModels "github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 )
 
 /*
@@ -23,7 +23,7 @@ $$ |  $$ |$$   ____| $$ |$$\       $$ |  $$ | \____$$\ $$   ____|$$ |
 func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after string) ([]*model.User, int, error) {
 	users := make([]*model.User, 0, first)
 	var totalCount int
-	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+	err := pgx.BeginTxFunc(ctx, r.DatabasePool, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		rows, err := tx.Query(
 			ctx,
 			"SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race FROM users WHERE id > $1 ORDER BY `id` DESC LIMIT $2",
@@ -120,7 +120,7 @@ func (r *DatabaseRepository) SearchUser(ctx context.Context, name string) ([]*mo
 	const limit int = 10
 	users := make([]*model.User, 0, limit)
 
-	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+	err := pgx.BeginTxFunc(ctx, r.DatabasePool, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		rows, err := tx.Query(ctx, "SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race from users WHERE to_tsvector(first_name || ' ' || last_name) @@ to_tsquery('$1:*') LIMIT $2", name, limit)
 		if err != nil {
 			return err
