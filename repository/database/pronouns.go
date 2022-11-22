@@ -37,7 +37,7 @@ func (r *DatabaseRepository) Set(id int, pronouns model.Pronouns) {
 	r.PronounReverseMap[pronouns] = id
 }
 
-func (r *DatabaseRepository) getPronouns(ctx context.Context, queryable database.Queryable, pronounId int) error {
+func (r *DatabaseRepository) GetPronouns(ctx context.Context, queryable database.Queryable, pronounId int) error {
 	pronouns, exists := r.GetById(pronounId)
 	// does the pronoun not exist in the local cache?
 	if !exists {

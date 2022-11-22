@@ -42,7 +42,7 @@ func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after stri
 			}
 			// user has pronouns, but we don't know what they are
 			if pronounId != nil {
-				err = r.getPronouns(ctx, tx, *pronounId)
+				err = r.GetPronouns(ctx, tx, *pronounId)
 				if err != nil {
 					return err
 				}
@@ -65,7 +65,7 @@ func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after stri
 
 // GetUserByID returns the user by their id
 func (r *DatabaseRepository) GetUserByID(ctx context.Context, id string) (*model.User, error) {
-	return r.getUser(
+	return r.GetUser(
 		ctx,
 		`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race FROM users WHERE id = $1 LIMIT 1`,
 		id,
@@ -74,7 +74,7 @@ func (r *DatabaseRepository) GetUserByID(ctx context.Context, id string) (*model
 
 // GetUserByOAuthUID returns the user by their oauth auth token
 func (r *DatabaseRepository) GetUserByOAuthUID(ctx context.Context, oAuthUID string, provider sharedModels.Provider) (*model.User, error) {
-	return r.getUser(
+	return r.GetUser(
 		ctx,
 		`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race FROM users WHERE oauth_uid=cast($1 as varchar) AND oauth_provider=$2 LIMIT 1`,
 		oAuthUID,
@@ -82,7 +82,7 @@ func (r *DatabaseRepository) GetUserByOAuthUID(ctx context.Context, oAuthUID str
 	)
 }
 
-func (r *DatabaseRepository) getUserWithTx(ctx context.Context, query string, tx pgx.Tx, args ...interface{}) (*model.User, error) {
+func (r *DatabaseRepository) GetUserWithTx(ctx context.Context, query string, tx pgx.Tx, args ...interface{}) (*model.User, error) {
 	var user model.User
 
 	if tx == nil {
@@ -105,15 +105,15 @@ func (r *DatabaseRepository) getUserWithTx(ctx context.Context, query string, tx
 
 	// if the user has their pronouns set
 	if pronounId != nil {
-		if err = r.getPronouns(ctx, tx, *pronounId); err != nil {
+		if err = r.GetPronouns(ctx, tx, *pronounId); err != nil {
 			return nil, err
 		}
 	}
 	return &user, nil
 }
 
-func (r *DatabaseRepository) getUser(ctx context.Context, query string, args ...interface{}) (*model.User, error) {
-	return r.getUserWithTx(ctx, query, nil, args...)
+func (r *DatabaseRepository) GetUser(ctx context.Context, query string, args ...interface{}) (*model.User, error) {
+	return r.GetUserWithTx(ctx, query, nil, args...)
 }
 
 func (r *DatabaseRepository) SearchUser(ctx context.Context, name string) ([]*model.User, error) {
@@ -133,7 +133,7 @@ func (r *DatabaseRepository) SearchUser(ctx context.Context, name string) ([]*mo
 				return err
 			}
 			if pronounId != nil {
-				err = r.getPronouns(ctx, tx, *pronounId)
+				err = r.GetPronouns(ctx, tx, *pronounId)
 			}
 			if err != nil {
 				return err
