@@ -7,7 +7,7 @@ import (
 	"github.com/KnightHacks/knighthacks_shared/database"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 	"math/rand"
 	"strconv"
 	"time"
@@ -63,7 +63,7 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 	if input.FirstName == nil && input.LastName == nil && input.Email == nil && input.PhoneNumber == nil && input.Pronouns == nil && input.Age == nil {
 		return nil, errors.New("empty user field")
 	}
-	err = r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+	err = pgx.BeginTxFunc(ctx, r.DatabasePool, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		if err = Validate(ctx, tx, id, input.FirstName, r.UpdateFirstName); err != nil {
 			return err
 		}

@@ -7,7 +7,7 @@ import (
 	sharedModels "github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 	"strconv"
 )
 
@@ -28,7 +28,7 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 	}
 
 	// Begins the database transaction
-	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+	err := pgx.BeginTxFunc(ctx, r.DatabasePool, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		// Detects whether the user with the oauth_uid, for GitHub that is their github ID already exists, if
 		// the use already exists we return an UserAlreadyExists error
 		var discoveredId = new(int)
