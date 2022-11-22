@@ -21,6 +21,11 @@ import (
 	"github.com/KnightHacks/knighthacks_users/repository"
 )
 
+// User is the resolver for the user field.
+func (r *hackathonApplicationResolver) User(ctx context.Context, obj *model.HackathonApplication) (*model.User, error) {
+	return r.Repository.GetUserByID(ctx, obj.ID)
+}
+
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, provider models.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.RegistrationPayload, error) {
 	// Decode the encrypted OAuth AccessToken from base64
@@ -267,6 +272,11 @@ func (r *userResolver) APIKey(ctx context.Context, obj *model.User) (*model.APIK
 	return r.Repository.GetAPIKey(ctx, obj)
 }
 
+// HackathonApplication returns generated.HackathonApplicationResolver implementation.
+func (r *Resolver) HackathonApplication() generated.HackathonApplicationResolver {
+	return &hackathonApplicationResolver{r}
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
@@ -276,6 +286,7 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 // User returns generated.UserResolver implementation.
 func (r *Resolver) User() generated.UserResolver { return &userResolver{r} }
 
+type hackathonApplicationResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }

@@ -233,6 +233,11 @@ type RegistrationPayload {
     refreshToken: String!
 }
 
+extend type HackathonApplication @key(fields: "id") {
+    id: ID!
+    user: User! @goField(forceResolver: true)
+}
+
 type Query {
     """
     The code supplied must be the code given to the frontend by the oauth flow
