@@ -249,7 +249,7 @@ VALUES ('joe.bob@example.com'::varchar, '100-200-3000'::varchar, 'Bob'::varchar,
 INSERT INTO users (email, phone_number, last_name, age, pronoun_id, first_name, role, oauth_uid,
                    oauth_provider, years_of_experience, shirt_size, race, gender)
 VALUES ('joe.biron@example.com'::varchar, '123-456-7890'::varchar, 'Biron'::varchar, 21::integer, 1::integer,
-        'Joe'::varchar, 'NORMAL'::varchar, '1'::varchar, 'GITHUB'::varchar, 3.5::double precision, 'L'::varchar,
+        'Joe'::varchar, 'NORMAL'::varchar, '4'::varchar, 'GITHUB'::varchar, 3.5::double precision, 'L'::varchar,
         ARRAY ['AFRICAN_AMERICAN'], 'MALE'::varchar);
 -- ID = 2
 
