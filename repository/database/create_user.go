@@ -27,6 +27,22 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 		}
 	}
 
+	user := &model.User{
+		ID:                userId,
+		FirstName:         input.FirstName,
+		LastName:          input.LastName,
+		Email:             input.Email,
+		PhoneNumber:       input.PhoneNumber,
+		Pronouns:          &pronouns,
+		Age:               input.Age,
+		Role:              sharedModels.RoleNormal,
+		OAuth:             oAuth,
+		Race:              input.Race,
+		YearsOfExperience: input.YearsOfExperience,
+		ShirtSize:         input.ShirtSize,
+		Gender:            input.Gender,
+	}
+
 	// Begins the database transaction
 	err := pgx.BeginTxFunc(ctx, r.DatabasePool, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		// Detects whether the user with the oauth_uid, for GitHub that is their github ID already exists, if
@@ -53,18 +69,42 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 		}
 
 		// Insert MLH Terms
-		if err = r.InsertMLHTerms(ctx, tx, userIdInt, input.Mlh); err != nil {
-			return err
+		if input.Mlh != nil {
+			if err = r.InsertMLHTerms(ctx, tx, userIdInt, input.Mlh); err != nil {
+				return err
+			}
+			user.Mlh = &model.MLHTerms{
+				SendMessages:  input.Mlh.SendMessages,
+				CodeOfConduct: input.Mlh.CodeOfConduct,
+				ShareInfo:     input.Mlh.ShareInfo,
+			}
 		}
 
 		// Insert Education Info
-		if err = r.InsertEducationInfo(ctx, tx, userIdInt, input.EducationInfo); err != nil {
-			return err
+		if input.EducationInfo != nil {
+			if err = r.InsertEducationInfo(ctx, tx, userIdInt, input.EducationInfo); err != nil {
+				return err
+			}
+			user.EducationInfo = &model.EducationInfo{
+				Name:           input.EducationInfo.Name,
+				GraduationDate: input.EducationInfo.GraduationDate,
+				Major:          input.EducationInfo.Major,
+				Level:          input.EducationInfo.Level,
+			}
 		}
 
 		// Insert Mailing Address Data
-		if err = r.InsertMailingAddress(ctx, tx, userIdInt, input.MailingAddress); err != nil {
-			return err
+		if input.MailingAddress != nil {
+			if err = r.InsertMailingAddress(ctx, tx, userIdInt, input.MailingAddress); err != nil {
+				return err
+			}
+			user.MailingAddress = &model.MailingAddress{
+				Country:      input.MailingAddress.Country,
+				State:        input.MailingAddress.State,
+				City:         input.MailingAddress.City,
+				PostalCode:   input.MailingAddress.PostalCode,
+				AddressLines: input.MailingAddress.AddressLines,
+			}
 		}
 
 		userId = strconv.Itoa(userIdInt)
@@ -74,16 +114,7 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 		return nil, err
 	}
 	// TODO: look into the case where the userId is not scanned in
-	return &model.User{
-		ID:          userId,
-		FirstName:   input.FirstName,
-		LastName:    input.LastName,
-		Email:       input.Email,
-		PhoneNumber: input.PhoneNumber,
-		Pronouns:    &pronouns,
-		Age:         input.Age,
-		OAuth:       oAuth,
-	}, nil
+	return user, nil
 }
 
 func (r *DatabaseRepository) InsertUser(ctx context.Context, queryable database.Queryable, input *model.NewUser, pronounIdPtr *int, oAuth *model.OAuth) (int, error) {
