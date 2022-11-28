@@ -128,7 +128,7 @@ func (r *DatabaseRepository) InsertMLHTerms(ctx context.Context, queryable datab
 }
 
 func (r *DatabaseRepository) InsertEducationInfo(ctx context.Context, queryable database.Queryable, userId int, input *model.EducationInfoInput) error {
-	_, err := queryable.Exec(ctx, "INSERT INTO education_info (user_id, name, major, graduation_date, level) VALUES ($1, $2, $3, $4)",
+	_, err := queryable.Exec(ctx, "INSERT INTO education_info (user_id, name, major, graduation_date, level) VALUES ($1, $2, $3, $4, $5)",
 		userId,
 		input.Name,
 		input.Major,
