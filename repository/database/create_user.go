@@ -98,7 +98,7 @@ func (r *DatabaseRepository) InsertUser(ctx context.Context, queryable database.
 		}
 	}
 	var userIdInt int
-	err := queryable.QueryRow(ctx, "INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider, role,years_of_experience, shirt_size, race, gender, race) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id",
+	err := queryable.QueryRow(ctx, "INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider, role, years_of_experience, shirt_size, race, gender) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id",
 		input.FirstName,
 		input.LastName,
 		input.Email,
@@ -110,9 +110,8 @@ func (r *DatabaseRepository) InsertUser(ctx context.Context, queryable database.
 		sharedModels.RoleNormal,
 		input.YearsOfExperience,
 		input.ShirtSize,
-		input.Race,
-		input.Gender,
 		raceStringArray,
+		input.Gender,
 	).Scan(&userIdInt)
 	return userIdInt, err
 }
