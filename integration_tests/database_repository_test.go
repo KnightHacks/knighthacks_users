@@ -316,7 +316,20 @@ func TestDatabaseRepository_GetByPronouns(t *testing.T) {
 		exists bool
 	}
 	tests := []Test[args, want]{
-
+		{
+			name: "get he him by pronouns",
+			args: args{
+				pronouns: model.Pronouns{
+					Subjective: "he",
+					Objective:  "him",
+				},
+			},
+			want: want{
+				id:     1,
+				exists: true,
+			},
+			wantErr: false,
+		},
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
