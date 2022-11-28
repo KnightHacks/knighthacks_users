@@ -45,7 +45,10 @@ func TestMain(t *testing.M) {
 		log.Fatalf("unable to connect to database err=%v\n", err)
 	}
 
-	databaseRepository, _ = database.NewDatabaseRepository(context.Background(), pool)
+	databaseRepository, err = database.NewDatabaseRepository(context.Background(), pool)
+	if err != nil {
+		log.Fatalf("unable to initialize database repository err=%v\n", err)
+	}
 	os.Exit(t.Run())
 }
 
@@ -330,13 +333,12 @@ func TestDatabaseRepository_GetByPronouns(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			id, exists := databaseRepository.GetByPronouns(tt.args.pronouns)
 			if id != tt.want.id {
-				t.Errorf("GetByPronouns() id = %v, want %v", id, tt.want)
+				t.Errorf("GetByPronouns() userId = %v, want %v", id, tt.want)
 			}
 			if exists != tt.want.exists {
 				t.Errorf("GetByPronouns() exists = %v, want %v", exists, tt.want.exists)
@@ -347,16 +349,26 @@ func TestDatabaseRepository_GetByPronouns(t *testing.T) {
 
 func TestDatabaseRepository_GetOAuth(t *testing.T) {
 	type args struct {
-		ctx context.Context
-		id  string
+		ctx    context.Context
+		userId string
 	}
 	tests := []Test[args, *model.OAuth]{
-
-		// TODO: Add test cases.
+		{
+			name: "get joe bob's oauth",
+			args: args{
+				ctx:    context.Background(),
+				userId: "1",
+			},
+			want: &model.OAuth{
+				Provider: models.ProviderGithub,
+				UID:      "1",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := databaseRepository.GetOAuth(tt.args.ctx, tt.args.id)
+			got, err := databaseRepository.GetOAuth(tt.args.ctx, tt.args.userId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetOAuth() error = %v, wantErr %v", err, tt.wantErr)
 				return

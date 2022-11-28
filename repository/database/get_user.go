@@ -151,9 +151,9 @@ func (r *DatabaseRepository) SearchUser(ctx context.Context, name string) ([]*mo
 // GetOAuth returns the model.OAuth object that is associated with the user's id
 // Used by the OAuth force resolver, this is not a common operation so making this
 // a force resolver is a good idea
-func (r *DatabaseRepository) GetOAuth(ctx context.Context, id string) (*model.OAuth, error) {
+func (r *DatabaseRepository) GetOAuth(ctx context.Context, userId string) (*model.OAuth, error) {
 	var oAuth model.OAuth
-	err := r.DatabasePool.QueryRow(ctx, "SELECT oauth_uid, oauth_provider FROM users WHERE id = $1", id).Scan(&oAuth.UID, &oAuth.Provider)
+	err := r.DatabasePool.QueryRow(ctx, "SELECT oauth_uid, oauth_provider FROM users WHERE id = $1", userId).Scan(&oAuth.UID, &oAuth.Provider)
 	if err != nil {
 		return nil, err
 	}
