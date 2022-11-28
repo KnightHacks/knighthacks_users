@@ -6,6 +6,7 @@ import (
 	"fmt"
 	shared_db_utils "github.com/KnightHacks/knighthacks_shared/database"
 	"github.com/KnightHacks/knighthacks_shared/models"
+	"github.com/KnightHacks/knighthacks_shared/utils"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository/database"
 	"github.com/jackc/pgx/v5"
@@ -14,6 +15,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 )
 
 var integrationTest = flag.Bool("integration", false, "whether to run integration tests")
@@ -77,18 +79,104 @@ func TestDatabaseRepository_CreateUser(t *testing.T) {
 		input *model.NewUser
 	}
 	tests := []Test[args, *model.User]{
-
-		// TODO: Add test cases.
+		{
+			name: "create thomas",
+			args: args{
+				ctx: context.Background(),
+				oAuth: &model.OAuth{
+					Provider: models.ProviderGithub,
+					UID:      "100",
+				},
+				input: &model.NewUser{
+					FirstName:   "Thomas",
+					LastName:    "Bob",
+					Email:       "thomas.bob@example.com",
+					PhoneNumber: "100-203-9112",
+					Pronouns: &model.PronounsInput{
+						Subjective: "He",
+						Objective:  "Him",
+					},
+					Age: utils.Ptr(21),
+					MailingAddress: &model.MailingAddressInput{
+						Country:    "United States",
+						State:      "Florida",
+						City:       "Orlando",
+						PostalCode: "32765",
+						AddressLines: []string{
+							"1234 Joe Mama Row",
+						},
+					},
+					Mlh: &model.MLHTermsInput{
+						SendMessages:  true,
+						CodeOfConduct: true,
+						ShareInfo:     true,
+					},
+					ShirtSize:         model.ShirtSizeM,
+					YearsOfExperience: utils.Ptr(3.5),
+					EducationInfo: &model.EducationInfoInput{
+						Name:           "University of Central Florida",
+						GraduationDate: time.Date(2026, 12, 20, 0, 0, 0, 0, time.UTC),
+						Major:          "Bachelors of Science",
+						Level:          utils.Ptr(model.LevelOfStudyFreshman),
+					},
+					Gender: utils.Ptr("male"),
+					Race:   []model.Race{model.RaceCaucasian, model.RaceAfricanAmerican},
+				},
+			},
+			want: &model.User{
+				//ID:          "", don't check for this
+				FirstName:   "Thomas",
+				LastName:    "Bob",
+				Email:       "thomas.bob@example.com",
+				PhoneNumber: "100-203-9112",
+				Pronouns: &model.Pronouns{
+					Subjective: "He",
+					Objective:  "Him",
+				},
+				Age: utils.Ptr(21),
+				MailingAddress: &model.MailingAddress{
+					Country:    "United States",
+					State:      "Florida",
+					City:       "Orlando",
+					PostalCode: "32765",
+					AddressLines: []string{
+						"1234 Joe Mama Row",
+					},
+				},
+				Role:   models.RoleNormal,
+				Gender: utils.Ptr("male"),
+				Race:   []model.Race{model.RaceCaucasian, model.RaceAfricanAmerican},
+				OAuth: &model.OAuth{
+					Provider: models.ProviderGithub,
+					UID:      "100",
+				},
+				Mlh: &model.MLHTerms{
+					SendMessages:  true,
+					CodeOfConduct: true,
+					ShareInfo:     true,
+				},
+				ShirtSize:         model.ShirtSizeM,
+				YearsOfExperience: utils.Ptr(3.5),
+				EducationInfo: &model.EducationInfo{
+					Name:           "University of Central Florida",
+					GraduationDate: time.Date(2026, 12, 20, 0, 0, 0, 0, time.UTC),
+					Major:          "Bachelors of Science",
+					Level:          utils.Ptr(model.LevelOfStudyFreshman),
+				},
+				APIKey: nil,
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := databaseRepository.CreateUser(tt.args.ctx, tt.args.oAuth, tt.args.input)
+			user, err := databaseRepository.CreateUser(tt.args.ctx, tt.args.oAuth, tt.args.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CreateUser() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CreateUser() got = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(user, tt.want) {
+				t.Errorf("CreateUser() user = %v, want %v", user, tt.want)
 			}
 		})
 	}
