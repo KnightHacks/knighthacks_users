@@ -18,12 +18,19 @@ type DatabaseRepository struct {
 	PronounReverseMap map[model.Pronouns]int
 }
 
-func NewDatabaseRepository(databasePool *pgxpool.Pool) *DatabaseRepository {
-	return &DatabaseRepository{
+func NewDatabaseRepository(ctx context.Context, databasePool *pgxpool.Pool) (*DatabaseRepository, error) {
+	databaseRepository := &DatabaseRepository{
 		DatabasePool:      databasePool,
 		PronounMap:        map[int]model.Pronouns{},
 		PronounReverseMap: map[model.Pronouns]int{},
 	}
+	if err := databaseRepository.DatabasePool.Ping(ctx); err != nil {
+		return nil, err
+	}
+	if err := databaseRepository.LoadPronouns(ctx); err != nil {
+		return nil, err
+	}
+	return databaseRepository, nil
 }
 
 func (r *DatabaseRepository) DeleteUser(ctx context.Context, id string) (bool, error) {

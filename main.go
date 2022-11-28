@@ -63,9 +63,13 @@ func graphqlHandler(a *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
 		}
 	}}
 
+	repository, err := database.NewDatabaseRepository(context.Background(), pool)
+	if err != nil {
+		log.Fatalf("error occured while initializing database repository err = %v\n", err)
+	}
 	config := generated.Config{
 		Resolvers: &graph.Resolver{
-			Repository: database.NewDatabaseRepository(pool),
+			Repository: repository,
 			Auth:       a,
 		},
 		Directives: generated.DirectiveRoot{

@@ -45,7 +45,7 @@ func TestMain(t *testing.M) {
 		log.Fatalf("unable to connect to database err=%v\n", err)
 	}
 
-	databaseRepository = database.NewDatabaseRepository(pool)
+	databaseRepository, _ = database.NewDatabaseRepository(context.Background(), pool)
 	os.Exit(t.Run())
 }
 
@@ -281,14 +281,24 @@ func TestDatabaseRepository_GetById(t *testing.T) {
 		exists   bool
 	}
 	tests := []Test[args, want]{
-
-		// TODO: Add test cases.
+		{
+			name: "get he/him",
+			args: args{id: 1},
+			want: want{
+				pronouns: model.Pronouns{
+					Subjective: "he",
+					Objective:  "him",
+				},
+				exists: true,
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := databaseRepository.GetById(tt.args.id)
-			if !reflect.DeepEqual(got, tt.want.pronouns) {
-				t.Errorf("GetById() got = %v, want %v", got, tt.want)
+			pronouns, got1 := databaseRepository.GetById(tt.args.id)
+			if !reflect.DeepEqual(pronouns, tt.want.pronouns) {
+				t.Errorf("GetById() pronouns = %v, want %v", pronouns, tt.want)
 			}
 			if got1 != tt.want.exists {
 				t.Errorf("GetById() got1 = %v, want %v", got1, tt.want)
@@ -1000,7 +1010,7 @@ func TestNewDatabaseRepository(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := database.NewDatabaseRepository(tt.args.databasePool); !reflect.DeepEqual(got, tt.want) {
+			if got, _ := database.NewDatabaseRepository(context.Background(), tt.args.databasePool); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewDatabaseRepository() = %v, want %v", got, tt.want)
 			}
 		})

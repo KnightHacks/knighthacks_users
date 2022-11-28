@@ -91,3 +91,22 @@ func (r *DatabaseRepository) GetOrCreatePronoun(ctx context.Context, queryable d
 	}
 	return &pronounId, nil
 }
+
+func (r *DatabaseRepository) LoadPronouns(ctx context.Context) error {
+	rows, err := r.DatabasePool.Query(ctx, "SELECT id, subjective, objective FROM pronouns")
+	if err != nil {
+		return err
+	}
+
+	for rows.Next() {
+		var pronouns model.Pronouns
+		var id int
+		err = rows.Scan(&id, &pronouns.Subjective, &pronouns.Objective)
+		if err != nil {
+			return err
+		}
+		r.Set(id, pronouns)
+	}
+
+	return nil
+}
