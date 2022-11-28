@@ -23,5 +23,5 @@ type Repository interface {
 	CreateUser(ctx context.Context, oAuth *model.OAuth, input *model.NewUser) (*model.User, error)
 	GetAPIKey(ctx context.Context, obj *model.User) (*model.APIKey, error)
 	DeleteAPIKey(ctx context.Context, id string) error
-	AddAPIKey(ctx context.Context, id string) (*model.APIKey, error)
+	AddAPIKey(ctx context.Context, id string, key string) (*model.APIKey, error)
 }

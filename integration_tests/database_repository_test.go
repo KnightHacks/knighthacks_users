@@ -7,7 +7,7 @@ import (
 	shared_db_utils "github.com/KnightHacks/knighthacks_shared/database"
 	"github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_shared/utils"
-	"github.com/KnightHacks/knighthacks_users/graph/model"
+	model "github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -53,20 +53,31 @@ func TestDatabaseRepository_AddAPIKey(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		id  string
+		key string
 	}
 	tests := []Test[args, *model.APIKey]{
-
-		// TODO: Add test cases.
+		{
+			name: "add APIKey to Joe Bob",
+			args: args{
+				ctx: context.Background(),
+				id:  "1",
+				key: "12345abcdef",
+			},
+			want: &model.APIKey{
+				Key: "12345abcdef",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := databaseRepository.AddAPIKey(tt.args.ctx, tt.args.id)
+			apiKey, err := databaseRepository.AddAPIKey(tt.args.ctx, tt.args.id, tt.args.key)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("AddAPIKey() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("AddAPIKey() got = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(apiKey.Key, tt.want.Key) {
+				t.Errorf("AddAPIKey() apiKey = %v, want %v", apiKey, tt.want)
 			}
 		})
 	}
@@ -959,23 +970,6 @@ func TestDatabaseRepository_getUserWithTx(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getUserWithTx() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestGenerateAPIKey(t *testing.T) {
-	type args struct {
-		length int
-	}
-	tests := []Test[args, any]{
-
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := database.GenerateAPIKey(tt.args.length); got != tt.want {
-				t.Errorf("GenerateAPIKey() = %v, want %v", got, tt.want)
 			}
 		})
 	}

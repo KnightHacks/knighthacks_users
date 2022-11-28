@@ -8,7 +8,6 @@ import (
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
 	"github.com/jackc/pgx/v5"
-	"math/rand"
 	"strconv"
 	"time"
 )
@@ -463,21 +462,11 @@ func (r *DatabaseRepository) DeleteAPIKey(ctx context.Context, id string) error 
 	return nil
 }
 
-func (r *DatabaseRepository) AddAPIKey(ctx context.Context, id string) (*model.APIKey, error) {
-	apiKey := GenerateAPIKey(100)
-	_, err := r.DatabasePool.Exec(ctx, "INSERT INTO api_keys (user_id, key, created) VALUES ($1, $2, $3)", id, apiKey, time.Now())
+func (r *DatabaseRepository) AddAPIKey(ctx context.Context, id string, key string) (*model.APIKey, error) {
+	now := time.Now()
+	_, err := r.DatabasePool.Exec(ctx, "INSERT INTO api_keys (user_id, key, created) VALUES ($1, $2, $3)", id, key, now)
 	if err != nil {
 		return nil, err
 	}
-	return &model.APIKey{Key: apiKey, Created: time.Now()}, nil
-}
-
-var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-func GenerateAPIKey(length int) string {
-	b := make([]rune, length)
-	for i := range b {
-		b[i] = letterRunes[rand.Intn(len(letterRunes))]
-	}
-	return string(b)
+	return &model.APIKey{Key: key, Created: time.Now()}, nil
 }
