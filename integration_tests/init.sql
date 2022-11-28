@@ -126,10 +126,10 @@ create table hackathon_applications
         constraint hackathon_applications_pk
             primary key,
     user_id                   integer                 not null
-        constraint hackathon_applications_users_null_fk
+        constraint hackathon_applications_users_id_fk
             references users,
     hackathon_id              integer                 not null
-        constraint hackathon_applications_hackathons_null_fk
+        constraint hackathon_applications_hackathons_id_fk
             references hackathons,
     why_attend                character varying[]     not null,
     what_do_you_want_to_learn character varying[]     not null,
@@ -144,7 +144,7 @@ create table mailing_addresses
     user_id       integer             not null
         constraint mailing_addresses_pk
             primary key
-        constraint mailing_addresses_users_null_fk
+        constraint mailing_addresses_users_id_fk
             references users,
     country       varchar             not null,
     state         varchar             not null,
@@ -152,11 +152,6 @@ create table mailing_addresses
     postal_code   varchar             not null,
     address_lines character varying[] not null
 );
-
-alter table users
-    add constraint users_mailing_addresses_user_id_fk
-        foreign key (id) references mailing_addresses
-            deferrable initially deferred;
 
 create table mlh_terms
 (
@@ -170,17 +165,12 @@ create table mlh_terms
     code_of_conduct boolean not null
 );
 
-alter table users
-    add constraint users_mlh_terms_user_id_fk
-        foreign key (id) references mlh_terms
-            deferrable initially deferred;
-
 create table education_info
 (
     user_id         integer   not null
         constraint education_info_pk
             primary key
-        constraint education_info_users_null_fk
+        constraint education_info_users_id_fk
             references users,
     name            varchar   not null,
     major           varchar   not null,
@@ -188,18 +178,13 @@ create table education_info
     level           varchar
 );
 
-alter table users
-    add constraint users_education_info_user_id_fk
-        foreign key (id) references education_info
-            deferrable initially deferred;
-
 create table event_attendance
 (
     event_id integer                 not null
-        constraint event_attendance_events_null_fk
+        constraint event_attendance_events_id_fk
             references events,
     user_id  integer                 not null
-        constraint event_attendance_users_null_fk
+        constraint event_attendance_users_id_fk
             references users,
     time     timestamp default now() not null,
     constraint event_attendance_pk
@@ -222,10 +207,10 @@ create table meals
 create table hackathon_checkin
 (
     hackathon_id integer   not null
-        constraint hackathon_attendance_hackathons_null_fk
+        constraint hackathon_checkin_hackathons_id_fk
             references hackathons,
     user_id      integer   not null
-        constraint hackathon_attendance_users_null_fk
+        constraint hackathon_checkin_users_id_fk
             references users,
     time         timestamp not null,
     constraint hackathon_checkin_pk
@@ -236,7 +221,9 @@ create table api_keys
 (
     user_id integer   not null
         constraint api_keys_pk
-            primary key,
+            primary key
+        constraint api_keys_users_id_fk
+            references users,
     key     varchar   not null,
     created timestamp not null
 );
