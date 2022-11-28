@@ -53,7 +53,7 @@ func TestDatabaseRepository_AddAPIKey(t *testing.T) {
 		id  string
 	}
 	tests := []Test[args, *model.APIKey]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -77,7 +77,7 @@ func TestDatabaseRepository_CreateUser(t *testing.T) {
 		input *model.NewUser
 	}
 	tests := []Test[args, *model.User]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -100,7 +100,7 @@ func TestDatabaseRepository_DeleteAPIKey(t *testing.T) {
 		id  string
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -118,7 +118,7 @@ func TestDatabaseRepository_DeleteUser(t *testing.T) {
 		id  string
 	}
 	tests := []Test[args, bool]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -141,7 +141,7 @@ func TestDatabaseRepository_GetAPIKey(t *testing.T) {
 		obj *model.User
 	}
 	tests := []Test[args, *model.APIKey]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -167,7 +167,7 @@ func TestDatabaseRepository_GetById(t *testing.T) {
 		exists   bool
 	}
 	tests := []Test[args, want]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -192,7 +192,7 @@ func TestDatabaseRepository_GetByPronouns(t *testing.T) {
 		exists bool
 	}
 	tests := []Test[args, want]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -214,7 +214,7 @@ func TestDatabaseRepository_GetOAuth(t *testing.T) {
 		id  string
 	}
 	tests := []Test[args, *model.OAuth]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -239,7 +239,7 @@ func TestDatabaseRepository_GetOrCreatePronoun(t *testing.T) {
 		input     *model.NewUser
 	}
 	tests := []Test[args, *int]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -263,7 +263,7 @@ func TestDatabaseRepository_GetUserByID(t *testing.T) {
 		id  string
 	}
 	tests := []Test[args, *model.User]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -288,7 +288,7 @@ func TestDatabaseRepository_GetUserByOAuthUID(t *testing.T) {
 		provider models.Provider
 	}
 	tests := []Test[args, *model.User]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -311,7 +311,7 @@ func TestDatabaseRepository_GetUserMLHTerms(t *testing.T) {
 		userId string
 	}
 	tests := []Test[args, *model.MLHTerms]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -336,7 +336,7 @@ func TestDatabaseRepository_GetUserMailingAddress(t *testing.T) {
 		userId string
 	}
 	tests := []Test[args, *model.MailingAddress]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -364,7 +364,7 @@ func TestDatabaseRepository_GetUsers(t *testing.T) {
 		total int
 	}
 	tests := []Test[args, want]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -392,7 +392,7 @@ func TestDatabaseRepository_InsertEducationInfo(t *testing.T) {
 		input     *model.EducationInfoInput
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -412,7 +412,7 @@ func TestDatabaseRepository_InsertMLHTerms(t *testing.T) {
 		input     *model.MLHTermsInput
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -433,7 +433,7 @@ func TestDatabaseRepository_InsertMailingAddress(t *testing.T) {
 		input     *model.MailingAddressInput
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -454,7 +454,7 @@ func TestDatabaseRepository_InsertUser(t *testing.T) {
 		oAuth        *model.OAuth
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -477,7 +477,7 @@ func TestDatabaseRepository_SearchUser(t *testing.T) {
 		name string
 	}
 	tests := []Test[args, []*model.User]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -503,7 +503,7 @@ func TestDatabaseRepository_Set(t *testing.T) {
 		name string
 		args args
 	}{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -521,7 +521,7 @@ func TestDatabaseRepository_UpdateAge(t *testing.T) {
 		tx  pgx.Tx
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -542,7 +542,7 @@ func TestDatabaseRepository_UpdateEducationInfo(t *testing.T) {
 		tx    pgx.Tx
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -564,7 +564,7 @@ func TestDatabaseRepository_UpdateEmail(t *testing.T) {
 		tx    pgx.Tx
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -585,7 +585,7 @@ func TestDatabaseRepository_UpdateFirstName(t *testing.T) {
 		tx    pgx.Tx
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -606,7 +606,7 @@ func TestDatabaseRepository_UpdateGender(t *testing.T) {
 		tx     pgx.Tx
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -626,7 +626,7 @@ func TestDatabaseRepository_UpdateLastName(t *testing.T) {
 		tx   pgx.Tx
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -647,7 +647,7 @@ func TestDatabaseRepository_UpdateMLHTerms(t *testing.T) {
 		tx    pgx.Tx
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -668,7 +668,7 @@ func TestDatabaseRepository_UpdateMailingAddress(t *testing.T) {
 		tx    pgx.Tx
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -688,7 +688,7 @@ func TestDatabaseRepository_UpdatePhoneNumber(t *testing.T) {
 		tx     pgx.Tx
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -709,7 +709,7 @@ func TestDatabaseRepository_UpdatePronouns(t *testing.T) {
 		tx      pgx.Tx
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -729,7 +729,7 @@ func TestDatabaseRepository_UpdateRace(t *testing.T) {
 		tx    pgx.Tx
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -750,7 +750,7 @@ func TestDatabaseRepository_UpdateShirtSize(t *testing.T) {
 		tx        pgx.Tx
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -769,7 +769,7 @@ func TestDatabaseRepository_UpdateUser(t *testing.T) {
 		input *model.UpdatedUser
 	}
 	tests := []Test[args, *model.User]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -794,7 +794,7 @@ func TestDatabaseRepository_UpdateYearsOfExperience(t *testing.T) {
 		tx    pgx.Tx
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -814,7 +814,7 @@ func TestDatabaseRepository_getPronouns(t *testing.T) {
 		pronounId int
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -833,7 +833,7 @@ func TestDatabaseRepository_getUser(t *testing.T) {
 		args  []interface{}
 	}
 	tests := []Test[args, *model.User]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -858,7 +858,7 @@ func TestDatabaseRepository_getUserWithTx(t *testing.T) {
 		args  []interface{}
 	}
 	tests := []Test[args, *model.User]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -881,7 +881,7 @@ func TestGenerateAPIKey(t *testing.T) {
 		length int
 	}
 	tests := []Test[args, any]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -898,7 +898,7 @@ func TestNewDatabaseRepository(t *testing.T) {
 		databasePool *pgxpool.Pool
 	}
 	tests := []Test[args, *database.DatabaseRepository]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -916,7 +916,7 @@ func TestScanUser(t *testing.T) {
 		scannable database.Scannable
 	}
 	tests := []Test[args, *int]{
-		{},
+
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
