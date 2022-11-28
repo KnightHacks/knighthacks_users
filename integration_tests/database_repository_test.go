@@ -199,8 +199,14 @@ func TestDatabaseRepository_DeleteAPIKey(t *testing.T) {
 		id  string
 	}
 	tests := []Test[args, any]{
-
-		// TODO: Add test cases.
+		{
+			name: "delete Joe Bob's APIKey",
+			args: args{
+				ctx: context.Background(),
+				id:  "1",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
