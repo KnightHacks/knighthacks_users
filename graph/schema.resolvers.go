@@ -269,7 +269,7 @@ func (r *userResolver) Mlh(ctx context.Context, obj *model.User) (*model.MLHTerm
 
 // APIKey is the resolver for the apiKey field.
 func (r *userResolver) APIKey(ctx context.Context, obj *model.User) (*model.APIKey, error) {
-	return r.Repository.GetAPIKey(ctx, obj)
+	return r.Repository.GetAPIKey(ctx, obj.ID)
 }
 
 // HackathonApplication returns generated.HackathonApplicationResolver implementation.

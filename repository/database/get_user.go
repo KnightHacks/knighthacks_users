@@ -195,8 +195,13 @@ func (r *DatabaseRepository) GetUserMLHTerms(ctx context.Context, userId string)
 
 }
 
-func (r *DatabaseRepository) GetAPIKey(ctx context.Context, obj *model.User) (apiKey *model.APIKey, err error) {
-	err = r.DatabasePool.QueryRow(ctx, "SELECT key, created FROM api_keys WHERE user_id = $1", obj.ID).Scan(&apiKey.Key, &apiKey.Created)
+func (r *DatabaseRepository) GetAPIKey(ctx context.Context, userId string) (apiKey *model.APIKey, err error) {
+	apiKey = &model.APIKey{}
+	err = r.DatabasePool.QueryRow(
+		ctx,
+		"SELECT key, created FROM api_keys WHERE user_id = $1",
+		userId,
+	).Scan(&apiKey.Key, &apiKey.Created)
 	if err != nil {
 		return nil, err
 	}

@@ -200,10 +200,10 @@ func TestDatabaseRepository_DeleteAPIKey(t *testing.T) {
 	}
 	tests := []Test[args, any]{
 		{
-			name: "delete Joe Bob's APIKey",
+			name: "delete Joe Biron's APIKey",
 			args: args{
 				ctx: context.Background(),
-				id:  "1",
+				id:  "2",
 			},
 			wantErr: false,
 		},
@@ -242,21 +242,30 @@ func TestDatabaseRepository_DeleteUser(t *testing.T) {
 
 func TestDatabaseRepository_GetAPIKey(t *testing.T) {
 	type args struct {
-		ctx context.Context
-		obj *model.User
+		ctx    context.Context
+		userId string
 	}
 	tests := []Test[args, *model.APIKey]{
-
-		// TODO: Add test cases.
+		{
+			name: "get Joe Bob's APIKey",
+			args: args{
+				ctx:    context.Background(),
+				userId: "1",
+			},
+			want: &model.APIKey{
+				Key: "12345abcdef",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotApiKey, err := databaseRepository.GetAPIKey(tt.args.ctx, tt.args.obj)
+			gotApiKey, err := databaseRepository.GetAPIKey(tt.args.ctx, tt.args.userId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAPIKey() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(gotApiKey, tt.want) {
+			if !reflect.DeepEqual(gotApiKey.Key, tt.want.Key) {
 				t.Errorf("GetAPIKey() gotApiKey = %v, want %v", gotApiKey, tt.want)
 			}
 		})

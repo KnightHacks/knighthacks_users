@@ -251,11 +251,23 @@ create unique index api_keys_key_uindex
 INSERT INTO pronouns (subjective, objective)
 VALUES ('he', 'him'); -- ID = 1
 
-INSERT INTO public.users (email, phone_number, last_name, age, pronoun_id, first_name, role, oauth_uid,
-                          oauth_provider, years_of_experience, shirt_size, race, gender)
+INSERT INTO users (email, phone_number, last_name, age, pronoun_id, first_name, role, oauth_uid,
+                   oauth_provider, years_of_experience, shirt_size, race, gender)
 VALUES ('joe.bob@example.com'::varchar, '100-200-3000'::varchar, 'Bob'::varchar, 22::integer, 1::integer,
         'Joe'::varchar, 'NORMAL'::varchar, '1'::varchar, 'GITHUB'::varchar, 3.5::double precision, 'L'::varchar,
         ARRAY ['CAUCASIAN'], 'MALE'::varchar);
+-- ID = 1
+
+
+INSERT INTO users (email, phone_number, last_name, age, pronoun_id, first_name, role, oauth_uid,
+                   oauth_provider, years_of_experience, shirt_size, race, gender)
+VALUES ('joe.biron@example.com'::varchar, '123-456-7890'::varchar, 'Biron'::varchar, 21::integer, 1::integer,
+        'Joe'::varchar, 'NORMAL'::varchar, '1'::varchar, 'GITHUB'::varchar, 3.5::double precision, 'L'::varchar,
+        ARRAY ['AFRICAN_AMERICAN'], 'MALE'::varchar);
+-- ID = 2
+
+INSERT INTO api_keys (user_id, key, created)
+VALUES (2, '1234567890abc', '2022-11-09')
 -- ID = 1
 
 -- INTEGRATION TEST DATA END
