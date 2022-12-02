@@ -104,7 +104,7 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 		}
 
 		user, err = r.GetUserWithTx(ctx,
-			`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race FROM users WHERE id = $1 LIMIT 1`,
+			`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race, shirt_size, years_of_experience FROM users WHERE id = $1 LIMIT 1`,
 			tx,
 			id)
 
@@ -429,7 +429,7 @@ type Scannable interface {
 }
 
 func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
-	var pronounId *int32
+	var pronounId int
 	var userIdInt int
 	err := scannable.Scan(
 		&userIdInt,
@@ -442,16 +442,17 @@ func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
 		&user.Role,
 		&user.Gender,
 		&user.Race,
+		&user.ShirtSize,
+		&user.YearsOfExperience,
 	)
 	if err != nil {
 		return nil, err
 	}
 	user.ID = strconv.Itoa(userIdInt)
-	if pronounId != nil {
-		i := int(*pronounId)
-		return &i, nil
+	if pronounId == 0 {
+		return nil, nil
 	}
-	return nil, nil
+	return &pronounId, nil
 }
 
 func (r *DatabaseRepository) DeleteAPIKey(ctx context.Context, id string) error {

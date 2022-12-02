@@ -412,7 +412,36 @@ func TestDatabaseRepository_GetUserByID(t *testing.T) {
 		id  string
 	}
 	tests := []Test[args, *model.User]{
-
+		{
+			name: "get Joe Bob by id",
+			args: args{
+				ctx: context.Background(),
+				id:  "1",
+			},
+			want: &model.User{
+				ID:          "1",
+				FirstName:   "Joe",
+				LastName:    "Bob",
+				Email:       "joe.bob@example.com",
+				PhoneNumber: "100-200-3000",
+				Pronouns: &model.Pronouns{
+					Subjective: "he",
+					Objective:  "him",
+				},
+				Age:               utils.Ptr(22),
+				Role:              models.RoleNormal,
+				Gender:            utils.Ptr("MALE"),
+				Race:              []model.Race{"CAUCASIAN"},
+				OAuth:             nil,
+				MailingAddress:    nil,
+				Mlh:               nil,
+				ShirtSize:         model.ShirtSizeL,
+				YearsOfExperience: utils.Ptr(3.5),
+				EducationInfo:     nil,
+				APIKey:            nil,
+			},
+			wantErr: false,
+		},
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -951,25 +980,6 @@ func TestDatabaseRepository_UpdateYearsOfExperience(t *testing.T) {
 
 			if err := databaseRepository.UpdateYearsOfExperience(tt.args.ctx, tt.args.id, tt.args.years, tt.args.tx); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateYearsOfExperience() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestDatabaseRepository_getPronouns(t *testing.T) {
-	type args struct {
-		ctx       context.Context
-		queryable shared_db_utils.Queryable
-		pronounId int
-	}
-	tests := []Test[args, any]{
-
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := databaseRepository.GetPronouns(tt.args.ctx, tt.args.queryable, tt.args.pronounId); (err != nil) != tt.wantErr {
-				t.Errorf("getPronouns() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
