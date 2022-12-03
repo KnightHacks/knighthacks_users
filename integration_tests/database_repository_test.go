@@ -466,7 +466,7 @@ func TestDatabaseRepository_GetUserByOAuthUID(t *testing.T) {
 	}
 	tests := []Test[args, *model.User]{
 		{
-			name: "get Joe Bob by id",
+			name: "get Joe Bob by oauth id",
 			args: args{
 				ctx:      context.Background(),
 				oAuthUID: "1",
