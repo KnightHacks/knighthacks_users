@@ -459,15 +459,43 @@ func TestDatabaseRepository_GetUserByID(t *testing.T) {
 }
 
 func TestDatabaseRepository_GetUserByOAuthUID(t *testing.T) {
-
 	type args struct {
 		ctx      context.Context
 		oAuthUID string
 		provider models.Provider
 	}
 	tests := []Test[args, *model.User]{
-
-		// TODO: Add test cases.
+		{
+			name: "get Joe Bob by id",
+			args: args{
+				ctx:      context.Background(),
+				oAuthUID: "1",
+				provider: models.ProviderGithub,
+			},
+			want: &model.User{
+				ID:          "1",
+				FirstName:   "Joe",
+				LastName:    "Bob",
+				Email:       "joe.bob@example.com",
+				PhoneNumber: "100-200-3000",
+				Pronouns: &model.Pronouns{
+					Subjective: "he",
+					Objective:  "him",
+				},
+				Age:               utils.Ptr(22),
+				Role:              models.RoleNormal,
+				Gender:            utils.Ptr("MALE"),
+				Race:              []model.Race{"CAUCASIAN"},
+				OAuth:             nil,
+				MailingAddress:    nil,
+				Mlh:               nil,
+				ShirtSize:         model.ShirtSizeL,
+				YearsOfExperience: utils.Ptr(3.5),
+				EducationInfo:     nil,
+				APIKey:            nil,
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
