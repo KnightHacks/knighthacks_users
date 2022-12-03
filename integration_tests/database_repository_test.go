@@ -1039,63 +1039,30 @@ func TestDatabaseRepository_UpdateYearsOfExperience(t *testing.T) {
 	}
 }
 
-func TestDatabaseRepository_getUser(t *testing.T) {
-	type args struct {
-		ctx   context.Context
-		query string
-		args  []interface{}
-	}
-	tests := []Test[args, *model.User]{
-
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := databaseRepository.GetUser(tt.args.ctx, tt.args.query, tt.args.args...)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getUser() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getUser() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestDatabaseRepository_getUserWithTx(t *testing.T) {
-	type args struct {
-		ctx   context.Context
-		query string
-		tx    pgx.Tx
-		args  []interface{}
-	}
-	tests := []Test[args, *model.User]{
-
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			got, err := databaseRepository.GetUserWithTx(tt.args.ctx, tt.args.query, tt.args.tx, tt.args.args...)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getUserWithTx() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getUserWithTx() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestNewDatabaseRepository(t *testing.T) {
 	type args struct {
 		databasePool *pgxpool.Pool
 	}
 	tests := []Test[args, *database.DatabaseRepository]{
-
-		// TODO: Add test cases.
+		{
+			name: "creating matching database repository",
+			args: args{
+				databasePool: databaseRepository.DatabasePool,
+			},
+			want: &database.DatabaseRepository{
+				DatabasePool:      databaseRepository.DatabasePool,
+				PronounMap:        databaseRepository.PronounMap,
+				PronounReverseMap: databaseRepository.PronounReverseMap,
+			},
+			wantErr: false,
+		},
+		{
+			name: "creating nil databasepool",
+			args: args{
+				databasePool: nil,
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

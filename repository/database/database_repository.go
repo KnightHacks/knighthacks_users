@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,6 +20,9 @@ type DatabaseRepository struct {
 }
 
 func NewDatabaseRepository(ctx context.Context, databasePool *pgxpool.Pool) (*DatabaseRepository, error) {
+	if databasePool == nil {
+		return nil, fmt.Errorf("cannot create DatabaseRepository with nil databasePool")
+	}
 	databaseRepository := &DatabaseRepository{
 		DatabasePool:      databasePool,
 		PronounMap:        map[int]model.Pronouns{},
