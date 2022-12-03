@@ -5,10 +5,10 @@ package graph
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/url"
 
@@ -93,7 +93,7 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 
 // AddAPIKey is the resolver for the addAPIKey field.
 func (r *mutationResolver) AddAPIKey(ctx context.Context, userID string) (*model.APIKey, error) {
-	return r.Repository.AddAPIKey(ctx, userID)
+	return r.Repository.AddAPIKey(ctx, userID, GenerateAPIKey(100))
 }
 
 // DeleteAPIKey is the resolver for the deleteAPIKey field.
@@ -269,7 +269,7 @@ func (r *userResolver) Mlh(ctx context.Context, obj *model.User) (*model.MLHTerm
 
 // APIKey is the resolver for the apiKey field.
 func (r *userResolver) APIKey(ctx context.Context, obj *model.User) (*model.APIKey, error) {
-	return r.Repository.GetAPIKey(ctx, obj)
+	return r.Repository.GetAPIKey(ctx, obj.ID)
 }
 
 // HackathonApplication returns generated.HackathonApplicationResolver implementation.
@@ -290,3 +290,13 @@ type hackathonApplicationResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func GenerateAPIKey(length int) string {
+	b := make([]rune, length)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}

@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -18,12 +19,22 @@ type DatabaseRepository struct {
 	PronounReverseMap map[model.Pronouns]int
 }
 
-func NewDatabaseRepository(databasePool *pgxpool.Pool) *DatabaseRepository {
-	return &DatabaseRepository{
+func NewDatabaseRepository(ctx context.Context, databasePool *pgxpool.Pool) (*DatabaseRepository, error) {
+	if databasePool == nil {
+		return nil, fmt.Errorf("cannot create DatabaseRepository with nil databasePool")
+	}
+	databaseRepository := &DatabaseRepository{
 		DatabasePool:      databasePool,
 		PronounMap:        map[int]model.Pronouns{},
 		PronounReverseMap: map[model.Pronouns]int{},
 	}
+	if err := databaseRepository.DatabasePool.Ping(ctx); err != nil {
+		return nil, err
+	}
+	if err := databaseRepository.LoadPronouns(ctx); err != nil {
+		return nil, err
+	}
+	return databaseRepository, nil
 }
 
 func (r *DatabaseRepository) DeleteUser(ctx context.Context, id string) (bool, error) {

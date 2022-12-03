@@ -26,7 +26,7 @@ func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after stri
 	err := pgx.BeginTxFunc(ctx, r.DatabasePool, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		rows, err := tx.Query(
 			ctx,
-			"SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race FROM users WHERE id > $1 ORDER BY `id` DESC LIMIT $2",
+			"SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race, shirt_size, years_of_experience FROM users WHERE id > $1 ORDER BY `id` DESC LIMIT $2",
 			after,
 			first,
 		)
@@ -42,10 +42,11 @@ func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after stri
 			}
 			// user has pronouns, but we don't know what they are
 			if pronounId != nil {
-				err = r.getPronouns(ctx, tx, *pronounId)
+				pronouns, err := r.GetPronouns(ctx, tx, *pronounId)
 				if err != nil {
 					return err
 				}
+				user.Pronouns = pronouns
 			}
 			users = append(users, &user)
 		}
@@ -65,24 +66,24 @@ func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after stri
 
 // GetUserByID returns the user by their id
 func (r *DatabaseRepository) GetUserByID(ctx context.Context, id string) (*model.User, error) {
-	return r.getUser(
+	return r.GetUser(
 		ctx,
-		`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race FROM users WHERE id = $1 LIMIT 1`,
+		`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race, shirt_size, years_of_experience FROM users WHERE id = $1 LIMIT 1`,
 		id,
 	)
 }
 
 // GetUserByOAuthUID returns the user by their oauth auth token
 func (r *DatabaseRepository) GetUserByOAuthUID(ctx context.Context, oAuthUID string, provider sharedModels.Provider) (*model.User, error) {
-	return r.getUser(
+	return r.GetUser(
 		ctx,
-		`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race FROM users WHERE oauth_uid=cast($1 as varchar) AND oauth_provider=$2 LIMIT 1`,
+		`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race, shirt_size, years_of_experience FROM users WHERE oauth_uid=cast($1 as varchar) AND oauth_provider=$2 LIMIT 1`,
 		oAuthUID,
 		provider,
 	)
 }
 
-func (r *DatabaseRepository) getUserWithTx(ctx context.Context, query string, tx pgx.Tx, args ...interface{}) (*model.User, error) {
+func (r *DatabaseRepository) GetUserWithTx(ctx context.Context, query string, tx pgx.Tx, args ...interface{}) (*model.User, error) {
 	var user model.User
 
 	if tx == nil {
@@ -105,15 +106,17 @@ func (r *DatabaseRepository) getUserWithTx(ctx context.Context, query string, tx
 
 	// if the user has their pronouns set
 	if pronounId != nil {
-		if err = r.getPronouns(ctx, tx, *pronounId); err != nil {
+		pronouns, err := r.GetPronouns(ctx, tx, *pronounId)
+		if err != nil {
 			return nil, err
 		}
+		user.Pronouns = pronouns
 	}
 	return &user, nil
 }
 
-func (r *DatabaseRepository) getUser(ctx context.Context, query string, args ...interface{}) (*model.User, error) {
-	return r.getUserWithTx(ctx, query, nil, args...)
+func (r *DatabaseRepository) GetUser(ctx context.Context, query string, args ...interface{}) (*model.User, error) {
+	return r.GetUserWithTx(ctx, query, nil, args...)
 }
 
 func (r *DatabaseRepository) SearchUser(ctx context.Context, name string) ([]*model.User, error) {
@@ -121,7 +124,7 @@ func (r *DatabaseRepository) SearchUser(ctx context.Context, name string) ([]*mo
 	users := make([]*model.User, 0, limit)
 
 	err := pgx.BeginTxFunc(ctx, r.DatabasePool, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		rows, err := tx.Query(ctx, "SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race from users WHERE to_tsvector(first_name || ' ' || last_name) @@ to_tsquery('$1:*') LIMIT $2", name, limit)
+		rows, err := tx.Query(ctx, "SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race, shirt_size, years_of_experience from users WHERE to_tsvector(first_name || ' ' || last_name) @@ to_tsquery('$1:*') LIMIT $2", name, limit)
 		if err != nil {
 			return err
 		}
@@ -133,7 +136,11 @@ func (r *DatabaseRepository) SearchUser(ctx context.Context, name string) ([]*mo
 				return err
 			}
 			if pronounId != nil {
-				err = r.getPronouns(ctx, tx, *pronounId)
+				pronouns, err := r.GetPronouns(ctx, tx, *pronounId)
+				if err != nil {
+					return err
+				}
+				user.Pronouns = pronouns
 			}
 			if err != nil {
 				return err
@@ -151,9 +158,9 @@ func (r *DatabaseRepository) SearchUser(ctx context.Context, name string) ([]*mo
 // GetOAuth returns the model.OAuth object that is associated with the user's id
 // Used by the OAuth force resolver, this is not a common operation so making this
 // a force resolver is a good idea
-func (r *DatabaseRepository) GetOAuth(ctx context.Context, id string) (*model.OAuth, error) {
+func (r *DatabaseRepository) GetOAuth(ctx context.Context, userId string) (*model.OAuth, error) {
 	var oAuth model.OAuth
-	err := r.DatabasePool.QueryRow(ctx, "SELECT oauth_uid, oauth_provider FROM users WHERE id = $1", id).Scan(&oAuth.UID, &oAuth.Provider)
+	err := r.DatabasePool.QueryRow(ctx, "SELECT oauth_uid, oauth_provider FROM users WHERE id = $1", userId).Scan(&oAuth.UID, &oAuth.Provider)
 	if err != nil {
 		return nil, err
 	}
@@ -195,8 +202,13 @@ func (r *DatabaseRepository) GetUserMLHTerms(ctx context.Context, userId string)
 
 }
 
-func (r *DatabaseRepository) GetAPIKey(ctx context.Context, obj *model.User) (apiKey *model.APIKey, err error) {
-	err = r.DatabasePool.QueryRow(ctx, "SELECT key, created FROM api_keys WHERE user_id = $1", obj.ID).Scan(&apiKey.Key, &apiKey.Created)
+func (r *DatabaseRepository) GetAPIKey(ctx context.Context, userId string) (apiKey *model.APIKey, err error) {
+	apiKey = &model.APIKey{}
+	err = r.DatabasePool.QueryRow(
+		ctx,
+		"SELECT key, created FROM api_keys WHERE user_id = $1",
+		userId,
+	).Scan(&apiKey.Key, &apiKey.Created)
 	if err != nil {
 		return nil, err
 	}
