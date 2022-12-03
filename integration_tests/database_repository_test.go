@@ -226,8 +226,14 @@ func TestDatabaseRepository_DeleteUser(t *testing.T) {
 		id  string
 	}
 	tests := []Test[args, bool]{
-
-		// TODO: Add test cases.
+		{
+			name: "delete Joe Biron",
+			args: args{
+				ctx: context.Background(),
+				id:  "2",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
