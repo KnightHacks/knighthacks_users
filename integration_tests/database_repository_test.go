@@ -553,7 +553,7 @@ func TestDatabaseRepository_GetUserMailingAddress(t *testing.T) {
 	}
 	tests := []Test[args, *model.MailingAddress]{
 		{
-			name: "",
+			name: "get mailing address for Joe Bob",
 			args: args{
 				ctx:    context.Background(),
 				userId: "1",
