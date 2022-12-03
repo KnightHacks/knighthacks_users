@@ -7,7 +7,7 @@ import (
 	sharedModels "github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 	"strconv"
 )
 
@@ -27,8 +27,24 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 		}
 	}
 
+	user := &model.User{
+		ID:                userId,
+		FirstName:         input.FirstName,
+		LastName:          input.LastName,
+		Email:             input.Email,
+		PhoneNumber:       input.PhoneNumber,
+		Pronouns:          &pronouns,
+		Age:               input.Age,
+		Role:              sharedModels.RoleNormal,
+		OAuth:             oAuth,
+		Race:              input.Race,
+		YearsOfExperience: input.YearsOfExperience,
+		ShirtSize:         input.ShirtSize,
+		Gender:            input.Gender,
+	}
+
 	// Begins the database transaction
-	err := r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+	err := pgx.BeginTxFunc(ctx, r.DatabasePool, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		// Detects whether the user with the oauth_uid, for GitHub that is their github ID already exists, if
 		// the use already exists we return an UserAlreadyExists error
 		var discoveredId = new(int)
@@ -53,18 +69,42 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 		}
 
 		// Insert MLH Terms
-		if err = r.InsertMLHTerms(ctx, tx, userIdInt, input.Mlh); err != nil {
-			return err
+		if input.Mlh != nil {
+			if err = r.InsertMLHTerms(ctx, tx, userIdInt, input.Mlh); err != nil {
+				return err
+			}
+			user.Mlh = &model.MLHTerms{
+				SendMessages:  input.Mlh.SendMessages,
+				CodeOfConduct: input.Mlh.CodeOfConduct,
+				ShareInfo:     input.Mlh.ShareInfo,
+			}
 		}
 
 		// Insert Education Info
-		if err = r.InsertEducationInfo(ctx, tx, userIdInt, input.EducationInfo); err != nil {
-			return err
+		if input.EducationInfo != nil {
+			if err = r.InsertEducationInfo(ctx, tx, userIdInt, input.EducationInfo); err != nil {
+				return err
+			}
+			user.EducationInfo = &model.EducationInfo{
+				Name:           input.EducationInfo.Name,
+				GraduationDate: input.EducationInfo.GraduationDate,
+				Major:          input.EducationInfo.Major,
+				Level:          input.EducationInfo.Level,
+			}
 		}
 
 		// Insert Mailing Address Data
-		if err = r.InsertMailingAddress(ctx, tx, userIdInt, input.MailingAddress); err != nil {
-			return err
+		if input.MailingAddress != nil {
+			if err = r.InsertMailingAddress(ctx, tx, userIdInt, input.MailingAddress); err != nil {
+				return err
+			}
+			user.MailingAddress = &model.MailingAddress{
+				Country:      input.MailingAddress.Country,
+				State:        input.MailingAddress.State,
+				City:         input.MailingAddress.City,
+				PostalCode:   input.MailingAddress.PostalCode,
+				AddressLines: input.MailingAddress.AddressLines,
+			}
 		}
 
 		userId = strconv.Itoa(userIdInt)
@@ -74,16 +114,7 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 		return nil, err
 	}
 	// TODO: look into the case where the userId is not scanned in
-	return &model.User{
-		ID:          userId,
-		FirstName:   input.FirstName,
-		LastName:    input.LastName,
-		Email:       input.Email,
-		PhoneNumber: input.PhoneNumber,
-		Pronouns:    &pronouns,
-		Age:         input.Age,
-		OAuth:       oAuth,
-	}, nil
+	return user, nil
 }
 
 func (r *DatabaseRepository) InsertUser(ctx context.Context, queryable database.Queryable, input *model.NewUser, pronounIdPtr *int, oAuth *model.OAuth) (int, error) {
@@ -98,7 +129,7 @@ func (r *DatabaseRepository) InsertUser(ctx context.Context, queryable database.
 		}
 	}
 	var userIdInt int
-	err := queryable.QueryRow(ctx, "INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider, role,years_of_experience, shirt_size, race, gender, race) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id",
+	err := queryable.QueryRow(ctx, "INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider, role, years_of_experience, shirt_size, race, gender) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id",
 		input.FirstName,
 		input.LastName,
 		input.Email,
@@ -110,9 +141,8 @@ func (r *DatabaseRepository) InsertUser(ctx context.Context, queryable database.
 		sharedModels.RoleNormal,
 		input.YearsOfExperience,
 		input.ShirtSize,
-		input.Race,
-		input.Gender,
 		raceStringArray,
+		input.Gender,
 	).Scan(&userIdInt)
 	return userIdInt, err
 }
@@ -128,7 +158,7 @@ func (r *DatabaseRepository) InsertMLHTerms(ctx context.Context, queryable datab
 }
 
 func (r *DatabaseRepository) InsertEducationInfo(ctx context.Context, queryable database.Queryable, userId int, input *model.EducationInfoInput) error {
-	_, err := queryable.Exec(ctx, "INSERT INTO education_info (user_id, name, major, graduation_date, level) VALUES ($1, $2, $3, $4)",
+	_, err := queryable.Exec(ctx, "INSERT INTO education_info (user_id, name, major, graduation_date, level) VALUES ($1, $2, $3, $4, $5)",
 		userId,
 		input.Name,
 		input.Major,

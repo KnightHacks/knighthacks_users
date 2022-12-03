@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/KnightHacks/knighthacks_shared/database"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 )
 
 /*
@@ -37,7 +37,7 @@ func (r *DatabaseRepository) Set(id int, pronouns model.Pronouns) {
 	r.PronounReverseMap[pronouns] = id
 }
 
-func (r *DatabaseRepository) getPronouns(ctx context.Context, queryable database.Queryable, pronounId int) error {
+func (r *DatabaseRepository) GetPronouns(ctx context.Context, queryable database.Queryable, pronounId int) (*model.Pronouns, error) {
 	pronouns, exists := r.GetById(pronounId)
 	// does the pronoun not exist in the local cache?
 	if !exists {
@@ -47,12 +47,12 @@ func (r *DatabaseRepository) getPronouns(ctx context.Context, queryable database
 			&pronouns.Objective,
 		)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		// set the pronoun in the local cache
 		r.Set(pronounId, pronouns)
 	}
-	return nil
+	return &pronouns, nil
 }
 
 func (r *DatabaseRepository) GetOrCreatePronoun(ctx context.Context, queryable database.Queryable, pronouns model.Pronouns, input *model.NewUser) (*int, error) {
@@ -90,4 +90,23 @@ func (r *DatabaseRepository) GetOrCreatePronoun(ctx context.Context, queryable d
 		r.Set(pronounId, pronouns)
 	}
 	return &pronounId, nil
+}
+
+func (r *DatabaseRepository) LoadPronouns(ctx context.Context) error {
+	rows, err := r.DatabasePool.Query(ctx, "SELECT id, subjective, objective FROM pronouns")
+	if err != nil {
+		return err
+	}
+
+	for rows.Next() {
+		var pronouns model.Pronouns
+		var id int
+		err = rows.Scan(&id, &pronouns.Subjective, &pronouns.Objective)
+		if err != nil {
+			return err
+		}
+		r.Set(id, pronouns)
+	}
+
+	return nil
 }

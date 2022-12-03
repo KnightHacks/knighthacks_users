@@ -7,8 +7,7 @@ import (
 	"github.com/KnightHacks/knighthacks_shared/database"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
-	"github.com/jackc/pgx/v4"
-	"math/rand"
+	"github.com/jackc/pgx/v5"
 	"strconv"
 	"time"
 )
@@ -63,7 +62,7 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 	if input.FirstName == nil && input.LastName == nil && input.Email == nil && input.PhoneNumber == nil && input.Pronouns == nil && input.Age == nil {
 		return nil, errors.New("empty user field")
 	}
-	err = r.DatabasePool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+	err = pgx.BeginTxFunc(ctx, r.DatabasePool, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		if err = Validate(ctx, tx, id, input.FirstName, r.UpdateFirstName); err != nil {
 			return err
 		}
@@ -104,8 +103,8 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 			return err
 		}
 
-		user, err = r.getUserWithTx(ctx,
-			`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race FROM users WHERE id = $1 LIMIT 1`,
+		user, err = r.GetUserWithTx(ctx,
+			`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race, shirt_size, years_of_experience FROM users WHERE id = $1 LIMIT 1`,
 			tx,
 			id)
 
@@ -430,7 +429,7 @@ type Scannable interface {
 }
 
 func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
-	var pronounId *int32
+	var pronounId int
 	var userIdInt int
 	err := scannable.Scan(
 		&userIdInt,
@@ -443,16 +442,17 @@ func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
 		&user.Role,
 		&user.Gender,
 		&user.Race,
+		&user.ShirtSize,
+		&user.YearsOfExperience,
 	)
 	if err != nil {
 		return nil, err
 	}
 	user.ID = strconv.Itoa(userIdInt)
-	if pronounId != nil {
-		i := int(*pronounId)
-		return &i, nil
+	if pronounId == 0 {
+		return nil, nil
 	}
-	return nil, nil
+	return &pronounId, nil
 }
 
 func (r *DatabaseRepository) DeleteAPIKey(ctx context.Context, id string) error {
@@ -463,21 +463,11 @@ func (r *DatabaseRepository) DeleteAPIKey(ctx context.Context, id string) error 
 	return nil
 }
 
-func (r *DatabaseRepository) AddAPIKey(ctx context.Context, id string) (*model.APIKey, error) {
-	apiKey := GenerateAPIKey(100)
-	_, err := r.DatabasePool.Exec(ctx, "INSERT INTO api_keys (user_id, key, created) VALUES ($1, $2, $3)", id, apiKey, time.Now())
+func (r *DatabaseRepository) AddAPIKey(ctx context.Context, id string, key string) (*model.APIKey, error) {
+	now := time.Now()
+	_, err := r.DatabasePool.Exec(ctx, "INSERT INTO api_keys (user_id, key, created) VALUES ($1, $2, $3)", id, key, now)
 	if err != nil {
 		return nil, err
 	}
-	return &model.APIKey{Key: apiKey, Created: time.Now()}, nil
-}
-
-var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-func GenerateAPIKey(length int) string {
-	b := make([]rune, length)
-	for i := range b {
-		b[i] = letterRunes[rand.Intn(len(letterRunes))]
-	}
-	return string(b)
+	return &model.APIKey{Key: key, Created: time.Now()}, nil
 }

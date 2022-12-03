@@ -41,6 +41,13 @@ type EducationInfoUpdate struct {
 	Level          *LevelOfStudy `json:"level"`
 }
 
+type HackathonApplication struct {
+	ID   string `json:"id"`
+	User *User  `json:"user"`
+}
+
+func (HackathonApplication) IsEntity() {}
+
 type LoginPayload struct {
 	// If false then you must register immediately following this. Else, you are logged in and have access to your own user.
 	AccountExists bool    `json:"accountExists"`

@@ -5,10 +5,10 @@ package graph
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/url"
 
@@ -20,6 +20,11 @@ import (
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
 )
+
+// User is the resolver for the user field.
+func (r *hackathonApplicationResolver) User(ctx context.Context, obj *model.HackathonApplication) (*model.User, error) {
+	return r.Repository.GetUserByID(ctx, obj.ID)
+}
 
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, provider models.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.RegistrationPayload, error) {
@@ -88,7 +93,7 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 
 // AddAPIKey is the resolver for the addAPIKey field.
 func (r *mutationResolver) AddAPIKey(ctx context.Context, userID string) (*model.APIKey, error) {
-	return r.Repository.AddAPIKey(ctx, userID)
+	return r.Repository.AddAPIKey(ctx, userID, GenerateAPIKey(100))
 }
 
 // DeleteAPIKey is the resolver for the deleteAPIKey field.
@@ -264,7 +269,12 @@ func (r *userResolver) Mlh(ctx context.Context, obj *model.User) (*model.MLHTerm
 
 // APIKey is the resolver for the apiKey field.
 func (r *userResolver) APIKey(ctx context.Context, obj *model.User) (*model.APIKey, error) {
-	return r.Repository.GetAPIKey(ctx, obj)
+	return r.Repository.GetAPIKey(ctx, obj.ID)
+}
+
+// HackathonApplication returns generated.HackathonApplicationResolver implementation.
+func (r *Resolver) HackathonApplication() generated.HackathonApplicationResolver {
+	return &hackathonApplicationResolver{r}
 }
 
 // Mutation returns generated.MutationResolver implementation.
@@ -276,6 +286,17 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 // User returns generated.UserResolver implementation.
 func (r *Resolver) User() generated.UserResolver { return &userResolver{r} }
 
+type hackathonApplicationResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func GenerateAPIKey(length int) string {
+	b := make([]rune, length)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}

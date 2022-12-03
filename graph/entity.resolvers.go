@@ -5,11 +5,15 @@ package graph
 
 import (
 	"context"
-
 	"github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_users/graph/generated"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 )
+
+// FindHackathonApplicationByID is the resolver for the findHackathonApplicationByID field.
+func (r *entityResolver) FindHackathonApplicationByID(ctx context.Context, id string) (*model.HackathonApplication, error) {
+	return &model.HackathonApplication{ID: id}, nil
+}
 
 // FindUserByID is the resolver for the findUserByID field.
 func (r *entityResolver) FindUserByID(ctx context.Context, id string) (*model.User, error) {

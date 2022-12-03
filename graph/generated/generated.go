@@ -40,6 +40,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Entity() EntityResolver
+	HackathonApplication() HackathonApplicationResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 	User() UserResolver
@@ -64,8 +65,14 @@ type ComplexityRoot struct {
 	}
 
 	Entity struct {
+		FindHackathonApplicationByID       func(childComplexity int, id string) int
 		FindUserByID                       func(childComplexity int, id string) int
 		FindUserByOAuthUIDAndOAuthProvider func(childComplexity int, oAuthUID string, oAuthProvider models.Provider) int
+	}
+
+	HackathonApplication struct {
+		ID   func(childComplexity int) int
+		User func(childComplexity int) int
 	}
 
 	LoginPayload struct {
@@ -164,8 +171,12 @@ type ComplexityRoot struct {
 }
 
 type EntityResolver interface {
+	FindHackathonApplicationByID(ctx context.Context, id string) (*model.HackathonApplication, error)
 	FindUserByID(ctx context.Context, id string) (*model.User, error)
 	FindUserByOAuthUIDAndOAuthProvider(ctx context.Context, oAuthUID string, oAuthProvider models.Provider) (*model.User, error)
+}
+type HackathonApplicationResolver interface {
+	User(ctx context.Context, obj *model.HackathonApplication) (*model.User, error)
 }
 type MutationResolver interface {
 	Register(ctx context.Context, provider models.Provider, encryptedOauthAccessToken string, input model.NewUser) (*model.RegistrationPayload, error)
@@ -250,6 +261,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.EducationInfo.Name(childComplexity), true
 
+	case "Entity.findHackathonApplicationByID":
+		if e.complexity.Entity.FindHackathonApplicationByID == nil {
+			break
+		}
+
+		args, err := ec.field_Entity_findHackathonApplicationByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Entity.FindHackathonApplicationByID(childComplexity, args["id"].(string)), true
+
 	case "Entity.findUserByID":
 		if e.complexity.Entity.FindUserByID == nil {
 			break
@@ -273,6 +296,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Entity.FindUserByOAuthUIDAndOAuthProvider(childComplexity, args["oAuthUID"].(string), args["oAuthProvider"].(models.Provider)), true
+
+	case "HackathonApplication.id":
+		if e.complexity.HackathonApplication.ID == nil {
+			break
+		}
+
+		return e.complexity.HackathonApplication.ID(childComplexity), true
+
+	case "HackathonApplication.user":
+		if e.complexity.HackathonApplication.User == nil {
+			break
+		}
+
+		return e.complexity.HackathonApplication.User(childComplexity), true
 
 	case "LoginPayload.accessToken":
 		if e.complexity.LoginPayload.AccessToken == nil {
@@ -1052,6 +1089,11 @@ type RegistrationPayload {
     refreshToken: String!
 }
 
+extend type HackathonApplication @key(fields: "id") {
+    id: ID!
+    user: User! @goField(forceResolver: true)
+}
+
 type Query {
     """
     The code supplied must be the code given to the frontend by the oauth flow
@@ -1092,11 +1134,12 @@ type Mutation {
 `, BuiltIn: true},
 	{Name: "../../federation/entity.graphql", Input: `
 # a union of all types that use the @key directive
-union _Entity = User
+union _Entity = HackathonApplication | User
 
 # fake type to build resolver interfaces for users to implement
 type Entity {
-		findUserByID(id: ID!,): User!
+		findHackathonApplicationByID(id: ID!,): HackathonApplication!
+	findUserByID(id: ID!,): User!
 	findUserByOAuthUIDAndOAuthProvider(oAuthUID: String!,oAuthProvider: Provider!,): User!
 
 }
@@ -1144,6 +1187,21 @@ func (ec *executionContext) dir_pagination_args(ctx context.Context, rawArgs map
 		}
 	}
 	args["maxLength"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Entity_findHackathonApplicationByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -1743,6 +1801,67 @@ func (ec *executionContext) fieldContext_EducationInfo_level(ctx context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _Entity_findHackathonApplicationByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Entity_findHackathonApplicationByID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Entity().FindHackathonApplicationByID(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.HackathonApplication)
+	fc.Result = res
+	return ec.marshalNHackathonApplication2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐHackathonApplication(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Entity_findHackathonApplicationByID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Entity",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_HackathonApplication_id(ctx, field)
+			case "user":
+				return ec.fieldContext_HackathonApplication_user(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type HackathonApplication", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Entity_findHackathonApplicationByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Entity_findUserByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Entity_findUserByID(ctx, field)
 	if err != nil {
@@ -1925,6 +2044,132 @@ func (ec *executionContext) fieldContext_Entity_findUserByOAuthUIDAndOAuthProvid
 	if fc.Args, err = ec.field_Entity_findUserByOAuthUIDAndOAuthProvider_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HackathonApplication_id(ctx context.Context, field graphql.CollectedField, obj *model.HackathonApplication) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_HackathonApplication_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_HackathonApplication_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HackathonApplication",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HackathonApplication_user(ctx context.Context, field graphql.CollectedField, obj *model.HackathonApplication) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_HackathonApplication_user(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.HackathonApplication().User(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_HackathonApplication_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HackathonApplication",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "firstName":
+				return ec.fieldContext_User_firstName(ctx, field)
+			case "lastName":
+				return ec.fieldContext_User_lastName(ctx, field)
+			case "fullName":
+				return ec.fieldContext_User_fullName(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_User_phoneNumber(ctx, field)
+			case "pronouns":
+				return ec.fieldContext_User_pronouns(ctx, field)
+			case "age":
+				return ec.fieldContext_User_age(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
+			case "race":
+				return ec.fieldContext_User_race(ctx, field)
+			case "oAuth":
+				return ec.fieldContext_User_oAuth(ctx, field)
+			case "mailingAddress":
+				return ec.fieldContext_User_mailingAddress(ctx, field)
+			case "mlh":
+				return ec.fieldContext_User_mlh(ctx, field)
+			case "shirtSize":
+				return ec.fieldContext_User_shirtSize(ctx, field)
+			case "yearsOfExperience":
+				return ec.fieldContext_User_yearsOfExperience(ctx, field)
+			case "educationInfo":
+				return ec.fieldContext_User_educationInfo(ctx, field)
+			case "apiKey":
+				return ec.fieldContext_User_apiKey(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -7941,6 +8186,13 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
+	case model.HackathonApplication:
+		return ec._HackathonApplication(ctx, sel, &obj)
+	case *model.HackathonApplication:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._HackathonApplication(ctx, sel, obj)
 	case model.User:
 		return ec._User(ctx, sel, &obj)
 	case *model.User:
@@ -8057,6 +8309,29 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Entity")
+		case "findHackathonApplicationByID":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findHackathonApplicationByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "findUserByID":
 			field := field
 
@@ -8102,6 +8377,54 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var hackathonApplicationImplementors = []string{"HackathonApplication", "_Entity"}
+
+func (ec *executionContext) _HackathonApplication(ctx context.Context, sel ast.SelectionSet, obj *model.HackathonApplication) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, hackathonApplicationImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("HackathonApplication")
+		case "id":
+
+			out.Values[i] = ec._HackathonApplication_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "user":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._HackathonApplication_user(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
 			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -9339,6 +9662,20 @@ func (ec *executionContext) marshalNEducationInfo2ᚖgithubᚗcomᚋKnightHacks�
 func (ec *executionContext) unmarshalNEducationInfoInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfoInput(ctx context.Context, v interface{}) (*model.EducationInfoInput, error) {
 	res, err := ec.unmarshalInputEducationInfoInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNHackathonApplication2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐHackathonApplication(ctx context.Context, sel ast.SelectionSet, v model.HackathonApplication) graphql.Marshaler {
+	return ec._HackathonApplication(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNHackathonApplication2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐHackathonApplication(ctx context.Context, sel ast.SelectionSet, v *model.HackathonApplication) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._HackathonApplication(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
