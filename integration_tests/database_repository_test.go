@@ -517,8 +517,19 @@ func TestDatabaseRepository_GetUserMLHTerms(t *testing.T) {
 		userId string
 	}
 	tests := []Test[args, *model.MLHTerms]{
-
-		// TODO: Add test cases.
+		{
+			name: "",
+			args: args{
+				ctx:    context.Background(),
+				userId: "1",
+			},
+			want: &model.MLHTerms{
+				SendMessages:  true,
+				CodeOfConduct: true,
+				ShareInfo:     true,
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
