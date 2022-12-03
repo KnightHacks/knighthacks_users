@@ -248,6 +248,8 @@ VALUES ('joe.bob@example.com'::varchar, '100-200-3000'::varchar, 'Bob'::varchar,
 INSERT INTO mlh_terms (user_id, send_messages, share_info, code_of_conduct)
 VALUES (1, true, true, true);
 
+INSERT INTO mailing_addresses (user_id, country, state, city, postal_code, address_lines)
+VALUES (1, 'United States', 'Florida', 'Orlando', '32765', ARRAY ['1000 Abc Rd', 'APT 69']);
 
 INSERT INTO users (email, phone_number, last_name, age, pronoun_id, first_name, role, oauth_uid,
                    oauth_provider, years_of_experience, shirt_size, race, gender)
