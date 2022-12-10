@@ -1090,7 +1090,7 @@ type RegistrationPayload {
 }
 
 extend type HackathonApplication @key(fields: "id") {
-    id: ID!
+    id: ID! @external
     user: User! @goField(forceResolver: true)
 }
 
