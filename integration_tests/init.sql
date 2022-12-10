@@ -262,4 +262,11 @@ INSERT INTO api_keys (user_id, key, created)
 VALUES (2, '1234567890abc', '2022-11-09')
 -- ID = 1
 
+
+INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider, role,years_of_experience, shirt_size, race, gender, race) 
+    VALUES ("dough"::varchar, "boy"::varchar, "doughboy@gmail.com"::varchar, "4071234567"::varchar, 16::integer, 1::integer, 
+    "12velofabo12"::varchar, "GITHUB"::varchar, "ADMIN"::varchar, "2.5"::double precision, "Sm"::varchar, 
+    ARRAY ['AFRICAN_AMERICAN'], "MALE"::varchar,);
+--ID=3
+
 -- INTEGRATION TEST DATA END
