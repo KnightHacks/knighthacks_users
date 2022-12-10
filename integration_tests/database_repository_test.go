@@ -226,8 +226,26 @@ func TestDatabaseRepository_DeleteUser(t *testing.T) {
 		id  string
 	}
 	tests := []Test[args, bool]{
-
-		// TODO: Add test cases.
+		{
+			name: "delete Joe Biron",
+			args: args{
+				ctx: context.Background(),
+				id:  "2",
+			},
+			wantErr: false,
+			want: true,
+			
+		},
+		{
+			name: "delete record that doesn't exist",
+			args: args{
+				ctx: context.Background(),
+				id:  "123343",
+			},
+			wantErr: true,
+			want: false,
+			
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -388,7 +406,106 @@ func TestDatabaseRepository_GetOrCreatePronoun(t *testing.T) {
 		input     *model.NewUser
 	}
 	tests := []Test[args, *int]{
+		{
+			name: "get Pronoun does exist",
+			args: args{
+				ctx: context.Background(),
+				queryable: databaseRepository.DatabasePool,
+				pronouns: model.Pronouns{
+					Subjective: "he",
+					Objective: "him",
+				},
+				input: &model.NewUser{
+					FirstName: "dough",
+					LastName: "boy",
+					Email: "doughboy@gmail.com",
+					PhoneNumber: "407-123-4567",
+					Pronouns: &model.PronounsInput{
+						Subjective: "He",
+						Objective: "Him",
+					},
+					Age: utils.Ptr(16),
+					MailingAddress: &model.MailingAddressInput{
+						Country: "USA",
+						State: "Florida",
+						City: "Orlando",
+						PostalCode: "32333",
+						AddressLines: []string{
+							"1122 mayflower ave",
+						},
+					},
+					Mlh: &model.MLHTermsInput{
+						SendMessages: true,
+						CodeOfConduct: true,
+						ShareInfo: true,
+					},
+					ShirtSize: model.ShirtSizeM,
+					YearsOfExperience: utils.Ptr(2.5),
+					EducationInfo: &model.EducationInfoInput{
+						Name:           "University of Central Florida",
+						GraduationDate: time.Date(2026, 12, 20, 0, 0, 0, 0, time.UTC),
+						Major:          "Bachelors of Science",
+						Level:          utils.Ptr(model.LevelOfStudyFreshman),
+					},
+					Gender: utils.Ptr("male"),
+					Race: []model.Race{model.RaceCaucasian, model.RaceAfricanAmerican},
 
+
+				},
+			},
+			want: utils.Ptr(1),
+			wantErr: false,
+		},
+		{
+			name: "create Pronoun when it doesnt exist",
+			args: args{
+				ctx: context.Background(),
+				queryable: databaseRepository.DatabasePool,
+				pronouns: model.Pronouns{
+					Subjective: "boto",
+					Objective: "roboto",
+				},
+				input: &model.NewUser{
+					FirstName: "cybo",
+					LastName: "orgomor",
+					Email: "cybo.orgomor@gmail.com",
+					PhoneNumber: "407-123-4567",
+					Pronouns: &model.PronounsInput{
+						Subjective: "boto",
+						Objective: "roboto",
+					},
+					Age: utils.Ptr(16),
+					MailingAddress: &model.MailingAddressInput{
+						Country: "USA",
+						State: "Florida",
+						City: "Orlando",
+						PostalCode: "32333",
+						AddressLines: []string{
+							"2234 bayleaf drive",
+						},
+					},
+					Mlh: &model.MLHTermsInput{
+						SendMessages: true,
+						CodeOfConduct: true,
+						ShareInfo: true,
+					},
+					ShirtSize: model.ShirtSizeM,
+					YearsOfExperience: utils.Ptr(2.5),
+					EducationInfo: &model.EducationInfoInput{
+						Name:           "University of Central Florida",
+						GraduationDate: time.Date(2026, 12, 20, 0, 0, 0, 0, time.UTC),
+						Major:          "Bachelors of Science",
+						Level:          utils.Ptr(model.LevelOfStudyFreshman),
+					},
+					Gender: utils.Ptr("male"),
+					Race: []model.Race{model.RaceCaucasian, model.RaceAfricanAmerican},
+
+
+				},
+			},
+			want: utils.Ptr(2),
+			wantErr: false,
+		},
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
@@ -441,6 +558,15 @@ func TestDatabaseRepository_GetUserByID(t *testing.T) {
 				APIKey:            nil,
 			},
 			wantErr: false,
+		},
+		{
+			name: "get a non-existing id",
+			args: args{
+				ctx: context.Background(),
+				id: "312345644",
+			},
+			want: nil,
+			wantErr: true,
 		},
 		// TODO: Add test cases.
 	}
