@@ -125,7 +125,7 @@ func TestDatabaseRepository_CreateUser(t *testing.T) {
 						CodeOfConduct: true,
 						ShareInfo:     true,
 					},
-					ShirtSize:         model.ShirtSizeM,
+					ShirtSize:         utils.Ptr(model.ShirtSizeM),
 					YearsOfExperience: utils.Ptr(3.5),
 					EducationInfo: &model.EducationInfoInput{
 						Name:           "University of Central Florida",
@@ -169,7 +169,7 @@ func TestDatabaseRepository_CreateUser(t *testing.T) {
 					CodeOfConduct: true,
 					ShareInfo:     true,
 				},
-				ShirtSize:         model.ShirtSizeM,
+				ShirtSize:         utils.Ptr(model.ShirtSizeM),
 				YearsOfExperience: utils.Ptr(3.5),
 				EducationInfo: &model.EducationInfo{
 					Name:           "University of Central Florida",
@@ -439,7 +439,7 @@ func TestDatabaseRepository_GetOrCreatePronoun(t *testing.T) {
 						CodeOfConduct: true,
 						ShareInfo: true,
 					},
-					ShirtSize: model.ShirtSizeM,
+					ShirtSize:         utils.Ptr(model.ShirtSizeM),
 					YearsOfExperience: utils.Ptr(2.5),
 					EducationInfo: &model.EducationInfoInput{
 						Name:           "University of Central Florida",
@@ -489,7 +489,7 @@ func TestDatabaseRepository_GetOrCreatePronoun(t *testing.T) {
 						CodeOfConduct: true,
 						ShareInfo: true,
 					},
-					ShirtSize: model.ShirtSizeM,
+					ShirtSize:         utils.Ptr(model.ShirtSizeM),
 					YearsOfExperience: utils.Ptr(2.5),
 					EducationInfo: &model.EducationInfoInput{
 						Name:           "University of Central Florida",
@@ -552,7 +552,7 @@ func TestDatabaseRepository_GetUserByID(t *testing.T) {
 				OAuth:             nil,
 				MailingAddress:    nil,
 				Mlh:               nil,
-				ShirtSize:         model.ShirtSizeL,
+				ShirtSize:         utils.Ptr(model.ShirtSizeL),
 				YearsOfExperience: utils.Ptr(3.5),
 				EducationInfo:     nil,
 				APIKey:            nil,
@@ -563,9 +563,9 @@ func TestDatabaseRepository_GetUserByID(t *testing.T) {
 			name: "get a non-existing id",
 			args: args{
 				ctx: context.Background(),
-				id: "312345644",
+				id:  "312345644",
 			},
-			want: nil,
+			want:    nil,
 			wantErr: true,
 		},
 		// TODO: Add test cases.
@@ -615,7 +615,7 @@ func TestDatabaseRepository_GetUserByOAuthUID(t *testing.T) {
 				OAuth:             nil,
 				MailingAddress:    nil,
 				Mlh:               nil,
-				ShirtSize:         model.ShirtSizeL,
+				ShirtSize:         utils.Ptr(model.ShirtSizeL),
 				YearsOfExperience: utils.Ptr(3.5),
 				EducationInfo:     nil,
 				APIKey:            nil,
