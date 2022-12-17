@@ -188,10 +188,10 @@ input NewUser {
     pronouns: PronounsInput
     age: Int
     mailingAddress: MailingAddressInput
-    mlh: MLHTermsInput!
-    shirtSize: ShirtSize!
+    mlh: MLHTermsInput
+    shirtSize: ShirtSize
     yearsOfExperience: Float
-    educationInfo: EducationInfoInput!
+    educationInfo: EducationInfoInput
     gender: String
     race: [Race!]
 }

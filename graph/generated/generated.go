@@ -1044,10 +1044,10 @@ input NewUser {
     pronouns: PronounsInput
     age: Int
     mailingAddress: MailingAddressInput
-    mlh: MLHTermsInput!
-    shirtSize: ShirtSize!
+    mlh: MLHTermsInput
+    shirtSize: ShirtSize
     yearsOfExperience: Float
-    educationInfo: EducationInfoInput!
+    educationInfo: EducationInfoInput
     gender: String
     race: [Race!]
 }
@@ -7952,7 +7952,7 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mlh"))
-			it.Mlh, err = ec.unmarshalNMLHTermsInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTermsInput(ctx, v)
+			it.Mlh, err = ec.unmarshalOMLHTermsInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTermsInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7960,7 +7960,7 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shirtSize"))
-			it.ShirtSize, err = ec.unmarshalNShirtSize2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐShirtSize(ctx, v)
+			it.ShirtSize, err = ec.unmarshalOShirtSize2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐShirtSize(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7976,7 +7976,7 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("educationInfo"))
-			it.EducationInfo, err = ec.unmarshalNEducationInfoInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfoInput(ctx, v)
+			it.EducationInfo, err = ec.unmarshalOEducationInfoInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfoInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9659,11 +9659,6 @@ func (ec *executionContext) marshalNEducationInfo2ᚖgithubᚗcomᚋKnightHacks�
 	return ec._EducationInfo(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNEducationInfoInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfoInput(ctx context.Context, v interface{}) (*model.EducationInfoInput, error) {
-	res, err := ec.unmarshalInputEducationInfoInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) marshalNHackathonApplication2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐHackathonApplication(ctx context.Context, sel ast.SelectionSet, v model.HackathonApplication) graphql.Marshaler {
 	return ec._HackathonApplication(ctx, sel, &v)
 }
@@ -9734,11 +9729,6 @@ func (ec *executionContext) marshalNMLHTerms2ᚖgithubᚗcomᚋKnightHacksᚋkni
 		return graphql.Null
 	}
 	return ec._MLHTerms(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNMLHTermsInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTermsInput(ctx context.Context, v interface{}) (*model.MLHTermsInput, error) {
-	res, err := ec.unmarshalInputMLHTermsInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNNewUser2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐNewUser(ctx context.Context, v interface{}) (model.NewUser, error) {
@@ -10359,6 +10349,14 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) unmarshalOEducationInfoInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfoInput(ctx context.Context, v interface{}) (*model.EducationInfoInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputEducationInfoInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOEducationInfoUpdate2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfoUpdate(ctx context.Context, v interface{}) (*model.EducationInfoUpdate, error) {
 	if v == nil {
 		return nil, nil
@@ -10413,6 +10411,14 @@ func (ec *executionContext) marshalOLevelOfStudy2ᚖgithubᚗcomᚋKnightHacks�
 		return graphql.Null
 	}
 	return v
+}
+
+func (ec *executionContext) unmarshalOMLHTermsInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTermsInput(ctx context.Context, v interface{}) (*model.MLHTermsInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputMLHTermsInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOMLHTermsUpdate2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTermsUpdate(ctx context.Context, v interface{}) (*model.MLHTermsUpdate, error) {
