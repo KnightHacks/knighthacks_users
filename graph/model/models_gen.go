@@ -109,7 +109,7 @@ type NewUser struct {
 	Age               *int                 `json:"age"`
 	MailingAddress    *MailingAddressInput `json:"mailingAddress"`
 	Mlh               *MLHTermsInput       `json:"mlh"`
-	ShirtSize         ShirtSize            `json:"shirtSize"`
+	ShirtSize         *ShirtSize           `json:"shirtSize"`
 	YearsOfExperience *float64             `json:"yearsOfExperience"`
 	EducationInfo     *EducationInfoInput  `json:"educationInfo"`
 	Gender            *string              `json:"gender"`
@@ -171,7 +171,7 @@ type User struct {
 	OAuth             *OAuth          `json:"oAuth"`
 	MailingAddress    *MailingAddress `json:"mailingAddress"`
 	Mlh               *MLHTerms       `json:"mlh"`
-	ShirtSize         ShirtSize       `json:"shirtSize"`
+	ShirtSize         *ShirtSize      `json:"shirtSize"`
 	YearsOfExperience *float64        `json:"yearsOfExperience"`
 	EducationInfo     *EducationInfo  `json:"educationInfo"`
 	APIKey            *APIKey         `json:"apiKey"`
