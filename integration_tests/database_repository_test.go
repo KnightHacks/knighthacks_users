@@ -233,8 +233,7 @@ func TestDatabaseRepository_DeleteUser(t *testing.T) {
 				id:  "2",
 			},
 			wantErr: false,
-			want: true,
-			
+			want:    true,
 		},
 		{
 			name: "delete record that doesn't exist",
@@ -243,8 +242,7 @@ func TestDatabaseRepository_DeleteUser(t *testing.T) {
 				id:  "123343",
 			},
 			wantErr: true,
-			want: false,
-			
+			want:    false,
 		},
 	}
 	for _, tt := range tests {
@@ -405,39 +403,39 @@ func TestDatabaseRepository_GetOrCreatePronoun(t *testing.T) {
 		pronouns  model.Pronouns
 		input     *model.NewUser
 	}
-	tests := []Test[args, *int]{
+	tests := []Test[args, any]{
 		{
 			name: "get Pronoun does exist",
 			args: args{
-				ctx: context.Background(),
+				ctx:       context.Background(),
 				queryable: databaseRepository.DatabasePool,
 				pronouns: model.Pronouns{
 					Subjective: "he",
-					Objective: "him",
+					Objective:  "him",
 				},
 				input: &model.NewUser{
-					FirstName: "dough",
-					LastName: "boy",
-					Email: "doughboy@gmail.com",
+					FirstName:   "dough",
+					LastName:    "boy",
+					Email:       "doughboy@gmail.com",
 					PhoneNumber: "407-123-4567",
 					Pronouns: &model.PronounsInput{
 						Subjective: "He",
-						Objective: "Him",
+						Objective:  "Him",
 					},
 					Age: utils.Ptr(16),
 					MailingAddress: &model.MailingAddressInput{
-						Country: "USA",
-						State: "Florida",
-						City: "Orlando",
+						Country:    "USA",
+						State:      "Florida",
+						City:       "Orlando",
 						PostalCode: "32333",
 						AddressLines: []string{
 							"1122 mayflower ave",
 						},
 					},
 					Mlh: &model.MLHTermsInput{
-						SendMessages: true,
+						SendMessages:  true,
 						CodeOfConduct: true,
-						ShareInfo: true,
+						ShareInfo:     true,
 					},
 					ShirtSize:         utils.Ptr(model.ShirtSizeM),
 					YearsOfExperience: utils.Ptr(2.5),
@@ -448,46 +446,43 @@ func TestDatabaseRepository_GetOrCreatePronoun(t *testing.T) {
 						Level:          utils.Ptr(model.LevelOfStudyFreshman),
 					},
 					Gender: utils.Ptr("male"),
-					Race: []model.Race{model.RaceCaucasian, model.RaceAfricanAmerican},
-
-
+					Race:   []model.Race{model.RaceCaucasian, model.RaceAfricanAmerican},
 				},
 			},
-			want: utils.Ptr(1),
 			wantErr: false,
 		},
 		{
 			name: "create Pronoun when it doesnt exist",
 			args: args{
-				ctx: context.Background(),
+				ctx:       context.Background(),
 				queryable: databaseRepository.DatabasePool,
 				pronouns: model.Pronouns{
 					Subjective: "boto",
-					Objective: "roboto",
+					Objective:  "roboto",
 				},
 				input: &model.NewUser{
-					FirstName: "cybo",
-					LastName: "orgomor",
-					Email: "cybo.orgomor@gmail.com",
+					FirstName:   "cybo",
+					LastName:    "orgomor",
+					Email:       "cybo.orgomor@gmail.com",
 					PhoneNumber: "407-123-4567",
 					Pronouns: &model.PronounsInput{
 						Subjective: "boto",
-						Objective: "roboto",
+						Objective:  "roboto",
 					},
 					Age: utils.Ptr(16),
 					MailingAddress: &model.MailingAddressInput{
-						Country: "USA",
-						State: "Florida",
-						City: "Orlando",
+						Country:    "USA",
+						State:      "Florida",
+						City:       "Orlando",
 						PostalCode: "32333",
 						AddressLines: []string{
 							"2234 bayleaf drive",
 						},
 					},
 					Mlh: &model.MLHTermsInput{
-						SendMessages: true,
+						SendMessages:  true,
 						CodeOfConduct: true,
-						ShareInfo: true,
+						ShareInfo:     true,
 					},
 					ShirtSize:         utils.Ptr(model.ShirtSizeM),
 					YearsOfExperience: utils.Ptr(2.5),
@@ -498,26 +493,19 @@ func TestDatabaseRepository_GetOrCreatePronoun(t *testing.T) {
 						Level:          utils.Ptr(model.LevelOfStudyFreshman),
 					},
 					Gender: utils.Ptr("male"),
-					Race: []model.Race{model.RaceCaucasian, model.RaceAfricanAmerican},
-
-
+					Race:   []model.Race{model.RaceCaucasian, model.RaceAfricanAmerican},
 				},
 			},
-			want: utils.Ptr(2),
 			wantErr: false,
 		},
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			got, err := databaseRepository.GetOrCreatePronoun(tt.args.ctx, tt.args.queryable, tt.args.pronouns, tt.args.input)
+			_, err := databaseRepository.GetOrCreatePronoun(tt.args.ctx, tt.args.queryable, tt.args.pronouns, tt.args.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetOrCreatePronoun() error = %v, wantErr %v", err, tt.wantErr)
 				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetOrCreatePronoun() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
