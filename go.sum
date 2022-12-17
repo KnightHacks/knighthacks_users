@@ -3,6 +3,8 @@ github.com/99designs/gqlgen v0.17.13/go.mod h1:w1brbeOdqVyNJI553BGwtwdVcYu1LKeYE
 github.com/BurntSushi/toml v1.1.0/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/KnightHacks/knighthacks_shared v0.0.0-20221122100922-bb5380fde900 h1:u7Kk62/6IS5f5ROwx+YvEqqZlaVZoBckk/nXHeKqRFE=
 github.com/KnightHacks/knighthacks_shared v0.0.0-20221122100922-bb5380fde900/go.mod h1:CoTeIUwu66fDN5b6Ib6aioECv5Cib7KVPEdrY4jL0g4=
+github.com/KnightHacks/knighthacks_shared v0.0.0-20221123184357-0f1e8db71c48 h1:wOt+RSnfUgSE8YdASFpIgOMNnCChzHa6Iz/3iyN8NUo=
+github.com/KnightHacks/knighthacks_shared v0.0.0-20221123184357-0f1e8db71c48/go.mod h1:CoTeIUwu66fDN5b6Ib6aioECv5Cib7KVPEdrY4jL0g4=
 github.com/agnivade/levenshtein v1.0.1/go.mod h1:CURSv5d9Uaml+FovSIICkLbAUZ9S4RqaHDIsdSBg7lM=
 github.com/agnivade/levenshtein v1.1.1 h1:QY8M92nrzkmr798gCo3kmMyqXFzdQVpxLlGPRBij0P8=
 github.com/agnivade/levenshtein v1.1.1/go.mod h1:veldBMzWxcCG2ZvUTKD2kJNRdCk5hVbJomOvKkmgYbo=
