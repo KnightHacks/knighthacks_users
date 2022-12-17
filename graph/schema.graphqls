@@ -61,10 +61,10 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
 
     mailingAddress: MailingAddress @goField(forceResolver: true) @hasRole(role: OWNS)
-    mlh: MLHTerms! @goField(forceResolver: true) @hasRole(role: OWNS)
-    shirtSize: ShirtSize! @hasRole(role: OWNS)
+    mlh: MLHTerms @goField(forceResolver: true) @hasRole(role: OWNS)
+    shirtSize: ShirtSize @hasRole(role: OWNS)
     yearsOfExperience: Float @hasRole(role: OWNS)
-    educationInfo: EducationInfo! @hasRole(role: OWNS)
+    educationInfo: EducationInfo @hasRole(role: OWNS)
 
     apiKey: APIKey! @goField(forceResolver: true) @hasRole(role: OWNS)
 }
@@ -188,10 +188,10 @@ input NewUser {
     pronouns: PronounsInput
     age: Int
     mailingAddress: MailingAddressInput
-    mlh: MLHTermsInput!
-    shirtSize: ShirtSize!
+    mlh: MLHTermsInput
+    shirtSize: ShirtSize
     yearsOfExperience: Float
-    educationInfo: EducationInfoInput!
+    educationInfo: EducationInfoInput
     gender: String
     race: [Race!]
 }
