@@ -171,7 +171,7 @@ type User struct {
 	OAuth             *OAuth          `json:"oAuth"`
 	MailingAddress    *MailingAddress `json:"mailingAddress"`
 	Mlh               *MLHTerms       `json:"mlh"`
-	ShirtSize         ShirtSize       `json:"shirtSize"`
+	ShirtSize         *ShirtSize      `json:"shirtSize"`
 	YearsOfExperience *float64        `json:"yearsOfExperience"`
 	EducationInfo     *EducationInfo  `json:"educationInfo"`
 	APIKey            *APIKey         `json:"apiKey"`

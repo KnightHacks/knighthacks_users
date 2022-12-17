@@ -917,10 +917,10 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
 
     mailingAddress: MailingAddress @goField(forceResolver: true) @hasRole(role: OWNS)
-    mlh: MLHTerms! @goField(forceResolver: true) @hasRole(role: OWNS)
-    shirtSize: ShirtSize! @hasRole(role: OWNS)
+    mlh: MLHTerms @goField(forceResolver: true) @hasRole(role: OWNS)
+    shirtSize: ShirtSize @hasRole(role: OWNS)
     yearsOfExperience: Float @hasRole(role: OWNS)
-    educationInfo: EducationInfo! @hasRole(role: OWNS)
+    educationInfo: EducationInfo @hasRole(role: OWNS)
 
     apiKey: APIKey! @goField(forceResolver: true) @hasRole(role: OWNS)
 }
@@ -5260,14 +5260,11 @@ func (ec *executionContext) _User_mlh(ctx context.Context, field graphql.Collect
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*model.MLHTerms)
 	fc.Result = res
-	return ec.marshalNMLHTerms2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTerms(ctx, field.Selections, res)
+	return ec.marshalOMLHTerms2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTerms(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_mlh(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5326,24 +5323,21 @@ func (ec *executionContext) _User_shirtSize(ctx context.Context, field graphql.C
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(model.ShirtSize); ok {
+		if data, ok := tmp.(*model.ShirtSize); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be github.com/KnightHacks/knighthacks_users/graph/model.ShirtSize`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/KnightHacks/knighthacks_users/graph/model.ShirtSize`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(model.ShirtSize)
+	res := resTmp.(*model.ShirtSize)
 	fc.Result = res
-	return ec.marshalNShirtSize2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐShirtSize(ctx, field.Selections, res)
+	return ec.marshalOShirtSize2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐShirtSize(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_shirtSize(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5469,14 +5463,11 @@ func (ec *executionContext) _User_educationInfo(ctx context.Context, field graph
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*model.EducationInfo)
 	fc.Result = res
-	return ec.marshalNEducationInfo2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfo(ctx, field.Selections, res)
+	return ec.marshalOEducationInfo2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_educationInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9176,9 +9167,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._User_mlh(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
 				return res
 			}
 
@@ -9190,9 +9178,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 
 			out.Values[i] = ec._User_shirtSize(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "yearsOfExperience":
 
 			out.Values[i] = ec._User_yearsOfExperience(ctx, field, obj)
@@ -9201,9 +9186,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 
 			out.Values[i] = ec._User_educationInfo(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "apiKey":
 			field := field
 
@@ -9649,16 +9631,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNEducationInfo2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfo(ctx context.Context, sel ast.SelectionSet, v *model.EducationInfo) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._EducationInfo(ctx, sel, v)
-}
-
 func (ec *executionContext) marshalNHackathonApplication2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐHackathonApplication(ctx context.Context, sel ast.SelectionSet, v model.HackathonApplication) graphql.Marshaler {
 	return ec._HackathonApplication(ctx, sel, &v)
 }
@@ -9715,20 +9687,6 @@ func (ec *executionContext) marshalNLoginPayload2ᚖgithubᚗcomᚋKnightHacks�
 		return graphql.Null
 	}
 	return ec._LoginPayload(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNMLHTerms2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTerms(ctx context.Context, sel ast.SelectionSet, v model.MLHTerms) graphql.Marshaler {
-	return ec._MLHTerms(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNMLHTerms2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTerms(ctx context.Context, sel ast.SelectionSet, v *model.MLHTerms) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._MLHTerms(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNNewUser2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐNewUser(ctx context.Context, v interface{}) (model.NewUser, error) {
@@ -9801,16 +9759,6 @@ func (ec *executionContext) unmarshalNRole2githubᚗcomᚋKnightHacksᚋknightha
 }
 
 func (ec *executionContext) marshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx context.Context, sel ast.SelectionSet, v models.Role) graphql.Marshaler {
-	return v
-}
-
-func (ec *executionContext) unmarshalNShirtSize2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐShirtSize(ctx context.Context, v interface{}) (model.ShirtSize, error) {
-	var res model.ShirtSize
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNShirtSize2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐShirtSize(ctx context.Context, sel ast.SelectionSet, v model.ShirtSize) graphql.Marshaler {
 	return v
 }
 
@@ -10349,6 +10297,13 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) marshalOEducationInfo2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfo(ctx context.Context, sel ast.SelectionSet, v *model.EducationInfo) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._EducationInfo(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOEducationInfoInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐEducationInfoInput(ctx context.Context, v interface{}) (*model.EducationInfoInput, error) {
 	if v == nil {
 		return nil, nil
@@ -10411,6 +10366,13 @@ func (ec *executionContext) marshalOLevelOfStudy2ᚖgithubᚗcomᚋKnightHacks�
 		return graphql.Null
 	}
 	return v
+}
+
+func (ec *executionContext) marshalOMLHTerms2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTerms(ctx context.Context, sel ast.SelectionSet, v *model.MLHTerms) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MLHTerms(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOMLHTermsInput2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐMLHTermsInput(ctx context.Context, v interface{}) (*model.MLHTermsInput, error) {
