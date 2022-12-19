@@ -1124,7 +1124,7 @@ type Mutation {
 	{Name: "../../federation/directives.graphql", Input: `
 	scalar _Any
 	scalar _FieldSet
-
+	
 	directive @external on FIELD_DEFINITION
 	directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
 	directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
@@ -7564,12 +7564,7 @@ func (ec *executionContext) unmarshalInputEducationInfoInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "graduationDate", "major", "level"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
+	for k, v := range asMap {
 		switch k {
 		case "name":
 			var err error
@@ -7616,12 +7611,7 @@ func (ec *executionContext) unmarshalInputEducationInfoUpdate(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "graduationDate", "major", "level"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
+	for k, v := range asMap {
 		switch k {
 		case "name":
 			var err error
@@ -7668,12 +7658,7 @@ func (ec *executionContext) unmarshalInputMLHTermsInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"sendMessages", "codeOfConduct", "shareInfo"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
+	for k, v := range asMap {
 		switch k {
 		case "sendMessages":
 			var err error
@@ -7712,12 +7697,7 @@ func (ec *executionContext) unmarshalInputMLHTermsUpdate(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"sendMessages", "codeOfConduct", "shareInfo"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
+	for k, v := range asMap {
 		switch k {
 		case "sendMessages":
 			var err error
@@ -7756,12 +7736,7 @@ func (ec *executionContext) unmarshalInputMailingAddressInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"country", "state", "city", "postalCode", "addressLines"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
+	for k, v := range asMap {
 		switch k {
 		case "country":
 			var err error
@@ -7816,12 +7791,7 @@ func (ec *executionContext) unmarshalInputMailingAddressUpdate(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"country", "state", "city", "postalCode", "addressLines"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
+	for k, v := range asMap {
 		switch k {
 		case "country":
 			var err error
@@ -7876,12 +7846,7 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"firstName", "lastName", "email", "phoneNumber", "pronouns", "age", "mailingAddress", "mlh", "shirtSize", "yearsOfExperience", "educationInfo", "gender", "race"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
+	for k, v := range asMap {
 		switch k {
 		case "firstName":
 			var err error
@@ -8000,12 +7965,7 @@ func (ec *executionContext) unmarshalInputPronounsInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"subjective", "objective"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
+	for k, v := range asMap {
 		switch k {
 		case "subjective":
 			var err error
@@ -8036,12 +7996,7 @@ func (ec *executionContext) unmarshalInputUpdatedUser(ctx context.Context, obj i
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"firstName", "lastName", "email", "phoneNumber", "pronouns", "age", "mailingAddress", "mlh", "shirtSize", "yearsOfExperience", "educationInfo", "gender", "race"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
+	for k, v := range asMap {
 		switch k {
 		case "firstName":
 			var err error
