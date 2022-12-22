@@ -201,6 +201,7 @@ type UserResolver interface {
 	MailingAddress(ctx context.Context, obj *model.User) (*model.MailingAddress, error)
 	Mlh(ctx context.Context, obj *model.User) (*model.MLHTerms, error)
 
+	EducationInfo(ctx context.Context, obj *model.User) (*model.EducationInfo, error)
 	APIKey(ctx context.Context, obj *model.User) (*model.APIKey, error)
 }
 
@@ -920,7 +921,7 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     mlh: MLHTerms @goField(forceResolver: true) @hasRole(role: OWNS)
     shirtSize: ShirtSize @hasRole(role: OWNS)
     yearsOfExperience: Float @hasRole(role: OWNS)
-    educationInfo: EducationInfo @hasRole(role: OWNS)
+    educationInfo: EducationInfo @goField(forceResolver: true) @hasRole(role: OWNS)
 
     apiKey: APIKey! @goField(forceResolver: true) @hasRole(role: OWNS)
 }
@@ -1124,7 +1125,7 @@ type Mutation {
 	{Name: "../../federation/directives.graphql", Input: `
 	scalar _Any
 	scalar _FieldSet
-	
+
 	directive @external on FIELD_DEFINITION
 	directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
 	directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
@@ -5433,7 +5434,7 @@ func (ec *executionContext) _User_educationInfo(ctx context.Context, field graph
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return obj.EducationInfo, nil
+			return ec.resolvers.User().EducationInfo(rctx, obj)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
@@ -5474,8 +5475,8 @@ func (ec *executionContext) fieldContext_User_educationInfo(ctx context.Context,
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "name":
@@ -7564,7 +7565,12 @@ func (ec *executionContext) unmarshalInputEducationInfoInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"name", "graduationDate", "major", "level"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "name":
 			var err error
@@ -7611,7 +7617,12 @@ func (ec *executionContext) unmarshalInputEducationInfoUpdate(ctx context.Contex
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"name", "graduationDate", "major", "level"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "name":
 			var err error
@@ -7658,7 +7669,12 @@ func (ec *executionContext) unmarshalInputMLHTermsInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"sendMessages", "codeOfConduct", "shareInfo"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "sendMessages":
 			var err error
@@ -7697,7 +7713,12 @@ func (ec *executionContext) unmarshalInputMLHTermsUpdate(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"sendMessages", "codeOfConduct", "shareInfo"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "sendMessages":
 			var err error
@@ -7736,7 +7757,12 @@ func (ec *executionContext) unmarshalInputMailingAddressInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"country", "state", "city", "postalCode", "addressLines"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "country":
 			var err error
@@ -7791,7 +7817,12 @@ func (ec *executionContext) unmarshalInputMailingAddressUpdate(ctx context.Conte
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"country", "state", "city", "postalCode", "addressLines"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "country":
 			var err error
@@ -7846,7 +7877,12 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"firstName", "lastName", "email", "phoneNumber", "pronouns", "age", "mailingAddress", "mlh", "shirtSize", "yearsOfExperience", "educationInfo", "gender", "race"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "firstName":
 			var err error
@@ -7965,7 +8001,12 @@ func (ec *executionContext) unmarshalInputPronounsInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"subjective", "objective"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "subjective":
 			var err error
@@ -7996,7 +8037,12 @@ func (ec *executionContext) unmarshalInputUpdatedUser(ctx context.Context, obj i
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"firstName", "lastName", "email", "phoneNumber", "pronouns", "age", "mailingAddress", "mlh", "shirtSize", "yearsOfExperience", "educationInfo", "gender", "race"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "firstName":
 			var err error
@@ -9138,9 +9184,22 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._User_yearsOfExperience(ctx, field, obj)
 
 		case "educationInfo":
+			field := field
 
-			out.Values[i] = ec._User_educationInfo(ctx, field, obj)
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_educationInfo(ctx, field, obj)
+				return res
+			}
 
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "apiKey":
 			field := field
 

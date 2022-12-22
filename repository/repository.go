@@ -24,4 +24,6 @@ type Repository interface {
 	GetAPIKey(ctx context.Context, userId string) (apiKey *model.APIKey, err error)
 	DeleteAPIKey(ctx context.Context, id string) error
 	AddAPIKey(ctx context.Context, id string, key string) (*model.APIKey, error)
+
+	GetUserEducationInfo(ctx context.Context, userId string) (*model.EducationInfo, error)
 }

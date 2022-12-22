@@ -64,7 +64,7 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     mlh: MLHTerms @goField(forceResolver: true) @hasRole(role: OWNS)
     shirtSize: ShirtSize @hasRole(role: OWNS)
     yearsOfExperience: Float @hasRole(role: OWNS)
-    educationInfo: EducationInfo @hasRole(role: OWNS)
+    educationInfo: EducationInfo @goField(forceResolver: true) @hasRole(role: OWNS)
 
     apiKey: APIKey! @goField(forceResolver: true) @hasRole(role: OWNS)
 }
