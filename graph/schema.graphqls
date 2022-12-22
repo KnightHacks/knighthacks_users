@@ -245,7 +245,7 @@ type Query {
     """
     getAuthRedirectLink(provider: Provider!, redirect: String): String!
     login(provider: Provider!, code: String!, state: String!): LoginPayload!
-    refreshJWT(refreshToken: String!): String! @hasRole(role: NORMAL)
+    refreshJWT(refreshToken: String!): String!
     users(first: Int!, after: String): UsersConnection! @pagination(maxLength: 20) @hasRole(role: ADMIN)
     getUser(id: ID!): User @hasRole(role: NORMAL)
     searchUser(name: String!): [User!]! @hasRole(role: ADMIN)

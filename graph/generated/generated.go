@@ -1102,7 +1102,7 @@ type Query {
     """
     getAuthRedirectLink(provider: Provider!, redirect: String): String!
     login(provider: Provider!, code: String!, state: String!): LoginPayload!
-    refreshJWT(refreshToken: String!): String! @hasRole(role: NORMAL)
+    refreshJWT(refreshToken: String!): String!
     users(first: Int!, after: String): UsersConnection! @pagination(maxLength: 20) @hasRole(role: ADMIN)
     getUser(id: ID!): User @hasRole(role: NORMAL)
     searchUser(name: String!): [User!]! @hasRole(role: ADMIN)
@@ -3544,32 +3544,8 @@ func (ec *executionContext) _Query_refreshJWT(ctx context.Context, field graphql
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().RefreshJwt(rctx, fc.Args["refreshToken"].(string))
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "NORMAL")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(string); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().RefreshJwt(rctx, fc.Args["refreshToken"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
