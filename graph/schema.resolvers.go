@@ -93,16 +93,30 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 
 // AddAPIKey is the resolver for the addAPIKey field.
 func (r *mutationResolver) AddAPIKey(ctx context.Context, userID string) (*model.APIKey, error) {
+	claims, ok := ctx.Value("AuthorizationUserClaims").(*auth.UserClaims)
+	if !ok {
+		return nil, errors.New("unable to retrieve user claims, most likely forgot to set @hasRole directive")
+	}
+	if claims.Role != models.RoleAdmin && claims.Id != userID {
+		return nil, errors.New("unauthorized to add an api key")
+	}
 	return r.Repository.AddAPIKey(ctx, userID, GenerateAPIKey(100))
 }
 
 // DeleteAPIKey is the resolver for the deleteAPIKey field.
 func (r *mutationResolver) DeleteAPIKey(ctx context.Context, userID string) (bool, error) {
+	claims, ok := ctx.Value("AuthorizationUserClaims").(*auth.UserClaims)
+	if !ok {
+		return false, errors.New("unable to retrieve user claims, most likely forgot to set @hasRole directive")
+	}
+	if claims.Role != models.RoleAdmin && claims.Id != userID {
+		return false, errors.New("unauthorized to add an api key")
+	}
 	err := r.Repository.DeleteAPIKey(ctx, userID)
 	if err != nil {
-		return true, err
+		return false, err
 	}
-	return false, nil
+	return true, nil
 }
 
 // GetAuthRedirectLink is the resolver for the getAuthRedirectLink field.
