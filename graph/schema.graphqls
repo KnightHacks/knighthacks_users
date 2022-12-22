@@ -260,7 +260,7 @@ type Mutation {
     updateUser(id: ID!, input: UpdatedUser!): User! @hasRole(role: NORMAL)
     deleteUser(id: ID!): Boolean! @hasRole(role: NORMAL)
 
-    addAPIKey(userId: ID!): APIKey
-    deleteAPIKey(userId: ID!): Boolean!
+    addAPIKey(userId: ID!): APIKey @hasRole(role: NORMAL)
+    deleteAPIKey(userId: ID!): Boolean! @hasRole(role: NORMAL)
 }
 
