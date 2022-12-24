@@ -710,8 +710,100 @@ func TestDatabaseRepository_GetUsers(t *testing.T) {
 		total int
 	}
 	tests := []Test[args, want]{
-
-		// TODO: Add test cases.
+		{
+			name: "get all users",
+			args: args{
+				ctx:   context.Background(),
+				first: 2,
+				after: "",
+			},
+			want: want{
+				users: []*model.User{
+					{
+						FirstName:   "Thomas",
+						LastName:    "Bob",
+						Email:       "thomas.bob@example.com",
+						PhoneNumber: "100-203-9112",
+						Pronouns: &model.Pronouns{
+							Subjective: "He",
+							Objective:  "Him",
+						},
+						Age: utils.Ptr(21),
+						MailingAddress: &model.MailingAddress{
+							Country:    "United States",
+							State:      "Florida",
+							City:       "Orlando",
+							PostalCode: "32765",
+							AddressLines: []string{
+								"1234 Joe Mama Row",
+							},
+						},
+						Role:   models.RoleNormal,
+						Gender: utils.Ptr("male"),
+						Race:   []model.Race{model.RaceCaucasian, model.RaceAfricanAmerican},
+						OAuth: &model.OAuth{
+							Provider: models.ProviderGithub,
+							UID:      "100",
+						},
+						Mlh: &model.MLHTerms{
+							SendMessages:  true,
+							CodeOfConduct: true,
+							ShareInfo:     true,
+						},
+						ShirtSize:         utils.Ptr(model.ShirtSizeM),
+						YearsOfExperience: utils.Ptr(3.5),
+						EducationInfo: &model.EducationInfo{
+							Name:           "University of Central Florida",
+							GraduationDate: time.Date(2026, 12, 20, 0, 0, 0, 0, time.UTC),
+							Major:          "Bachelors of Science",
+							Level:          utils.Ptr(model.LevelOfStudyFreshman),
+						},
+					},
+					{
+						FirstName:   "Joe",
+						LastName:    "Bob",
+						Email:       "",
+						PhoneNumber: "100-203-9112",
+						Pronouns: &model.Pronouns{
+							Subjective: "He",
+							Objective:  "Him",
+						},
+						Age: utils.Ptr(21),
+						MailingAddress: &model.MailingAddress{
+							Country:    "United States",
+							State:      "Florida",
+							City:       "Orlando",
+							PostalCode: "32765",
+							AddressLines: []string{
+								"1234 Joe Mama Row",
+							},
+						},
+						Role:   models.RoleNormal,
+						Gender: utils.Ptr("male"),
+						Race:   []model.Race{model.RaceCaucasian, model.RaceAfricanAmerican},
+						OAuth: &model.OAuth{
+							Provider: models.ProviderGithub,
+							UID:      "100",
+						},
+						Mlh: &model.MLHTerms{
+							SendMessages:  true,
+							CodeOfConduct: true,
+							ShareInfo:     true,
+						},
+						ShirtSize:         utils.Ptr(model.ShirtSizeM),
+						YearsOfExperience: utils.Ptr(3.5),
+						EducationInfo: &model.EducationInfo{
+							Name:           "University of Central Florida",
+							GraduationDate: time.Date(2026, 12, 20, 0, 0, 0, 0, time.UTC),
+							Major:          "Bachelors of Science",
+							Level:          utils.Ptr(model.LevelOfStudyFreshman),
+						},
+					},
+				},
+				total: 2,
+			},
+		},
+		// CHECK: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -738,8 +830,22 @@ func TestDatabaseRepository_InsertEducationInfo(t *testing.T) {
 		input     *model.EducationInfoInput
 	}
 	tests := []Test[args, any]{
-
-		// TODO: Add test cases.
+		{
+			name: "InsertThomasEducationInfo",
+			args: args{
+				ctx:       context.Background(),
+				//userId:    1,
+				input: &model.EducationInfoInput{
+					Name:           "University of Central Florida",
+					GraduationDate: time.Date(2026, 12, 20, 0, 0, 0, 0, time.UTC),
+					Major:          "Bachelors of Science",
+					Level:          utils.Ptr(model.LevelOfStudyFreshman),
+				},
+			},
+			wantErr: false,
+		},
+		
+		// CHECK : Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -758,8 +864,20 @@ func TestDatabaseRepository_InsertMLHTerms(t *testing.T) {
 		input     *model.MLHTermsInput
 	}
 	tests := []Test[args, any]{
-
-		// TODO: Add test cases.
+		{
+			name: "InsertThomasMLHTerms",
+			args: args{
+				ctx:    context.Background(),
+				//userId: 1,
+				input: &model.MLHTermsInput{
+					SendMessages:  true,
+					CodeOfConduct: true,
+					ShareInfo:     true,
+				},
+			},
+			wantErr: false,
+		},
+		// CHECK : Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -779,8 +897,24 @@ func TestDatabaseRepository_InsertMailingAddress(t *testing.T) {
 		input     *model.MailingAddressInput
 	}
 	tests := []Test[args, any]{
-
-		// TODO: Add test cases.
+		{
+			name: "InsertThomasMailingAddress",
+			args: args{
+				ctx:    context.Background(),
+				//userId: 1,
+				input: &model.MailingAddressInput{
+					Country:    "United States",
+					State:      "Florida",
+					City:       "Orlando",
+					PostalCode: "32765",
+					AddressLines: []string{
+						"1234 Joe Mama Row",
+					},
+				},
+			},
+			wantErr: false,
+		},
+		// CHECK: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -800,8 +934,25 @@ func TestDatabaseRepository_InsertUser(t *testing.T) {
 		oAuth        *model.OAuth
 	}
 	tests := []Test[args, any]{
+		{
+			name: "InsertThomas",
+			args: args{
+				ctx:       context.Background(),
+				queryable: nil,
+				input: &model.NewUser{
+					FirstName:   "Thomas",
+					LastName:    "Bob",
+					Email:       "",
+					PhoneNumber: "100-203-9112",
+				},
+				pronounIdPtr: nil,
+				oAuth:        nil,
+			},
+			want:    1,
+			wantErr: false,
+		},
 
-		// TODO: Add test cases.
+		// CHECK: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -823,8 +974,24 @@ func TestDatabaseRepository_SearchUser(t *testing.T) {
 		name string
 	}
 	tests := []Test[args, []*model.User]{
-
-		// TODO: Add test cases.
+		{
+			name: "SearchThomas",
+			args: args{
+				ctx:  context.Background(),
+				name: "Thomas",
+			},
+			want: []*model.User{
+				{
+					FirstName: "Thomas",
+					LastName:  "Bob",
+					Email:     "noreply@gmail.com",
+					Role:      models.RoleAdmin,
+					Age:       utils.Ptr(21),
+				},
+			},
+			wantErr: false,
+		},
+		// check: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -849,8 +1016,14 @@ func TestDatabaseRepository_Set(t *testing.T) {
 		name string
 		args args
 	}{
-
-		// TODO: Add test cases.
+		{
+			name: "SetThomasPronouns",
+			args: args{
+				id:       1,
+				pronouns: model.Pronouns{Subjective: "he", Objective: "him"},
+			},
+		},
+		// check: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -861,14 +1034,23 @@ func TestDatabaseRepository_Set(t *testing.T) {
 
 func TestDatabaseRepository_UpdateAge(t *testing.T) {
 	type args struct {
-		ctx context.Context
+		ctx context.Context 
 		id  string
 		age *int
 		tx  pgx.Tx
 	}
 	tests := []Test[args, any]{
+		{
+			name: "UpdateThomasAge",
+			args: args{
+				ctx: context.Background(),
+				id:  "1",
+				age: utils.Ptr(22),
+			},
+			wantErr: false,
 
-		// TODO: Add test cases.
+		},
+		// check: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -888,8 +1070,20 @@ func TestDatabaseRepository_UpdateEducationInfo(t *testing.T) {
 		tx    pgx.Tx
 	}
 	tests := []Test[args, any]{
-
-		// TODO: Add test cases.
+		{
+			name: "UpdateThomasEducationInfo",
+			args: args{
+				ctx: context.Background(),
+				id:  "1",
+				input: &model.EducationInfoUpdate{
+					Level:          utils.Ptr(model.LevelOfStudyFreshman),
+					GraduationDate: utils.Ptr(time.Date(2026, 12, 20, 0, 0, 0, 0, time.UTC)),
+					Major:          utils.Ptr("IT"),
+					Name:		   utils.Ptr("University of Florida"),
+				},
+			},
+		},
+		// Check: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -910,9 +1104,18 @@ func TestDatabaseRepository_UpdateEmail(t *testing.T) {
 		tx    pgx.Tx
 	}
 	tests := []Test[args, any]{
-
-		// TODO: Add test cases.
+		{
+			name: "UpdateThomasEmail",
+			args: args{
+				ctx:   context.Background(),
+				id:    "1",
+				email: utils.Ptr("noreply@google.com"),
+			},
+			wantErr: false,
+		},
 	}
+		// Check: Add test cases.
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
@@ -931,8 +1134,16 @@ func TestDatabaseRepository_UpdateFirstName(t *testing.T) {
 		tx    pgx.Tx
 	}
 	tests := []Test[args, any]{
-
-		// TODO: Add test cases.
+		{
+			name: "UpdateThomasFirstName",
+			args: args{
+				ctx:   context.Background(),
+				id:    "1",
+				first: utils.Ptr("Tom"),
+			},
+			wantErr: false,
+		},
+		// Check: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -953,7 +1164,7 @@ func TestDatabaseRepository_UpdateGender(t *testing.T) {
 	}
 	tests := []Test[args, any]{
 
-		// TODO: Add test cases.
+		// Check: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -993,8 +1204,19 @@ func TestDatabaseRepository_UpdateMLHTerms(t *testing.T) {
 		tx    pgx.Tx
 	}
 	tests := []Test[args, any]{
-
-		// TODO: Add test cases.
+		{
+			name: "UpdateThomasMLHTerms",
+			args: args{
+				ctx: context.Background(),
+				id:  "1",
+				input: &model.MLHTermsUpdate{
+					CodeOfConduct: 	utils.Ptr(true),
+					SendMessages: 	utils.Ptr(false),
+					ShareInfo: 		utils.Ptr(true),
+				},
+			},
+		},
+		// Check: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1014,8 +1236,23 @@ func TestDatabaseRepository_UpdateMailingAddress(t *testing.T) {
 		tx    pgx.Tx
 	}
 	tests := []Test[args, any]{
-
-		// TODO: Add test cases.
+		{
+			name: "UpdateThomasMailingAddress",
+			args: args{
+				ctx: context.Background(),
+				id:  "1",
+				input: &model.MailingAddressUpdate{
+					Country: 	utils.Ptr("United States"),
+					State: 		utils.Ptr("New Mexico"),
+					City: 		utils.Ptr("Albuquerque"),
+					AddressLines: []string{
+						"308 Negra Arroyo Lane",
+					},
+					PostalCode: 	utils.Ptr("87104"),
+				},
+			},
+		},
+		// Check: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1034,8 +1271,15 @@ func TestDatabaseRepository_UpdatePhoneNumber(t *testing.T) {
 		tx     pgx.Tx
 	}
 	tests := []Test[args, any]{
-
-		// TODO: Add test cases.
+		{
+			name: "UpdateThomasPhoneNumber",
+			args: args{
+				ctx: context.Background(),
+				id:  "1",
+				number: utils.Ptr("800-588-2300"),
+			},
+		},
+		// Check: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1055,8 +1299,18 @@ func TestDatabaseRepository_UpdatePronouns(t *testing.T) {
 		tx      pgx.Tx
 	}
 	tests := []Test[args, any]{
-
-		// TODO: Add test cases.
+		{
+			name: "UpdateThomasPronouns",
+			args: args{
+				ctx: context.Background(),
+				id:  "1",
+				pronoun: &model.PronounsInput{
+					Subjective: 	"they",
+					Objective: 		"them",
+				},
+			},
+		},
+		// Check: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1075,8 +1329,17 @@ func TestDatabaseRepository_UpdateRace(t *testing.T) {
 		tx    pgx.Tx
 	}
 	tests := []Test[args, any]{
-
-		// TODO: Add test cases.
+		{
+			name: "UpdateThomasRace",
+			args: args{
+				ctx: context.Background(),
+				id:  "1",
+				races: []model.Race{
+					model.RaceLatino,
+				},
+			},
+		},
+		// CHECK: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1096,8 +1359,15 @@ func TestDatabaseRepository_UpdateShirtSize(t *testing.T) {
 		tx        pgx.Tx
 	}
 	tests := []Test[args, any]{
-
-		// TODO: Add test cases.
+		{
+			name: "UpdateThomasShirtSize",
+			args: args{
+				ctx: context.Background(),
+				id:  "1",
+				shirtSize: utils.Ptr(model.ShirtSizeM),
+			},
+		},
+		// Check: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1115,8 +1385,49 @@ func TestDatabaseRepository_UpdateUser(t *testing.T) {
 		input *model.UpdatedUser
 	}
 	tests := []Test[args, *model.User]{
-
-		// TODO: Add test cases.
+		{
+			name: "UpdateThomasUser",
+			args: args{
+				ctx: context.Background(),
+				id:  "1",
+				input: &model.UpdatedUser{
+					FirstName: 		utils.Ptr("Thomas"),
+					LastName:  		utils.Ptr("Anderson"),
+					Email:     		utils.Ptr("noreply@google.com"),
+					PhoneNumber: 	utils.Ptr("800-588-2300"),
+					Pronouns: 		utils.Ptr(model.PronounsInput{
+						Subjective: 	"him",
+						Objective: 		"them",
+					}),
+					Age: 			utils.Ptr(30),
+					EducationInfo: 	&model.EducationInfoUpdate{
+						GraduationDate: utils.Ptr(time.Date(2026, 12, 20, 0, 0, 0, 0, time.UTC)),
+						Name: 		utils.Ptr("Florida International University"),
+						Major: 		utils.Ptr("Computer Science"),
+						Level: 		utils.Ptr(model.LevelOfStudyFreshman),
+					},
+					Mlh: 			&model.MLHTermsUpdate{
+						SendMessages: 	utils.Ptr(true),
+						CodeOfConduct: 	utils.Ptr(true),
+						ShareInfo: 		utils.Ptr(true),
+					},
+					MailingAddress: &model.MailingAddressUpdate{
+						AddressLines: 	[]string{
+							"University of Central Florida 4000 Central Florida Blvd",
+					},
+						City: 			utils.Ptr("Miami"),
+						State: 			utils.Ptr("FL"),
+						PostalCode: 	utils.Ptr("33131"),
+						Country: 		utils.Ptr("USA"),
+					},
+					ShirtSize: 		utils.Ptr(model.ShirtSizeM),
+					Gender: 		utils.Ptr("female"),
+					Race:   []model.Race{model.RaceCaucasian, model.RaceAsianPacificIslander},
+					YearsOfExperience: utils.Ptr(1.0),
+				},
+			},
+		},
+		// Check: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1140,8 +1451,15 @@ func TestDatabaseRepository_UpdateYearsOfExperience(t *testing.T) {
 		tx    pgx.Tx
 	}
 	tests := []Test[args, any]{
-
-		// TODO: Add test cases.
+		{
+			name: "UpdateThomasYearsOfExperience",
+			args: args{
+				ctx: context.Background(),
+				id:  "1",
+				years: utils.Ptr(3.0),
+			},
+		},
+		// Check: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1193,7 +1511,14 @@ func TestScanUser(t *testing.T) {
 		scannable database.Scannable
 	}
 	tests := []Test[args, *int]{
-
+		{
+			name: "scan user",
+			args: args{
+				user: &model.User{
+					ID:             "1",
+				},
+			},
+		},
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
