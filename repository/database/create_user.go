@@ -18,10 +18,10 @@ import (
 // lot of pointers for nil safety purposes
 func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth, input *model.NewUser) (*model.User, error) {
 	var userId string
-	var pronouns model.Pronouns
+	var pronouns *model.Pronouns = nil
 	if input.Pronouns != nil {
 		// input.Pronouns is a PronounsInput struct which a direct copy of the Pronouns struct, so we need to copy its fields
-		pronouns = model.Pronouns{
+		pronouns = &model.Pronouns{
 			Subjective: input.Pronouns.Subjective,
 			Objective:  input.Pronouns.Objective,
 		}
@@ -33,7 +33,7 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 		LastName:          input.LastName,
 		Email:             input.Email,
 		PhoneNumber:       input.PhoneNumber,
-		Pronouns:          &pronouns,
+		Pronouns:          pronouns,
 		Age:               input.Age,
 		Role:              sharedModels.RoleNormal,
 		OAuth:             oAuth,
@@ -57,11 +57,13 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 		}
 
 		// Get pronouns
-		pronounIdPtr, err := r.GetOrCreatePronoun(ctx, tx, pronouns, input)
-		if err != nil {
-			return err
+		var pronounIdPtr *int
+		if pronouns != nil {
+			pronounIdPtr, err = r.GetOrCreatePronoun(ctx, tx, *pronouns, input)
+			if err != nil {
+				return err
+			}
 		}
-
 		// Insert new user into database
 		userIdInt, err := r.InsertUser(ctx, tx, input, pronounIdPtr, oAuth)
 		if err != nil {
