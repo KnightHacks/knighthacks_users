@@ -214,3 +214,17 @@ func (r *DatabaseRepository) GetAPIKey(ctx context.Context, userId string) (apiK
 	}
 	return apiKey, nil
 }
+
+func (r *DatabaseRepository) GetUserEducationInfo(ctx context.Context, userId string) (*model.EducationInfo, error) {
+	var educationInfo model.EducationInfo
+	err := r.DatabasePool.QueryRow(ctx, `SELECT name, major, graduation_date, level FROM education_info WHERE user_id = $1`, userId).Scan(
+		&educationInfo.Name,
+		&educationInfo.Major,
+		&educationInfo.GraduationDate,
+		&educationInfo.Level,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &educationInfo, nil
+}

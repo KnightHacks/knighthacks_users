@@ -201,6 +201,7 @@ type UserResolver interface {
 	MailingAddress(ctx context.Context, obj *model.User) (*model.MailingAddress, error)
 	Mlh(ctx context.Context, obj *model.User) (*model.MLHTerms, error)
 
+	EducationInfo(ctx context.Context, obj *model.User) (*model.EducationInfo, error)
 	APIKey(ctx context.Context, obj *model.User) (*model.APIKey, error)
 }
 
@@ -920,7 +921,7 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     mlh: MLHTerms @goField(forceResolver: true) @hasRole(role: OWNS)
     shirtSize: ShirtSize @hasRole(role: OWNS)
     yearsOfExperience: Float @hasRole(role: OWNS)
-    educationInfo: EducationInfo @hasRole(role: OWNS)
+    educationInfo: EducationInfo @goField(forceResolver: true) @hasRole(role: OWNS)
 
     apiKey: APIKey! @goField(forceResolver: true) @hasRole(role: OWNS)
 }
@@ -1101,7 +1102,7 @@ type Query {
     """
     getAuthRedirectLink(provider: Provider!, redirect: String): String!
     login(provider: Provider!, code: String!, state: String!): LoginPayload!
-    refreshJWT(refreshToken: String!): String! @hasRole(role: NORMAL)
+    refreshJWT(refreshToken: String!): String!
     users(first: Int!, after: String): UsersConnection! @pagination(maxLength: 20) @hasRole(role: ADMIN)
     getUser(id: ID!): User @hasRole(role: NORMAL)
     searchUser(name: String!): [User!]! @hasRole(role: ADMIN)
@@ -1116,8 +1117,8 @@ type Mutation {
     updateUser(id: ID!, input: UpdatedUser!): User! @hasRole(role: NORMAL)
     deleteUser(id: ID!): Boolean! @hasRole(role: NORMAL)
 
-    addAPIKey(userId: ID!): APIKey
-    deleteAPIKey(userId: ID!): Boolean!
+    addAPIKey(userId: ID!): APIKey @hasRole(role: NORMAL)
+    deleteAPIKey(userId: ID!): Boolean! @hasRole(role: NORMAL)
 }
 
 `, BuiltIn: false},
@@ -3044,8 +3045,32 @@ func (ec *executionContext) _Mutation_addAPIKey(ctx context.Context, field graph
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddAPIKey(rctx, fc.Args["userId"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().AddAPIKey(rctx, fc.Args["userId"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "NORMAL")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.APIKey); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/KnightHacks/knighthacks_users/graph/model.APIKey`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3102,8 +3127,32 @@ func (ec *executionContext) _Mutation_deleteAPIKey(ctx context.Context, field gr
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteAPIKey(rctx, fc.Args["userId"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().DeleteAPIKey(rctx, fc.Args["userId"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "NORMAL")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3543,32 +3592,8 @@ func (ec *executionContext) _Query_refreshJWT(ctx context.Context, field graphql
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().RefreshJwt(rctx, fc.Args["refreshToken"].(string))
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "NORMAL")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(string); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().RefreshJwt(rctx, fc.Args["refreshToken"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5433,7 +5458,7 @@ func (ec *executionContext) _User_educationInfo(ctx context.Context, field graph
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return obj.EducationInfo, nil
+			return ec.resolvers.User().EducationInfo(rctx, obj)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
@@ -5474,8 +5499,8 @@ func (ec *executionContext) fieldContext_User_educationInfo(ctx context.Context,
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "name":
@@ -9183,9 +9208,22 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._User_yearsOfExperience(ctx, field, obj)
 
 		case "educationInfo":
+			field := field
 
-			out.Values[i] = ec._User_educationInfo(ctx, field, obj)
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_educationInfo(ctx, field, obj)
+				return res
+			}
 
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "apiKey":
 			field := field
 
