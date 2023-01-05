@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/KnightHacks/knighthacks_shared/database"
+	"github.com/KnightHacks/knighthacks_shared/utils"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
 	"github.com/jackc/pgx/v5"
@@ -429,7 +430,7 @@ type Scannable interface {
 }
 
 func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
-	var pronounId int
+	var pronounId int32
 	var userIdInt int
 	err := scannable.Scan(
 		&userIdInt,
@@ -452,7 +453,7 @@ func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
 	if pronounId == 0 {
 		return nil, nil
 	}
-	return &pronounId, nil
+	return utils.Ptr(int(pronounId)), nil
 }
 
 func (r *DatabaseRepository) DeleteAPIKey(ctx context.Context, id string) error {
