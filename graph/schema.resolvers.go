@@ -154,7 +154,7 @@ func (r *queryResolver) Login(ctx context.Context, provider models.Provider, cod
 	}
 
 	if cookieHeader != state {
-		return nil, fmt.Errorf("invalid oauth state")
+		return nil, fmt.Errorf("invalid oauth state, cookieHeader='%s', state='%s'", cookieHeader, state)
 	}
 
 	// Using the OAuth code provided exchange the code for an access token
