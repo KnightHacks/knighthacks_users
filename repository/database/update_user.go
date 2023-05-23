@@ -35,15 +35,15 @@ type UpdateFunc[T any] func(ctx context.Context, id string, input T, tx pgx.Tx) 
 // *any does not work bc when you use *any it passes your generic type into any and not as *any.
 // that would make it a double pointer and not a single pointer.
 func Validate[T *string |
-	*float64 |
-	*model.ShirtSize |
-	*int |
-	[]*string |
-	*model.PronounsInput |
-	*model.MailingAddressUpdate |
-	*model.EducationInfoUpdate |
-	*model.MLHTermsUpdate |
-	[]model.Race](ctx context.Context, tx pgx.Tx, id string, input T, updateFunc UpdateFunc[T]) error {
+*float64 |
+*model.ShirtSize |
+*int |
+[]*string |
+*model.PronounsInput |
+*model.MailingAddressUpdate |
+*model.EducationInfoUpdate |
+*model.MLHTermsUpdate |
+[]model.Race](ctx context.Context, tx pgx.Tx, id string, input T, updateFunc UpdateFunc[T]) error {
 	if input != nil {
 		err := updateFunc(ctx, id, input, tx)
 		if err != nil {
@@ -430,7 +430,8 @@ type Scannable interface {
 }
 
 func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
-	var pronounId int32
+	var pronounVal uint32
+	pronounId := &pronounVal
 	var userIdInt int
 	err := scannable.Scan(
 		&userIdInt,
@@ -450,10 +451,10 @@ func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
 		return nil, err
 	}
 	user.ID = strconv.Itoa(userIdInt)
-	if pronounId == 0 {
+	if pronounId == nil {
 		return nil, nil
 	}
-	return utils.Ptr(int(pronounId)), nil
+	return utils.Ptr(int(*pronounId)), nil
 }
 
 func (r *DatabaseRepository) DeleteAPIKey(ctx context.Context, id string) error {
