@@ -17,7 +17,6 @@ import (
 // must be able to run regardless of whether of it's input, that is why there is a
 // lot of pointers for nil safety purposes
 func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth, input *model.NewUser) (*model.User, error) {
-	var userId string
 	var pronouns *model.Pronouns = nil
 	if input.Pronouns != nil {
 		// input.Pronouns is a PronounsInput struct which a direct copy of the Pronouns struct, so we need to copy its fields
@@ -28,7 +27,6 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 	}
 
 	user := &model.User{
-		ID:                userId,
 		FirstName:         input.FirstName,
 		LastName:          input.LastName,
 		Email:             input.Email,
@@ -109,7 +107,7 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 			}
 		}
 
-		userId = strconv.Itoa(userIdInt)
+		user.ID = strconv.Itoa(userIdInt)
 		return nil
 	})
 	if err != nil {
