@@ -72,7 +72,8 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 	if !ok {
 		return nil, errors.New("unable to retrieve user claims, most likely forgot to set @hasRole directive")
 	}
-	if claims.Role != models.RoleAdmin && claims.Id != id {
+
+	if claims.Role != models.RoleAdmin && claims.UserID != id {
 		return nil, errors.New("unauthorized to update user that is not you")
 	}
 
@@ -85,7 +86,7 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 	if !ok {
 		return false, errors.New("unable to retrieve user claims, most likely forgot to set @hasRole directive")
 	}
-	if claims.Role != models.RoleAdmin && claims.Id != id {
+	if claims.Role != models.RoleAdmin && claims.UserID != id {
 		return false, errors.New("unauthorized to update user that is not you")
 	}
 	return r.Repository.DeleteUser(ctx, id)
@@ -97,7 +98,7 @@ func (r *mutationResolver) AddAPIKey(ctx context.Context, userID string) (*model
 	if !ok {
 		return nil, errors.New("unable to retrieve user claims, most likely forgot to set @hasRole directive")
 	}
-	if claims.Role != models.RoleAdmin && claims.Id != userID {
+	if claims.Role != models.RoleAdmin && claims.UserID != userID {
 		return nil, errors.New("unauthorized to add an api key")
 	}
 	return r.Repository.AddAPIKey(ctx, userID, GenerateAPIKey(100))
@@ -109,7 +110,7 @@ func (r *mutationResolver) DeleteAPIKey(ctx context.Context, userID string) (boo
 	if !ok {
 		return false, errors.New("unable to retrieve user claims, most likely forgot to set @hasRole directive")
 	}
-	if claims.Role != models.RoleAdmin && claims.Id != userID {
+	if claims.Role != models.RoleAdmin && claims.UserID != userID {
 		return false, errors.New("unauthorized to add an api key")
 	}
 	err := r.Repository.DeleteAPIKey(ctx, userID)
