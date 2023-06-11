@@ -35,15 +35,15 @@ type UpdateFunc[T any] func(ctx context.Context, id string, input T, tx pgx.Tx) 
 // *any does not work bc when you use *any it passes your generic type into any and not as *any.
 // that would make it a double pointer and not a single pointer.
 func Validate[T *string |
-*float64 |
-*model.ShirtSize |
-*int |
-[]*string |
-*model.PronounsInput |
-*model.MailingAddressUpdate |
-*model.EducationInfoUpdate |
-*model.MLHTermsUpdate |
-[]model.Race](ctx context.Context, tx pgx.Tx, id string, input T, updateFunc UpdateFunc[T]) error {
+	*float64 |
+	*model.ShirtSize |
+	*int |
+	[]*string |
+	*model.PronounsInput |
+	*model.MailingAddressUpdate |
+	*model.EducationInfoUpdate |
+	*model.MLHTermsUpdate |
+	[]model.Race](ctx context.Context, tx pgx.Tx, id string, input T, updateFunc UpdateFunc[T]) error {
 	if input != nil {
 		err := updateFunc(ctx, id, input, tx)
 		if err != nil {
@@ -266,9 +266,8 @@ func (r *DatabaseRepository) UpdateMLHTerms(ctx context.Context, id string, inpu
 		return errors.New("something went wrong calculating keys and values for sql")
 	}
 
-	sql := fmt.Sprintf(`UPDATE mlh_terms SET (%s) = (%s) WHERE user_id = $1`,
-		database.GeneratePlaceholderNumbers(2, len(keys)+1),
-		database.GeneratePlaceholderNumbers(len(keys)+2, len(keys)+len(values)+1))
+	sql := fmt.Sprintf(`UPDATE mlh_terms SET %s WHERE user_id = $1`,
+		database.GenerateUpdatePairs(keys, 2))
 
 	combined := append(keys, values...)
 
@@ -309,9 +308,8 @@ func (r *DatabaseRepository) UpdateEducationInfo(ctx context.Context, id string,
 		return errors.New("something went wrong calculating keys and values for sql")
 	}
 
-	sql := fmt.Sprintf(`UPDATE education_info SET (%s) = (%s) WHERE user_id = $1`,
-		database.GeneratePlaceholderNumbers(2, len(keys)+1),
-		database.GeneratePlaceholderNumbers(len(keys)+2, len(keys)+len(values)+1))
+	sql := fmt.Sprintf(`UPDATE education_info SET %s WHERE user_id = $1`,
+		database.GenerateUpdatePairs(keys, 2))
 
 	combined := append(keys, values...)
 
@@ -356,9 +354,8 @@ func (r *DatabaseRepository) UpdateMailingAddress(ctx context.Context, id string
 		return errors.New("something went wrong calculating keys and values for sql")
 	}
 
-	sql := fmt.Sprintf(`UPDATE mailing_addresses SET (%s) = (%s) WHERE user_id = $1`,
-		database.GeneratePlaceholderNumbers(2, len(keys)+1),
-		database.GeneratePlaceholderNumbers(len(keys)+2, len(keys)+len(values)+1))
+	sql := fmt.Sprintf(`UPDATE mailing_addresses SET %s WHERE user_id = $1`,
+		database.GenerateUpdatePairs(keys, 2))
 
 	combined := append(keys, values...)
 

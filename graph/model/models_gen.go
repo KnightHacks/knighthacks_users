@@ -13,6 +13,8 @@ import (
 
 type Connection interface {
 	IsConnection()
+	GetTotalCount() *int
+	GetPageInfo() *models.PageInfo
 }
 
 type APIKey struct {
@@ -24,21 +26,21 @@ type EducationInfo struct {
 	Name           string        `json:"name"`
 	GraduationDate time.Time     `json:"graduationDate"`
 	Major          string        `json:"major"`
-	Level          *LevelOfStudy `json:"level"`
+	Level          *LevelOfStudy `json:"level,omitempty"`
 }
 
 type EducationInfoInput struct {
 	Name           string        `json:"name"`
 	GraduationDate time.Time     `json:"graduationDate"`
 	Major          string        `json:"major"`
-	Level          *LevelOfStudy `json:"level"`
+	Level          *LevelOfStudy `json:"level,omitempty"`
 }
 
 type EducationInfoUpdate struct {
-	Name           *string       `json:"name"`
-	GraduationDate *time.Time    `json:"graduationDate"`
-	Major          *string       `json:"major"`
-	Level          *LevelOfStudy `json:"level"`
+	Name           *string       `json:"name,omitempty"`
+	GraduationDate *time.Time    `json:"graduationDate,omitempty"`
+	Major          *string       `json:"major,omitempty"`
+	Level          *LevelOfStudy `json:"level,omitempty"`
 }
 
 type HackathonApplication struct {
@@ -51,11 +53,11 @@ func (HackathonApplication) IsEntity() {}
 type LoginPayload struct {
 	// If false then you must register immediately following this. Else, you are logged in and have access to your own user.
 	AccountExists bool    `json:"accountExists"`
-	User          *User   `json:"user"`
-	AccessToken   *string `json:"accessToken"`
-	RefreshToken  *string `json:"refreshToken"`
+	User          *User   `json:"user,omitempty"`
+	AccessToken   *string `json:"accessToken,omitempty"`
+	RefreshToken  *string `json:"refreshToken,omitempty"`
 	// Not null when accountExists is false, use this in registration
-	EncryptedOAuthAccessToken *string `json:"encryptedOAuthAccessToken"`
+	EncryptedOAuthAccessToken *string `json:"encryptedOAuthAccessToken,omitempty"`
 }
 
 type MLHTerms struct {
@@ -71,9 +73,9 @@ type MLHTermsInput struct {
 }
 
 type MLHTermsUpdate struct {
-	SendMessages  *bool `json:"sendMessages"`
-	CodeOfConduct *bool `json:"codeOfConduct"`
-	ShareInfo     *bool `json:"shareInfo"`
+	SendMessages  *bool `json:"sendMessages,omitempty"`
+	CodeOfConduct *bool `json:"codeOfConduct,omitempty"`
+	ShareInfo     *bool `json:"shareInfo,omitempty"`
 }
 
 type MailingAddress struct {
@@ -93,11 +95,11 @@ type MailingAddressInput struct {
 }
 
 type MailingAddressUpdate struct {
-	Country      *string  `json:"country"`
-	State        *string  `json:"state"`
-	City         *string  `json:"city"`
-	PostalCode   *string  `json:"postalCode"`
-	AddressLines []string `json:"addressLines"`
+	Country      *string  `json:"country,omitempty"`
+	State        *string  `json:"state,omitempty"`
+	City         *string  `json:"city,omitempty"`
+	PostalCode   *string  `json:"postalCode,omitempty"`
+	AddressLines []string `json:"addressLines,omitempty"`
 }
 
 type NewUser struct {
@@ -105,15 +107,15 @@ type NewUser struct {
 	LastName          string               `json:"lastName"`
 	Email             string               `json:"email"`
 	PhoneNumber       string               `json:"phoneNumber"`
-	Pronouns          *PronounsInput       `json:"pronouns"`
-	Age               *int                 `json:"age"`
-	MailingAddress    *MailingAddressInput `json:"mailingAddress"`
-	Mlh               *MLHTermsInput       `json:"mlh"`
-	ShirtSize         *ShirtSize           `json:"shirtSize"`
-	YearsOfExperience *float64             `json:"yearsOfExperience"`
-	EducationInfo     *EducationInfoInput  `json:"educationInfo"`
-	Gender            *string              `json:"gender"`
-	Race              []Race               `json:"race"`
+	Pronouns          *PronounsInput       `json:"pronouns,omitempty"`
+	Age               *int                 `json:"age,omitempty"`
+	MailingAddress    *MailingAddressInput `json:"mailingAddress,omitempty"`
+	Mlh               *MLHTermsInput       `json:"mlh,omitempty"`
+	ShirtSize         *ShirtSize           `json:"shirtSize,omitempty"`
+	YearsOfExperience *float64             `json:"yearsOfExperience,omitempty"`
+	EducationInfo     *EducationInfoInput  `json:"educationInfo,omitempty"`
+	Gender            *string              `json:"gender,omitempty"`
+	Race              []Race               `json:"race,omitempty"`
 }
 
 type OAuth struct {
@@ -141,19 +143,19 @@ type RegistrationPayload struct {
 }
 
 type UpdatedUser struct {
-	FirstName         *string               `json:"firstName"`
-	LastName          *string               `json:"lastName"`
-	Email             *string               `json:"email"`
-	PhoneNumber       *string               `json:"phoneNumber"`
-	Pronouns          *PronounsInput        `json:"pronouns"`
-	Age               *int                  `json:"age"`
-	MailingAddress    *MailingAddressUpdate `json:"mailingAddress"`
-	Mlh               *MLHTermsUpdate       `json:"mlh"`
-	ShirtSize         *ShirtSize            `json:"shirtSize"`
-	YearsOfExperience *float64              `json:"yearsOfExperience"`
-	EducationInfo     *EducationInfoUpdate  `json:"educationInfo"`
-	Gender            *string               `json:"gender"`
-	Race              []Race                `json:"race"`
+	FirstName         *string               `json:"firstName,omitempty"`
+	LastName          *string               `json:"lastName,omitempty"`
+	Email             *string               `json:"email,omitempty"`
+	PhoneNumber       *string               `json:"phoneNumber,omitempty"`
+	Pronouns          *PronounsInput        `json:"pronouns,omitempty"`
+	Age               *int                  `json:"age,omitempty"`
+	MailingAddress    *MailingAddressUpdate `json:"mailingAddress,omitempty"`
+	Mlh               *MLHTermsUpdate       `json:"mlh,omitempty"`
+	ShirtSize         *ShirtSize            `json:"shirtSize,omitempty"`
+	YearsOfExperience *float64              `json:"yearsOfExperience,omitempty"`
+	EducationInfo     *EducationInfoUpdate  `json:"educationInfo,omitempty"`
+	Gender            *string               `json:"gender,omitempty"`
+	Race              []Race                `json:"race,omitempty"`
 }
 
 type User struct {
@@ -163,17 +165,17 @@ type User struct {
 	FullName          string          `json:"fullName"`
 	Email             string          `json:"email"`
 	PhoneNumber       string          `json:"phoneNumber"`
-	Pronouns          *Pronouns       `json:"pronouns"`
-	Age               *int            `json:"age"`
+	Pronouns          *Pronouns       `json:"pronouns,omitempty"`
+	Age               *int            `json:"age,omitempty"`
 	Role              models.Role     `json:"role"`
-	Gender            *string         `json:"gender"`
-	Race              []Race          `json:"race"`
+	Gender            *string         `json:"gender,omitempty"`
+	Race              []Race          `json:"race,omitempty"`
 	OAuth             *OAuth          `json:"oAuth"`
-	MailingAddress    *MailingAddress `json:"mailingAddress"`
-	Mlh               *MLHTerms       `json:"mlh"`
-	ShirtSize         *ShirtSize      `json:"shirtSize"`
-	YearsOfExperience *float64        `json:"yearsOfExperience"`
-	EducationInfo     *EducationInfo  `json:"educationInfo"`
+	MailingAddress    *MailingAddress `json:"mailingAddress,omitempty"`
+	Mlh               *MLHTerms       `json:"mlh,omitempty"`
+	ShirtSize         *ShirtSize      `json:"shirtSize,omitempty"`
+	YearsOfExperience *float64        `json:"yearsOfExperience,omitempty"`
+	EducationInfo     *EducationInfo  `json:"educationInfo,omitempty"`
 	APIKey            *APIKey         `json:"apiKey"`
 }
 
@@ -185,7 +187,9 @@ type UsersConnection struct {
 	Users      []*User          `json:"users"`
 }
 
-func (UsersConnection) IsConnection() {}
+func (UsersConnection) IsConnection()                      {}
+func (this UsersConnection) GetTotalCount() *int           { return &this.TotalCount }
+func (this UsersConnection) GetPageInfo() *models.PageInfo { return this.PageInfo }
 
 type LevelOfStudy string
 
