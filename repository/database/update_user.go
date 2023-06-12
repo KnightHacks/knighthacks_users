@@ -357,9 +357,9 @@ func (r *DatabaseRepository) UpdateMailingAddress(ctx context.Context, id string
 	sql := fmt.Sprintf(`UPDATE mailing_addresses SET %s WHERE user_id = $1`,
 		database.GenerateUpdatePairs(keys, 2))
 
-	combined := append(keys, values...)
+	combined := append([]any{id}, values...)
 
-	commandTag, err := tx.Exec(ctx, sql, id, combined)
+	commandTag, err := tx.Exec(ctx, sql, combined...)
 	if err != nil {
 		return err
 	}
