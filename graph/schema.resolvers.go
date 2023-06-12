@@ -65,7 +65,19 @@ func (r *mutationResolver) Register(ctx context.Context, provider models.Provide
 
 // UpdateUser is the resolver for the updateUser field.
 func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.UpdatedUser) (*model.User, error) {
-	if input.FirstName == nil && input.LastName == nil && input.Email == nil && input.PhoneNumber == nil && input.Pronouns == nil && input.Age == nil {
+	if input.FirstName == nil &&
+		input.LastName == nil &&
+		input.Email == nil &&
+		input.PhoneNumber == nil &&
+		input.Pronouns == nil &&
+		input.Age == nil &&
+		input.EducationInfo != nil &&
+		input.Mlh == nil &&
+		input.MailingAddress == nil &&
+		input.ShirtSize == nil &&
+		input.Gender != nil &&
+		input.Race != nil &&
+		input.YearsOfExperience != nil {
 		return nil, fmt.Errorf("no field has been updated")
 	}
 
