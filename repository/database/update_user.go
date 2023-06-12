@@ -63,7 +63,7 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 	if input.FirstName == nil && input.LastName == nil && input.Email == nil && input.PhoneNumber == nil && input.Pronouns == nil && input.Age == nil {
 		return nil, errors.New("empty user field")
 	}
-	err = pgx.BeginTxFunc(ctx, r.DatabasePool, pgx.TxOptions{}, func(tx pgx.Tx) error {
+	err = pgx.BeginFunc(ctx, r.DatabasePool, func(tx pgx.Tx) error {
 		if err = Validate(ctx, tx, id, input.FirstName, r.UpdateFirstName); err != nil {
 			return err
 		}
@@ -312,8 +312,9 @@ func (r *DatabaseRepository) UpdateEducationInfo(ctx context.Context, id string,
 		database.GenerateUpdatePairs(keys, 2))
 
 	combined := append(keys, values...)
+	combined = append([]any{id}, combined)
 
-	commandTag, err := tx.Exec(ctx, sql, id, combined)
+	commandTag, err := tx.Exec(ctx, sql, combined...)
 	if err != nil {
 		return err
 	}
