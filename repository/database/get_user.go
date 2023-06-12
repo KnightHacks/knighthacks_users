@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"errors"
+	"github.com/KnightHacks/knighthacks_shared/database"
 	sharedModels "github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
@@ -83,19 +84,10 @@ func (r *DatabaseRepository) GetUserByOAuthUID(ctx context.Context, oAuthUID str
 	)
 }
 
-func (r *DatabaseRepository) GetUserWithTx(ctx context.Context, query string, tx pgx.Tx, args ...interface{}) (*model.User, error) {
+func (r *DatabaseRepository) GetUserWithQueryable(ctx context.Context, query string, queryable database.Queryable, args ...interface{}) (*model.User, error) {
 	var user model.User
 
-	if tx == nil {
-		var err error
-		tx, err = r.DatabasePool.Begin(ctx)
-		if err != nil {
-			return nil, err
-		}
-		defer tx.Commit(ctx)
-	}
-
-	pronounId, err := ScanUser(&user, tx.QueryRow(ctx, query, args...))
+	pronounId, err := ScanUser(&user, queryable.QueryRow(ctx, query, args...))
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -106,7 +98,7 @@ func (r *DatabaseRepository) GetUserWithTx(ctx context.Context, query string, tx
 
 	// if the user has their pronouns set
 	if pronounId != nil {
-		pronouns, err := r.GetPronouns(ctx, tx, *pronounId)
+		pronouns, err := r.GetPronouns(ctx, queryable, *pronounId)
 		if err != nil {
 			return nil, err
 		}
@@ -116,7 +108,7 @@ func (r *DatabaseRepository) GetUserWithTx(ctx context.Context, query string, tx
 }
 
 func (r *DatabaseRepository) GetUser(ctx context.Context, query string, args ...interface{}) (*model.User, error) {
-	return r.GetUserWithTx(ctx, query, nil, args...)
+	return r.GetUserWithQueryable(ctx, query, r.DatabasePool, args...)
 }
 
 func (r *DatabaseRepository) SearchUser(ctx context.Context, name string) ([]*model.User, error) {

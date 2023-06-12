@@ -104,7 +104,7 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 			return err
 		}
 
-		user, err = r.GetUserWithTx(ctx,
+		user, err = r.GetUserWithQueryable(ctx,
 			`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race, shirt_size, years_of_experience FROM users WHERE id = $1 LIMIT 1`,
 			tx,
 			id)
