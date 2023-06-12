@@ -59,10 +59,23 @@ func Validate[T *string |
 func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *model.UpdatedUser) (*model.User, error) {
 	var user *model.User
 	var err error
-	// checking to see if input is empty first
-	if input.FirstName == nil && input.LastName == nil && input.Email == nil && input.PhoneNumber == nil && input.Pronouns == nil && input.Age == nil {
+	// checking to see if any of the fields are not empty in input
+	if input.FirstName == nil &&
+		input.LastName == nil &&
+		input.Email == nil &&
+		input.PhoneNumber == nil &&
+		input.Pronouns == nil &&
+		input.Age == nil &&
+		input.EducationInfo != nil &&
+		input.Mlh == nil &&
+		input.MailingAddress == nil &&
+		input.ShirtSize == nil &&
+		input.Gender != nil &&
+		input.Race != nil &&
+		input.YearsOfExperience != nil {
 		return nil, errors.New("empty user field")
 	}
+
 	err = pgx.BeginFunc(ctx, r.DatabasePool, func(tx pgx.Tx) error {
 		if err = Validate(ctx, tx, id, input.FirstName, r.UpdateFirstName); err != nil {
 			return err
