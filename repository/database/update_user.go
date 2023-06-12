@@ -312,7 +312,7 @@ func (r *DatabaseRepository) UpdateEducationInfo(ctx context.Context, id string,
 		database.GenerateUpdatePairs(keys, 2))
 
 	combined := append(keys, values...)
-	combined = append([]any{id}, combined)
+	combined = append([]any{id}, combined...)
 
 	commandTag, err := tx.Exec(ctx, sql, combined...)
 	if err != nil {
