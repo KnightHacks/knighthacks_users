@@ -233,7 +233,7 @@ func (r *queryResolver) Users(ctx context.Context, first int, after *string) (*m
 
 	return &model.UsersConnection{
 		TotalCount: total,
-		PageInfo:   pagination.GetPageInfo(users[0].ID, users[len(users)-1].ID),
+		PageInfo:   pagination.GetPageInfo(users),
 		Users:      users,
 	}, nil
 }
