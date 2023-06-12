@@ -311,8 +311,7 @@ func (r *DatabaseRepository) UpdateEducationInfo(ctx context.Context, id string,
 	sql := fmt.Sprintf(`UPDATE education_info SET %s WHERE user_id = $1`,
 		database.GenerateUpdatePairs(keys, 2))
 
-	combined := append(keys, values...)
-	combined = append([]any{id}, combined...)
+	combined := append([]any{id}, values...)
 
 	commandTag, err := tx.Exec(ctx, sql, combined...)
 	if err != nil {
