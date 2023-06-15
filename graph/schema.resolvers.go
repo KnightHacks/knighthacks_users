@@ -149,7 +149,7 @@ func (r *queryResolver) GetAuthRedirectLink(ctx context.Context, provider models
 
 	// TODO: check into enabling secure behind proxy in production
 	ginContext.SetSameSite(http.SameSiteNoneMode)
-	ginContext.SetCookie("oauthstate", state, 60*10, "/", "", true, false)
+	ginContext.SetCookie("oauthstate", state, 60*10, "/", "2023.knighthacks.org", false, true)
 	ginContext.Header("Access-Control-Allow-Credentials", "true")
 	return r.Auth.GetAuthCodeURL(provider, state, redirect), nil
 }
