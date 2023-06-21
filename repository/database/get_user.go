@@ -24,10 +24,10 @@ $$ |  $$ |$$   ____| $$ |$$\       $$ |  $$ | \____$$\ $$   ____|$$ |
 func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after string) ([]*model.User, int, error) {
 	users := make([]*model.User, 0, first)
 	var totalCount int
-	err := pgx.BeginTxFunc(ctx, r.DatabasePool, pgx.TxOptions{}, func(tx pgx.Tx) error {
+	err := pgx.BeginFunc(ctx, r.DatabasePool, func(tx pgx.Tx) error {
 		rows, err := tx.Query(
 			ctx,
-			"SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race, shirt_size, years_of_experience FROM users WHERE id > $1 ORDER BY `id` DESC LIMIT $2",
+			"SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race, shirt_size, years_of_experience FROM users WHERE id > $1 ORDER BY id DESC LIMIT $2",
 			after,
 			first,
 		)
