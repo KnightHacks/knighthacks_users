@@ -115,7 +115,7 @@ type NewUser struct {
 	YearsOfExperience *float64             `json:"yearsOfExperience,omitempty"`
 	EducationInfo     *EducationInfoInput  `json:"educationInfo,omitempty"`
 	Gender            *string              `json:"gender,omitempty"`
-	Race              []Race               `json:"race,omitempty"`
+	Race              Race                 `json:"race"`
 }
 
 type OAuth struct {
@@ -155,7 +155,7 @@ type UpdatedUser struct {
 	YearsOfExperience *float64              `json:"yearsOfExperience,omitempty"`
 	EducationInfo     *EducationInfoUpdate  `json:"educationInfo,omitempty"`
 	Gender            *string               `json:"gender,omitempty"`
-	Race              []Race                `json:"race,omitempty"`
+	Race              Race                  `json:"race"`
 }
 
 type User struct {
@@ -169,7 +169,7 @@ type User struct {
 	Age               *int            `json:"age,omitempty"`
 	Role              models.Role     `json:"role"`
 	Gender            *string         `json:"gender,omitempty"`
-	Race              []Race          `json:"race,omitempty"`
+	Race              Race            `json:"race"`
 	OAuth             *OAuth          `json:"oAuth"`
 	MailingAddress    *MailingAddress `json:"mailingAddress,omitempty"`
 	Mlh               *MLHTerms       `json:"mlh,omitempty"`
@@ -243,24 +243,30 @@ func (e LevelOfStudy) MarshalGQL(w io.Writer) {
 type Race string
 
 const (
-	RaceAfricanAmerican      Race = "AFRICAN_AMERICAN"
-	RaceAsianPacificIslander Race = "ASIAN_PACIFIC_ISLANDER"
-	RaceCaucasian            Race = "CAUCASIAN"
-	RaceLatino               Race = "LATINO"
-	RacePrefer               Race = "PREFER"
+	RaceAmericanIndianOrAlaskanNative        Race = "AMERICAN_INDIAN_OR_ALASKAN_NATIVE"
+	RaceAsian                                Race = "ASIAN"
+	RaceBlackOrAfricanAmerican               Race = "BLACK_OR_AFRICAN_AMERICAN"
+	RaceHispanicOrLatino                     Race = "HISPANIC_OR_LATINO"
+	RaceMiddleEastern                        Race = "MIDDLE_EASTERN"
+	RaceNativeHawaiianOrOtherPacificIslander Race = "NATIVE_HAWAIIAN_OR_OTHER_PACIFIC_ISLANDER"
+	RaceWhite                                Race = "WHITE"
+	RaceTwoOrMore                            Race = "TWO_OR_MORE"
 )
 
 var AllRace = []Race{
-	RaceAfricanAmerican,
-	RaceAsianPacificIslander,
-	RaceCaucasian,
-	RaceLatino,
-	RacePrefer,
+	RaceAmericanIndianOrAlaskanNative,
+	RaceAsian,
+	RaceBlackOrAfricanAmerican,
+	RaceHispanicOrLatino,
+	RaceMiddleEastern,
+	RaceNativeHawaiianOrOtherPacificIslander,
+	RaceWhite,
+	RaceTwoOrMore,
 }
 
 func (e Race) IsValid() bool {
 	switch e {
-	case RaceAfricanAmerican, RaceAsianPacificIslander, RaceCaucasian, RaceLatino, RacePrefer:
+	case RaceAmericanIndianOrAlaskanNative, RaceAsian, RaceBlackOrAfricanAmerican, RaceHispanicOrLatino, RaceMiddleEastern, RaceNativeHawaiianOrOtherPacificIslander, RaceWhite, RaceTwoOrMore:
 		return true
 	}
 	return false

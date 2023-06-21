@@ -121,13 +121,6 @@ func (r *DatabaseRepository) InsertUser(ctx context.Context, queryable database.
 	// TODO: Possibly change ID type to int to stop this hacky fix?
 	// insert user into database and return their ID
 
-	var raceStringArray []string
-	if input.Race != nil && len(input.Race) > 0 {
-		raceStringArray = make([]string, 0, len(input.Race))
-		for _, race := range input.Race {
-			raceStringArray = append(raceStringArray, race.String())
-		}
-	}
 	var userIdInt int
 	err := queryable.QueryRow(ctx, "INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider, role, years_of_experience, shirt_size, race, gender) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id",
 		input.FirstName,
@@ -141,7 +134,7 @@ func (r *DatabaseRepository) InsertUser(ctx context.Context, queryable database.
 		sharedModels.RoleNormal,
 		input.YearsOfExperience,
 		input.ShirtSize,
-		raceStringArray,
+		input.Race,
 		input.Gender,
 	).Scan(&userIdInt)
 	return userIdInt, err

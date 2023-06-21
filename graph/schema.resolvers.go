@@ -75,9 +75,9 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 		input.Mlh == nil &&
 		input.MailingAddress == nil &&
 		input.ShirtSize == nil &&
-		input.Gender != nil &&
-		input.Race != nil &&
-		input.YearsOfExperience != nil {
+		input.Gender == nil &&
+		len(input.Race.String()) == 0 &&
+		input.YearsOfExperience == nil {
 		return nil, fmt.Errorf("no field has been updated")
 	}
 

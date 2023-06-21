@@ -36,11 +36,14 @@ type UsersConnection implements Connection {
 }
 
 enum Race {
-    AFRICAN_AMERICAN
-    ASIAN_PACIFIC_ISLANDER
-    CAUCASIAN
-    LATINO
-    PREFER
+    AMERICAN_INDIAN_OR_ALASKAN_NATIVE
+    ASIAN
+    BLACK_OR_AFRICAN_AMERICAN
+    HISPANIC_OR_LATINO
+    MIDDLE_EASTERN
+    NATIVE_HAWAIIAN_OR_OTHER_PACIFIC_ISLANDER
+    WHITE
+    TWO_OR_MORE
 }
 
 type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
@@ -56,7 +59,7 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     role: Role! @hasRole(role: OWNS)
 
     gender: String @hasRole(role: OWNS)
-    race: [Race!] @hasRole(role: OWNS)
+    race: Race! @hasRole(role: OWNS)
 
     oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
 
@@ -193,7 +196,7 @@ input NewUser {
     yearsOfExperience: Float
     educationInfo: EducationInfoInput
     gender: String
-    race: [Race!]
+    race: Race!
 }
 
 input UpdatedUser {
@@ -209,7 +212,7 @@ input UpdatedUser {
     yearsOfExperience: Float
     educationInfo: EducationInfoUpdate
     gender: String
-    race: [Race!]
+    race: Race!
 }
 
 type LoginPayload {

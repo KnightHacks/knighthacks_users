@@ -35,15 +35,15 @@ type UpdateFunc[T any] func(ctx context.Context, id string, input T, tx pgx.Tx) 
 // *any does not work bc when you use *any it passes your generic type into any and not as *any.
 // that would make it a double pointer and not a single pointer.
 func Validate[T *string |
-	*float64 |
-	*model.ShirtSize |
-	*int |
-	[]*string |
-	*model.PronounsInput |
-	*model.MailingAddressUpdate |
-	*model.EducationInfoUpdate |
-	*model.MLHTermsUpdate |
-	[]model.Race](ctx context.Context, tx pgx.Tx, id string, input T, updateFunc UpdateFunc[T]) error {
+*float64 |
+*model.ShirtSize |
+*int |
+[]*string |
+*model.PronounsInput |
+*model.MailingAddressUpdate |
+*model.EducationInfoUpdate |
+*model.MLHTermsUpdate |
+*model.Race](ctx context.Context, tx pgx.Tx, id string, input T, updateFunc UpdateFunc[T]) error {
 	if input != nil {
 		err := updateFunc(ctx, id, input, tx)
 		if err != nil {
@@ -66,13 +66,13 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 		input.PhoneNumber == nil &&
 		input.Pronouns == nil &&
 		input.Age == nil &&
-		input.EducationInfo != nil &&
+		input.EducationInfo == nil &&
 		input.Mlh == nil &&
 		input.MailingAddress == nil &&
 		input.ShirtSize == nil &&
-		input.Gender != nil &&
-		input.Race != nil &&
-		input.YearsOfExperience != nil {
+		input.Gender == nil &&
+		len(input.Race) == 0 &&
+		input.YearsOfExperience == nil {
 		return nil, errors.New("empty user field")
 	}
 
@@ -110,7 +110,7 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 		if err = Validate(ctx, tx, id, input.Gender, r.UpdateGender); err != nil {
 			return err
 		}
-		if err = Validate(ctx, tx, id, input.Race, r.UpdateRace); err != nil {
+		if err = Validate(ctx, tx, id, &input.Race, r.UpdateRace); err != nil {
 			return err
 		}
 		if err = Validate(ctx, tx, id, input.YearsOfExperience, r.UpdateYearsOfExperience); err != nil {
@@ -225,15 +225,8 @@ func (r *DatabaseRepository) UpdateYearsOfExperience(ctx context.Context, id str
 }
 
 // UpdateRace updates race
-func (r *DatabaseRepository) UpdateRace(ctx context.Context, id string, races []model.Race, tx pgx.Tx) error {
-	var raceStringArray []string
-	if races != nil && len(races) > 0 {
-		raceStringArray = make([]string, 0, len(races))
-		for _, race := range races {
-			raceStringArray = append(raceStringArray, race.String())
-		}
-	}
-	commandTag, err := tx.Exec(ctx, "UPDATE users SET race = $1 WHERE id = $2", raceStringArray, id)
+func (r *DatabaseRepository) UpdateRace(ctx context.Context, id string, race *model.Race, tx pgx.Tx) error {
+	commandTag, err := tx.Exec(ctx, "UPDATE users SET race = $1 WHERE id = $2", race.String(), id)
 	if err != nil {
 		return err
 	}
@@ -321,6 +314,7 @@ func (r *DatabaseRepository) UpdateEducationInfo(ctx context.Context, id string,
 		return errors.New("something went wrong calculating keys and values for sql")
 	}
 
+	// TODO: implement upsert
 	sql := fmt.Sprintf(`UPDATE education_info SET %s WHERE user_id = $1`,
 		database.GenerateUpdatePairs(keys, 2))
 
@@ -442,6 +436,7 @@ type Scannable interface {
 func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
 	var pronounVal uint32
 	pronounId := &pronounVal
+	var racesStringArray []string
 	var userIdInt int
 	err := scannable.Scan(
 		&userIdInt,
@@ -453,10 +448,11 @@ func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
 		&user.Age,
 		&user.Role,
 		&user.Gender,
-		&user.Race,
+		&racesStringArray,
 		&user.ShirtSize,
 		&user.YearsOfExperience,
 	)
+
 	if err != nil {
 		return nil, err
 	}
