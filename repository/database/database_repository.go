@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -38,20 +39,71 @@ func NewDatabaseRepository(ctx context.Context, databasePool *pgxpool.Pool) (*Da
 }
 
 func (r *DatabaseRepository) DeleteUser(ctx context.Context, id string) (bool, error) {
+	err := pgx.BeginFunc(ctx, r.DatabasePool, func(tx pgx.Tx) error {
+		// Delete from hackathon_applications
+		_, err := tx.Exec(ctx, "DELETE FROM hackathon_applications WHERE user_id = $1", id)
+		if err != nil {
+			return err
+		}
 
-	//query the row using the id with a DELETE statment
-	commandTag, err := r.DatabasePool.Exec(ctx, "DELETE FROM users WHERE id = $1", id)
+		// Delete from mlh_terms
+		_, err = tx.Exec(ctx, "DELETE FROM mlh_terms WHERE user_id = $1", id)
+		if err != nil {
+			return err
+		}
 
-	//err should return a nil value, if not throw error
+		// Delete from meals
+		_, err = tx.Exec(ctx, "DELETE FROM meals WHERE user_id = $1", id)
+		if err != nil {
+			return err
+		}
+
+		// Delete from mailing_addresses
+		_, err = tx.Exec(ctx, "DELETE FROM mailing_addresses WHERE user_id = $1", id)
+		if err != nil {
+			return err
+		}
+
+		// Delete from hackathon_checkin
+		_, err = tx.Exec(ctx, "DELETE FROM hackathon_checkin WHERE user_id = $1", id)
+		if err != nil {
+			return err
+		}
+
+		// Delete from hackathon_checkin
+		_, err = tx.Exec(ctx, "DELETE FROM education_info WHERE user_id = $1", id)
+		if err != nil {
+			return err
+		}
+
+		// Delete from api_keys
+		_, err = tx.Exec(ctx, "DELETE FROM api_keys WHERE user_id = $1", id)
+		if err != nil {
+			return err
+		}
+
+		// Delete from api_keys
+		_, err = tx.Exec(ctx, "DELETE FROM event_attendance WHERE user_id = $1", id)
+		if err != nil {
+			return err
+		}
+
+		commandTag, err := r.DatabasePool.Exec(ctx, "DELETE FROM users WHERE id = $1", id)
+		if err != nil {
+			return err
+		}
+
+		//there should be one row affected, if not throw error
+		if commandTag.RowsAffected() != 1 {
+			return repository.UserNotFound
+		}
+
+		return nil
+	})
+
 	if err != nil {
 		return false, err
 	}
-
-	//there should be one row affected, if not throw error
-	if commandTag.RowsAffected() != 1 {
-		return false, repository.UserNotFound
-	}
-
 	// then no error
 	return true, nil
 }
