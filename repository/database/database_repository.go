@@ -88,7 +88,7 @@ func (r *DatabaseRepository) DeleteUser(ctx context.Context, id string) (bool, e
 			return err
 		}
 
-		commandTag, err := r.DatabasePool.Exec(ctx, "DELETE FROM users WHERE id = $1", id)
+		commandTag, err := tx.Exec(ctx, "DELETE FROM users WHERE id = $1", id)
 		if err != nil {
 			return err
 		}
