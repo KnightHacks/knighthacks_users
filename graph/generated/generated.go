@@ -953,7 +953,7 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     role: Role! @hasRole(role: OWNS)
 
     gender: String @hasRole(role: OWNS)
-    race: Race! @hasRole(role: OWNS)
+    race: Race @hasRole(role: OWNS)
 
     oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
 
@@ -1090,7 +1090,7 @@ input NewUser {
     yearsOfExperience: Float
     educationInfo: EducationInfoInput
     gender: String
-    race: Race!
+    race: Race
 }
 
 input UpdatedUser {
@@ -1106,7 +1106,7 @@ input UpdatedUser {
     yearsOfExperience: Float
     educationInfo: EducationInfoUpdate
     gender: String
-    race: Race!
+    race: Race
 }
 
 type LoginPayload {
@@ -5097,24 +5097,21 @@ func (ec *executionContext) _User_race(ctx context.Context, field graphql.Collec
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(model.Race); ok {
+		if data, ok := tmp.(*model.Race); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be github.com/KnightHacks/knighthacks_users/graph/model.Race`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/KnightHacks/knighthacks_users/graph/model.Race`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(model.Race)
+	res := resTmp.(*model.Race)
 	fc.Result = res
-	return ec.marshalNRace2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRace(ctx, field.Selections, res)
+	return ec.marshalORace2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRace(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_race(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8085,7 +8082,7 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("race"))
-			data, err := ec.unmarshalNRace2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRace(ctx, v)
+			data, err := ec.unmarshalORace2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRace(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8260,7 +8257,7 @@ func (ec *executionContext) unmarshalInputUpdatedUser(ctx context.Context, obj i
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("race"))
-			data, err := ec.unmarshalNRace2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRace(ctx, v)
+			data, err := ec.unmarshalORace2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRace(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9333,9 +9330,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._User_gender(ctx, field, obj)
 		case "race":
 			out.Values[i] = ec._User_race(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
 		case "oAuth":
 			field := field
 
@@ -10071,16 +10065,6 @@ func (ec *executionContext) marshalNProvider2githubᚗcomᚋKnightHacksᚋknight
 	return v
 }
 
-func (ec *executionContext) unmarshalNRace2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRace(ctx context.Context, v interface{}) (model.Race, error) {
-	var res model.Race
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNRace2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRace(ctx context.Context, sel ast.SelectionSet, v model.Race) graphql.Marshaler {
-	return v
-}
-
 func (ec *executionContext) marshalNRegistrationPayload2githubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRegistrationPayload(ctx context.Context, sel ast.SelectionSet, v model.RegistrationPayload) graphql.Marshaler {
 	return ec._RegistrationPayload(ctx, sel, &v)
 }
@@ -10770,6 +10754,22 @@ func (ec *executionContext) unmarshalOPronounsInput2ᚖgithubᚗcomᚋKnightHack
 	}
 	res, err := ec.unmarshalInputPronounsInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalORace2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRace(ctx context.Context, v interface{}) (*model.Race, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.Race)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalORace2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐRace(ctx context.Context, sel ast.SelectionSet, v *model.Race) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOShirtSize2ᚖgithubᚗcomᚋKnightHacksᚋknighthacks_usersᚋgraphᚋmodelᚐShirtSize(ctx context.Context, v interface{}) (*model.ShirtSize, error) {

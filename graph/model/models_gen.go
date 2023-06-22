@@ -115,7 +115,7 @@ type NewUser struct {
 	YearsOfExperience *float64             `json:"yearsOfExperience,omitempty"`
 	EducationInfo     *EducationInfoInput  `json:"educationInfo,omitempty"`
 	Gender            *string              `json:"gender,omitempty"`
-	Race              Race                 `json:"race"`
+	Race              *Race                `json:"race,omitempty"`
 }
 
 type OAuth struct {
@@ -155,7 +155,7 @@ type UpdatedUser struct {
 	YearsOfExperience *float64              `json:"yearsOfExperience,omitempty"`
 	EducationInfo     *EducationInfoUpdate  `json:"educationInfo,omitempty"`
 	Gender            *string               `json:"gender,omitempty"`
-	Race              Race                  `json:"race"`
+	Race              *Race                 `json:"race,omitempty"`
 }
 
 type User struct {
@@ -169,7 +169,7 @@ type User struct {
 	Age               *int            `json:"age,omitempty"`
 	Role              models.Role     `json:"role"`
 	Gender            *string         `json:"gender,omitempty"`
-	Race              Race            `json:"race"`
+	Race              *Race           `json:"race,omitempty"`
 	OAuth             *OAuth          `json:"oAuth"`
 	MailingAddress    *MailingAddress `json:"mailingAddress,omitempty"`
 	Mlh               *MLHTerms       `json:"mlh,omitempty"`

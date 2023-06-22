@@ -71,7 +71,7 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 		input.MailingAddress == nil &&
 		input.ShirtSize == nil &&
 		input.Gender == nil &&
-		len(input.Race) == 0 &&
+		input.Race == nil &&
 		input.YearsOfExperience == nil {
 		return nil, errors.New("empty user field")
 	}
@@ -110,7 +110,7 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 		if err = Validate(ctx, tx, id, input.Gender, r.UpdateGender); err != nil {
 			return err
 		}
-		if err = Validate(ctx, tx, id, &input.Race, r.UpdateRace); err != nil {
+		if err = Validate(ctx, tx, id, input.Race, r.UpdateRace); err != nil {
 			return err
 		}
 		if err = Validate(ctx, tx, id, input.YearsOfExperience, r.UpdateYearsOfExperience); err != nil {

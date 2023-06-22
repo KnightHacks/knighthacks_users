@@ -59,7 +59,7 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
     role: Role! @hasRole(role: OWNS)
 
     gender: String @hasRole(role: OWNS)
-    race: Race! @hasRole(role: OWNS)
+    race: Race @hasRole(role: OWNS)
 
     oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
 
@@ -196,7 +196,7 @@ input NewUser {
     yearsOfExperience: Float
     educationInfo: EducationInfoInput
     gender: String
-    race: Race!
+    race: Race
 }
 
 input UpdatedUser {
@@ -212,7 +212,7 @@ input UpdatedUser {
     yearsOfExperience: Float
     educationInfo: EducationInfoUpdate
     gender: String
-    race: Race!
+    race: Race
 }
 
 type LoginPayload {

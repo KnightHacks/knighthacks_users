@@ -1,15 +1,5 @@
 github.com/99designs/gqlgen v0.17.32 h1:yX5On31oZ8I4dAfgZeeR/A8L9SWk+nD+cF8Aao4vmHs=
 github.com/99designs/gqlgen v0.17.32/go.mod h1:5j5Ak84e9FTYtH3aaNhK+FoYzXdUAY9CahQcWDqOwR8=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20230612000807-23a6bcca6f99 h1:d+RAywCoQJIXjPXwRpSi/91kEyEx8II0tnTNW4KwFiI=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20230612000807-23a6bcca6f99/go.mod h1:CoTeIUwu66fDN5b6Ib6aioECv5Cib7KVPEdrY4jL0g4=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20230612003310-4129feb4c665 h1:KFDceuVaYCv5s5NNnzDbky3Whu3CcHmloL7nGT/AVEM=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20230612003310-4129feb4c665/go.mod h1:n+KoIc/WSWR5bhX2gDqyiwmNA6V7z2Gxs8teq7C/eBQ=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20230612011004-86d81f7e8fb5 h1:V0yWEm/TUEIUOVN8SaKyv5yr9S4uVIMBAYt72dnd1b4=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20230612011004-86d81f7e8fb5/go.mod h1:n+KoIc/WSWR5bhX2gDqyiwmNA6V7z2Gxs8teq7C/eBQ=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20230612012132-de4448709402 h1:aZP24UylAwl1jqEGUnXW588ewloAFJXqfXdhpTiee6c=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20230612012132-de4448709402/go.mod h1:n+KoIc/WSWR5bhX2gDqyiwmNA6V7z2Gxs8teq7C/eBQ=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20230621101517-bb657bf41658 h1:sQcSbC1VIuRPcmDHz4jDfcOlmfiz6hPXn72KK0xz7Ik=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20230621101517-bb657bf41658/go.mod h1:n+KoIc/WSWR5bhX2gDqyiwmNA6V7z2Gxs8teq7C/eBQ=
 github.com/KnightHacks/knighthacks_shared v0.0.0-20230621233753-1c04bb6dd4b7 h1:yHYV1T7IgmHnb9PpB4hkSAOxcffJ6l22lyN5nuMgpBc=
 github.com/KnightHacks/knighthacks_shared v0.0.0-20230621233753-1c04bb6dd4b7/go.mod h1:n+KoIc/WSWR5bhX2gDqyiwmNA6V7z2Gxs8teq7C/eBQ=
 github.com/agnivade/levenshtein v1.1.1 h1:QY8M92nrzkmr798gCo3kmMyqXFzdQVpxLlGPRBij0P8=
