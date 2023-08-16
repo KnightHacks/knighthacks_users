@@ -61,7 +61,7 @@ func graphqlHandler(a *auth.Auth, pool *pgxpool.Pool) gin.HandlerFunc {
 			// shouldn't happen, you must implement the new object with the ID field
 			return "", errors.New("this shouldn't happen")
 		}
-	}}
+	}, Queryable: pool}
 
 	repository, err := database.NewDatabaseRepository(context.Background(), pool)
 	if err != nil {
