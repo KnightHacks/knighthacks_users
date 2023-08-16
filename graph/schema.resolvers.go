@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/KnightHacks/knighthacks_shared/auth"
 	"github.com/KnightHacks/knighthacks_shared/models"
@@ -24,7 +25,8 @@ import (
 
 // User is the resolver for the user field.
 func (r *hackathonApplicationResolver) User(ctx context.Context, obj *model.HackathonApplication) (*model.User, error) {
-	return r.Repository.GetUserByID(ctx, obj.ID)
+	userId := strings.Split(obj.ID, "-")[1]
+	return r.Repository.GetUserByID(ctx, userId)
 }
 
 // Register is the resolver for the register field.
