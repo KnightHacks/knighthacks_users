@@ -1,7 +1,5 @@
 github.com/99designs/gqlgen v0.17.32 h1:yX5On31oZ8I4dAfgZeeR/A8L9SWk+nD+cF8Aao4vmHs=
 github.com/99designs/gqlgen v0.17.32/go.mod h1:5j5Ak84e9FTYtH3aaNhK+FoYzXdUAY9CahQcWDqOwR8=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20230816214951-c7541c0f3f94 h1:wnjHO9WvuXNqRlyBHWk7cbdv7GZOQjdn6blcUnihiqU=
-github.com/KnightHacks/knighthacks_shared v0.0.0-20230816214951-c7541c0f3f94/go.mod h1:n+KoIc/WSWR5bhX2gDqyiwmNA6V7z2Gxs8teq7C/eBQ=
 github.com/KnightHacks/knighthacks_shared v0.0.0-20230816235545-cf33535810ff h1:EVfjG97uZ8SZs2Sg2tlDaUHqnEKQngZjutiiOJNQ1iU=
 github.com/KnightHacks/knighthacks_shared v0.0.0-20230816235545-cf33535810ff/go.mod h1:tj3wsHFnJxZlPqYoKIXy/KeiRp1UxJfUnXkAk2+HLlg=
 github.com/agnivade/levenshtein v1.1.1 h1:QY8M92nrzkmr798gCo3kmMyqXFzdQVpxLlGPRBij0P8=

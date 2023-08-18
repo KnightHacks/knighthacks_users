@@ -116,6 +116,8 @@ type NewUser struct {
 	EducationInfo     *EducationInfoInput  `json:"educationInfo,omitempty"`
 	Gender            *string              `json:"gender,omitempty"`
 	Race              *Race                `json:"race,omitempty"`
+	CyberTrack        *bool                `json:"cyberTrack,omitempty"`
+	FirstTimeHacker   *bool                `json:"firstTimeHacker,omitempty"`
 }
 
 type OAuth struct {
@@ -156,6 +158,8 @@ type UpdatedUser struct {
 	EducationInfo     *EducationInfoUpdate  `json:"educationInfo,omitempty"`
 	Gender            *string               `json:"gender,omitempty"`
 	Race              *Race                 `json:"race,omitempty"`
+	CyberTrack        *bool                 `json:"cyberTrack,omitempty"`
+	FirstTimeHacker   *bool                 `json:"firstTimeHacker,omitempty"`
 }
 
 type User struct {
@@ -170,6 +174,8 @@ type User struct {
 	Role              models.Role     `json:"role"`
 	Gender            *string         `json:"gender,omitempty"`
 	Race              *Race           `json:"race,omitempty"`
+	CyberTrack        *bool           `json:"cyberTrack,omitempty"`
+	FirstTimeHacker   *bool           `json:"firstTimeHacker,omitempty"`
 	OAuth             *OAuth          `json:"oAuth"`
 	MailingAddress    *MailingAddress `json:"mailingAddress,omitempty"`
 	Mlh               *MLHTerms       `json:"mlh,omitempty"`

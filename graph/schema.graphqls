@@ -60,6 +60,8 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
 
     gender: String @hasRole(role: OWNS)
     race: Race @hasRole(role: OWNS)
+    cyberTrack: Boolean @hasRole(role: OWNS)
+    firstTimeHacker: Boolean @hasRole(role: OWNS)
 
     oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
 
@@ -197,6 +199,8 @@ input NewUser {
     educationInfo: EducationInfoInput
     gender: String
     race: Race
+    cyberTrack: Boolean
+    firstTimeHacker: Boolean
 }
 
 input UpdatedUser {
@@ -213,6 +217,8 @@ input UpdatedUser {
     educationInfo: EducationInfoUpdate
     gender: String
     race: Race
+    cyberTrack: Boolean
+    firstTimeHacker: Boolean
 }
 
 type LoginPayload {

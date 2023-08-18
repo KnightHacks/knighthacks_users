@@ -9,11 +9,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"math/rand"
-	"net/http"
-	"net/url"
-	"strings"
-
 	"github.com/KnightHacks/knighthacks_shared/auth"
 	"github.com/KnightHacks/knighthacks_shared/models"
 	"github.com/KnightHacks/knighthacks_shared/pagination"
@@ -21,6 +16,10 @@ import (
 	"github.com/KnightHacks/knighthacks_users/graph/generated"
 	"github.com/KnightHacks/knighthacks_users/graph/model"
 	"github.com/KnightHacks/knighthacks_users/repository"
+	"math/rand"
+	"net/http"
+	"net/url"
+	"strings"
 )
 
 // User is the resolver for the user field.
@@ -79,7 +78,9 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 		input.ShirtSize == nil &&
 		input.Gender == nil &&
 		len(input.Race.String()) == 0 &&
-		input.YearsOfExperience == nil {
+		input.YearsOfExperience == nil &&
+		input.CyberTrack == nil &&
+		input.FirstTimeHacker == nil {
 		return nil, fmt.Errorf("no field has been updated")
 	}
 

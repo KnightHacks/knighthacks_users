@@ -141,9 +141,11 @@ type ComplexityRoot struct {
 	User struct {
 		APIKey            func(childComplexity int) int
 		Age               func(childComplexity int) int
+		CyberTrack        func(childComplexity int) int
 		EducationInfo     func(childComplexity int) int
 		Email             func(childComplexity int) int
 		FirstName         func(childComplexity int) int
+		FirstTimeHacker   func(childComplexity int) int
 		FullName          func(childComplexity int) int
 		Gender            func(childComplexity int) int
 		ID                func(childComplexity int) int
@@ -638,6 +640,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.Age(childComplexity), true
 
+	case "User.cyberTrack":
+		if e.complexity.User.CyberTrack == nil {
+			break
+		}
+
+		return e.complexity.User.CyberTrack(childComplexity), true
+
 	case "User.educationInfo":
 		if e.complexity.User.EducationInfo == nil {
 			break
@@ -658,6 +667,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.FirstName(childComplexity), true
+
+	case "User.firstTimeHacker":
+		if e.complexity.User.FirstTimeHacker == nil {
+			break
+		}
+
+		return e.complexity.User.FirstTimeHacker(childComplexity), true
 
 	case "User.fullName":
 		if e.complexity.User.FullName == nil {
@@ -954,6 +970,8 @@ type User @key(fields:"id") @key(fields:"oAuth { uid provider }") {
 
     gender: String @hasRole(role: OWNS)
     race: Race @hasRole(role: OWNS)
+    cyberTrack: Boolean @hasRole(role: OWNS)
+    firstTimeHacker: Boolean @hasRole(role: OWNS)
 
     oAuth: OAuth! @goField(forceResolver: true) @hasRole(role: OWNS)
 
@@ -1091,6 +1109,8 @@ input NewUser {
     educationInfo: EducationInfoInput
     gender: String
     race: Race
+    cyberTrack: Boolean
+    firstTimeHacker: Boolean
 }
 
 input UpdatedUser {
@@ -1107,6 +1127,8 @@ input UpdatedUser {
     educationInfo: EducationInfoUpdate
     gender: String
     race: Race
+    cyberTrack: Boolean
+    firstTimeHacker: Boolean
 }
 
 type LoginPayload {
@@ -1962,6 +1984,10 @@ func (ec *executionContext) fieldContext_Entity_findUserByID(ctx context.Context
 				return ec.fieldContext_User_gender(ctx, field)
 			case "race":
 				return ec.fieldContext_User_race(ctx, field)
+			case "cyberTrack":
+				return ec.fieldContext_User_cyberTrack(ctx, field)
+			case "firstTimeHacker":
+				return ec.fieldContext_User_firstTimeHacker(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -2055,6 +2081,10 @@ func (ec *executionContext) fieldContext_Entity_findUserByOAuthUIDAndOAuthProvid
 				return ec.fieldContext_User_gender(ctx, field)
 			case "race":
 				return ec.fieldContext_User_race(ctx, field)
+			case "cyberTrack":
+				return ec.fieldContext_User_cyberTrack(ctx, field)
+			case "firstTimeHacker":
+				return ec.fieldContext_User_firstTimeHacker(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -2192,6 +2222,10 @@ func (ec *executionContext) fieldContext_HackathonApplication_user(ctx context.C
 				return ec.fieldContext_User_gender(ctx, field)
 			case "race":
 				return ec.fieldContext_User_race(ctx, field)
+			case "cyberTrack":
+				return ec.fieldContext_User_cyberTrack(ctx, field)
+			case "firstTimeHacker":
+				return ec.fieldContext_User_firstTimeHacker(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -2315,6 +2349,10 @@ func (ec *executionContext) fieldContext_LoginPayload_user(ctx context.Context, 
 				return ec.fieldContext_User_gender(ctx, field)
 			case "race":
 				return ec.fieldContext_User_race(ctx, field)
+			case "cyberTrack":
+				return ec.fieldContext_User_cyberTrack(ctx, field)
+			case "firstTimeHacker":
+				return ec.fieldContext_User_firstTimeHacker(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -2959,6 +2997,10 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 				return ec.fieldContext_User_gender(ctx, field)
 			case "race":
 				return ec.fieldContext_User_race(ctx, field)
+			case "cyberTrack":
+				return ec.fieldContext_User_cyberTrack(ctx, field)
+			case "firstTimeHacker":
+				return ec.fieldContext_User_firstTimeHacker(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -3851,6 +3893,10 @@ func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, fiel
 				return ec.fieldContext_User_gender(ctx, field)
 			case "race":
 				return ec.fieldContext_User_race(ctx, field)
+			case "cyberTrack":
+				return ec.fieldContext_User_cyberTrack(ctx, field)
+			case "firstTimeHacker":
+				return ec.fieldContext_User_firstTimeHacker(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -3968,6 +4014,10 @@ func (ec *executionContext) fieldContext_Query_searchUser(ctx context.Context, f
 				return ec.fieldContext_User_gender(ctx, field)
 			case "race":
 				return ec.fieldContext_User_race(ctx, field)
+			case "cyberTrack":
+				return ec.fieldContext_User_cyberTrack(ctx, field)
+			case "firstTimeHacker":
+				return ec.fieldContext_User_firstTimeHacker(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -4082,6 +4132,10 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 				return ec.fieldContext_User_gender(ctx, field)
 			case "race":
 				return ec.fieldContext_User_race(ctx, field)
+			case "cyberTrack":
+				return ec.fieldContext_User_cyberTrack(ctx, field)
+			case "firstTimeHacker":
+				return ec.fieldContext_User_firstTimeHacker(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -4396,6 +4450,10 @@ func (ec *executionContext) fieldContext_RegistrationPayload_user(ctx context.Co
 				return ec.fieldContext_User_gender(ctx, field)
 			case "race":
 				return ec.fieldContext_User_race(ctx, field)
+			case "cyberTrack":
+				return ec.fieldContext_User_cyberTrack(ctx, field)
+			case "firstTimeHacker":
+				return ec.fieldContext_User_firstTimeHacker(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -5127,6 +5185,136 @@ func (ec *executionContext) fieldContext_User_race(ctx context.Context, field gr
 	return fc, nil
 }
 
+func (ec *executionContext) _User_cyberTrack(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_cyberTrack(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return obj.CyberTrack, nil
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_cyberTrack(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_firstTimeHacker(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_firstTimeHacker(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return obj.FirstTimeHacker, nil
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋKnightHacksᚋknighthacks_sharedᚋmodelsᚐRole(ctx, "OWNS")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_firstTimeHacker(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_oAuth(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_oAuth(ctx, field)
 	if err != nil {
@@ -5785,6 +5973,10 @@ func (ec *executionContext) fieldContext_UsersConnection_users(ctx context.Conte
 				return ec.fieldContext_User_gender(ctx, field)
 			case "race":
 				return ec.fieldContext_User_race(ctx, field)
+			case "cyberTrack":
+				return ec.fieldContext_User_cyberTrack(ctx, field)
+			case "firstTimeHacker":
+				return ec.fieldContext_User_firstTimeHacker(ctx, field)
 			case "oAuth":
 				return ec.fieldContext_User_oAuth(ctx, field)
 			case "mailingAddress":
@@ -7963,7 +8155,7 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"firstName", "lastName", "email", "phoneNumber", "pronouns", "age", "mailingAddress", "mlh", "shirtSize", "yearsOfExperience", "educationInfo", "gender", "race"}
+	fieldsInOrder := [...]string{"firstName", "lastName", "email", "phoneNumber", "pronouns", "age", "mailingAddress", "mlh", "shirtSize", "yearsOfExperience", "educationInfo", "gender", "race", "cyberTrack", "firstTimeHacker"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -8087,6 +8279,24 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 				return it, err
 			}
 			it.Race = data
+		case "cyberTrack":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cyberTrack"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CyberTrack = data
+		case "firstTimeHacker":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("firstTimeHacker"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FirstTimeHacker = data
 		}
 	}
 
@@ -8138,7 +8348,7 @@ func (ec *executionContext) unmarshalInputUpdatedUser(ctx context.Context, obj i
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"firstName", "lastName", "email", "phoneNumber", "pronouns", "age", "mailingAddress", "mlh", "shirtSize", "yearsOfExperience", "educationInfo", "gender", "race"}
+	fieldsInOrder := [...]string{"firstName", "lastName", "email", "phoneNumber", "pronouns", "age", "mailingAddress", "mlh", "shirtSize", "yearsOfExperience", "educationInfo", "gender", "race", "cyberTrack", "firstTimeHacker"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -8262,6 +8472,24 @@ func (ec *executionContext) unmarshalInputUpdatedUser(ctx context.Context, obj i
 				return it, err
 			}
 			it.Race = data
+		case "cyberTrack":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cyberTrack"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CyberTrack = data
+		case "firstTimeHacker":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("firstTimeHacker"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FirstTimeHacker = data
 		}
 	}
 
@@ -9330,6 +9558,10 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._User_gender(ctx, field, obj)
 		case "race":
 			out.Values[i] = ec._User_race(ctx, field, obj)
+		case "cyberTrack":
+			out.Values[i] = ec._User_cyberTrack(ctx, field, obj)
+		case "firstTimeHacker":
+			out.Values[i] = ec._User_firstTimeHacker(ctx, field, obj)
 		case "oAuth":
 			field := field
 

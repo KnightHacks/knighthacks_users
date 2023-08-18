@@ -118,7 +118,7 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 		}
 
 		user, err = r.GetUserWithQueryable(ctx,
-			`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race, shirt_size, years_of_experience FROM users WHERE id = $1 LIMIT 1`,
+			`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race, shirt_size, years_of_experience, cyber_track, first_time_hacker FROM users WHERE id = $1 LIMIT 1`,
 			tx,
 			id)
 
@@ -240,6 +240,32 @@ func (r *DatabaseRepository) UpdateRace(ctx context.Context, id string, race *mo
 // UpdateGender updates gender
 func (r *DatabaseRepository) UpdateGender(ctx context.Context, id string, gender *string, tx pgx.Tx) error {
 	commandTag, err := tx.Exec(ctx, "UPDATE users SET gender = $1 WHERE id = $2", *gender, id)
+	if err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() != 1 {
+		return repository.UserNotFound
+	}
+	// then no error
+	return nil
+}
+
+// UpdateCyberTrack updates cyber_track
+func (r *DatabaseRepository) UpdateCyberTrack(ctx context.Context, id string, cyberTrack *bool, tx pgx.Tx) error {
+	commandTag, err := tx.Exec(ctx, "UPDATE users SET cyber_track = $1 WHERE id = $2", *cyberTrack, id)
+	if err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() != 1 {
+		return repository.UserNotFound
+	}
+	// then no error
+	return nil
+}
+
+// UpdateFirstTimeHacker updates first_time_hacker
+func (r *DatabaseRepository) UpdateFirstTimeHacker(ctx context.Context, id string, firstTimeHacker *bool, tx pgx.Tx) error {
+	commandTag, err := tx.Exec(ctx, "UPDATE users SET first_time_hacker = $1 WHERE id = $2", *firstTimeHacker, id)
 	if err != nil {
 		return err
 	}

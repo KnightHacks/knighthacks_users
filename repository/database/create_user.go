@@ -34,11 +34,13 @@ func (r *DatabaseRepository) CreateUser(ctx context.Context, oAuth *model.OAuth,
 		Pronouns:          pronouns,
 		Age:               input.Age,
 		Role:              sharedModels.RoleNormal,
-		OAuth:             oAuth,
-		Race:              input.Race,
-		YearsOfExperience: input.YearsOfExperience,
-		ShirtSize:         input.ShirtSize,
 		Gender:            input.Gender,
+		Race:              input.Race,
+		CyberTrack:        input.CyberTrack,
+		FirstTimeHacker:   input.FirstTimeHacker,
+		OAuth:             oAuth,
+		ShirtSize:         input.ShirtSize,
+		YearsOfExperience: input.YearsOfExperience,
 	}
 
 	// Begins the database transaction
@@ -122,7 +124,7 @@ func (r *DatabaseRepository) InsertUser(ctx context.Context, queryable database.
 	// insert user into database and return their ID
 
 	var userIdInt int
-	err := queryable.QueryRow(ctx, "INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider, role, years_of_experience, shirt_size, race, gender) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id",
+	err := queryable.QueryRow(ctx, "INSERT INTO users (first_name, last_name, email, phone_number, age, pronoun_id, oauth_uid, oauth_provider, role, years_of_experience, shirt_size, race, gender, cyber_track, first_time_hacker) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id",
 		input.FirstName,
 		input.LastName,
 		input.Email,
@@ -136,6 +138,8 @@ func (r *DatabaseRepository) InsertUser(ctx context.Context, queryable database.
 		input.ShirtSize,
 		input.Race,
 		input.Gender,
+		input.CyberTrack,
+		input.FirstTimeHacker,
 	).Scan(&userIdInt)
 	return userIdInt, err
 }
