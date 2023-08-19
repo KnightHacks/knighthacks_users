@@ -4,6 +4,8 @@ github.com/KnightHacks/knighthacks_shared v0.0.0-20230816235545-cf33535810ff h1:
 github.com/KnightHacks/knighthacks_shared v0.0.0-20230816235545-cf33535810ff/go.mod h1:tj3wsHFnJxZlPqYoKIXy/KeiRp1UxJfUnXkAk2+HLlg=
 github.com/KnightHacks/knighthacks_shared v0.0.0-20230819073527-926fabb62221 h1:5JSRsTE6zYq6wZGXvHFe/0WUlrVerTnSaVMvUKfdpz0=
 github.com/KnightHacks/knighthacks_shared v0.0.0-20230819073527-926fabb62221/go.mod h1:tj3wsHFnJxZlPqYoKIXy/KeiRp1UxJfUnXkAk2+HLlg=
+github.com/KnightHacks/knighthacks_shared v0.0.0-20230819080759-e72f3b06de31 h1:BBoiNI8G8P2I5t4zCJ7AOdOfoGNlV9EEyCxt3uVjxdQ=
+github.com/KnightHacks/knighthacks_shared v0.0.0-20230819080759-e72f3b06de31/go.mod h1:tj3wsHFnJxZlPqYoKIXy/KeiRp1UxJfUnXkAk2+HLlg=
 github.com/agnivade/levenshtein v1.1.1 h1:QY8M92nrzkmr798gCo3kmMyqXFzdQVpxLlGPRBij0P8=
 github.com/agnivade/levenshtein v1.1.1/go.mod h1:veldBMzWxcCG2ZvUTKD2kJNRdCk5hVbJomOvKkmgYbo=
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883 h1:bvNMNQO63//z+xNgfBlViaCIJKLlCJ6/fmUseuG0wVQ=
