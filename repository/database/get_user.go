@@ -27,7 +27,7 @@ func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after stri
 	err := pgx.BeginFunc(ctx, r.DatabasePool, func(tx pgx.Tx) error {
 		rows, err := tx.Query(
 			ctx,
-			"SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race, shirt_size, years_of_experience, cyber_track, first_time_hacker FROM users WHERE id > $1 ORDER BY id DESC LIMIT $2",
+			"SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, COALESCE(race, '') as race, shirt_size, years_of_experience, cyber_track, first_time_hacker FROM users WHERE id > $1 ORDER BY id DESC LIMIT $2",
 			after,
 			first,
 		)
@@ -69,7 +69,7 @@ func (r *DatabaseRepository) GetUsers(ctx context.Context, first int, after stri
 func (r *DatabaseRepository) GetUserByID(ctx context.Context, id string) (*model.User, error) {
 	return r.GetUser(
 		ctx,
-		`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race, shirt_size, years_of_experience, cyber_track, first_time_hacker FROM users WHERE id = $1 LIMIT 1`,
+		`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, COALESCE(race, '') as race, shirt_size, years_of_experience, cyber_track, first_time_hacker FROM users WHERE id = $1 LIMIT 1`,
 		id,
 	)
 }
@@ -78,7 +78,7 @@ func (r *DatabaseRepository) GetUserByID(ctx context.Context, id string) (*model
 func (r *DatabaseRepository) GetUserByOAuthUID(ctx context.Context, oAuthUID string, provider sharedModels.Provider) (*model.User, error) {
 	return r.GetUser(
 		ctx,
-		`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race, shirt_size, years_of_experience, cyber_track, first_time_hacker FROM users WHERE oauth_uid=cast($1 as varchar) AND oauth_provider=$2 LIMIT 1`,
+		`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, COALESCE(race, '') as race, shirt_size, years_of_experience, cyber_track, first_time_hacker FROM users WHERE oauth_uid=cast($1 as varchar) AND oauth_provider=$2 LIMIT 1`,
 		oAuthUID,
 		provider,
 	)
@@ -116,7 +116,7 @@ func (r *DatabaseRepository) SearchUser(ctx context.Context, name string) ([]*mo
 	users := make([]*model.User, 0, limit)
 
 	err := pgx.BeginTxFunc(ctx, r.DatabasePool, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		rows, err := tx.Query(ctx, "SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race, shirt_size, years_of_experience, cyber_track, first_time_hacker from users WHERE to_tsvector(first_name || ' ' || last_name) @@ to_tsquery('$1:*') LIMIT $2", name, limit)
+		rows, err := tx.Query(ctx, "SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, COALESCE(race, '') as race, shirt_size, years_of_experience, cyber_track, first_time_hacker from users WHERE to_tsvector(first_name || ' ' || last_name) @@ to_tsquery('$1:*') LIMIT $2", name, limit)
 		if err != nil {
 			return err
 		}
