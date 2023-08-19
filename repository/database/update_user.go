@@ -469,7 +469,7 @@ type Scannable interface {
 func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
 	var pronounVal uint32
 	pronounId := &pronounVal
-	var racesStringArray []string
+	var raceString string
 	var userIdInt int
 	err := scannable.Scan(
 		&userIdInt,
@@ -481,7 +481,7 @@ func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
 		&user.Age,
 		&user.Role,
 		&user.Gender,
-		&racesStringArray,
+		&raceString,
 		&user.ShirtSize,
 		&user.YearsOfExperience,
 		&user.CyberTrack,
@@ -495,6 +495,10 @@ func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
 	if pronounId == nil {
 		return nil, nil
 	}
+
+	race := model.Race(raceString)
+
+	user.Race = &race
 	return utils.Ptr(int(*pronounId)), nil
 }
 
