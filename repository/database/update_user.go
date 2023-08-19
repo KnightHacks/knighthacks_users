@@ -125,7 +125,7 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 		}
 
 		user, err = r.GetUserWithQueryable(ctx,
-			`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, race, shirt_size, years_of_experience, cyber_track, first_time_hacker FROM users WHERE id = $1 LIMIT 1`,
+			`SELECT id, first_name, last_name, email, phone_number, pronoun_id, age, role, gender, COALESCE(race, '') as race, shirt_size, years_of_experience, cyber_track, first_time_hacker FROM users WHERE id = $1 LIMIT 1`,
 			tx,
 			id)
 
@@ -496,9 +496,11 @@ func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
 		return nil, nil
 	}
 
-	race := model.Race(raceString)
+	if len(raceString) > 0 {
+		race := model.Race(raceString)
 
-	user.Race = &race
+		user.Race = &race
+	}
 	return utils.Ptr(int(*pronounId)), nil
 }
 
