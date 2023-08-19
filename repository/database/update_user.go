@@ -38,6 +38,7 @@ func Validate[T *string |
 *float64 |
 *model.ShirtSize |
 *int |
+*bool |
 []*string |
 *model.PronounsInput |
 *model.MailingAddressUpdate |
@@ -114,6 +115,12 @@ func (r *DatabaseRepository) UpdateUser(ctx context.Context, id string, input *m
 			return err
 		}
 		if err = Validate(ctx, tx, id, input.YearsOfExperience, r.UpdateYearsOfExperience); err != nil {
+			return err
+		}
+		if err = Validate(ctx, tx, id, input.CyberTrack, r.UpdateCyberTrack); err != nil {
+			return err
+		}
+		if err = Validate(ctx, tx, id, input.FirstTimeHacker, r.UpdateFirstTimeHacker); err != nil {
 			return err
 		}
 
@@ -477,6 +484,8 @@ func ScanUser[T Scannable](user *model.User, scannable T) (*int, error) {
 		&racesStringArray,
 		&user.ShirtSize,
 		&user.YearsOfExperience,
+		&user.CyberTrack,
+		&user.FirstTimeHacker,
 	)
 
 	if err != nil {
